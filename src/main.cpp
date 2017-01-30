@@ -77,7 +77,7 @@ int main(int argc, char **argv)
         []() {
             std::stringstream header;
             header << "=======================================================================================================" << std::endl;
-            header << "souffle -- Oracle Labs' datalog engine." << std::endl;
+            header << "souffle -- A datalog engine." << std::endl;
             header << "Usage: souffle [OPTION] FILE." << std::endl;
             header << "-------------------------------------------------------------------------------------------------------" << std::endl;
             header << "Options:" << std::endl;
@@ -116,9 +116,10 @@ int main(int argc, char **argv)
                 {"verbose",         'v', "",        "",     "Verbose output."},
                 {"help",            'h', "",        "",     "Display this help message."},
 
-                // TODO: uncomment to allow breadth and depth limits as command line parameters, must also do so below
-                // {"breadth-limit",   3,   "N",       "2",    "Specify the breadth limit used for the topological ordering of strongly connected components."},
-                // {"depth-limit",     4,   "N",       "2",    "Specify the depth limit used for the topological ordering of strongly connected components."}
+                // options for the topological ordering of strongly connected components, see TopologicallySortedSCCGraph class in PrecedenceGraph.cpp
+                {"breadth-limit",   3,   "N",       "",     "Specify the breadth limit used for the topological ordering of strongly connected components."},
+                {"depth-limit",     4,   "N",       "",     "Specify the depth limit used for the topological ordering of strongly connected components."},
+                {"lookahead",       5,   "N",       "",     "Specify the lookahead used for the topological ordering of strongly connected components."}
 
             };
             return std::vector<Option>(std::begin(opts), std::end(opts));
@@ -165,20 +166,28 @@ int main(int argc, char **argv)
     if (env.has("auto-schedule") && !env.has("dl-program"))
        fail("error: no executable is specified for auto-scheduling (option -o <FILE>)");
 
-    // TODO: uncomment to allow breadth and depth limits as command line parameters, must also do so above
     /* set the breadth and depth limits for the topological ordering of strongly connected components */
-    // if (env.has("breadth-limit")) {
-    //    int limit = std::stoi(env.get("breadth-limit"));
-    //    if (limit <= 0)
-    //        fail("error: breadth limit must be a natural number");
-    //    TopologicallySortedSCCGraph::BREADTH_LIMIT = limit;
-    // }
-    // if (env.has("depth-limit")) {
-    //     int limit = std::stoi(env.get("depth-limit"));
-    //     if (limit <= 0)
-    //         fail("error: depth limit must be a natural number");
-    //     TopologicallySortedSCCGraph::DEPTH_LIMIT = limit;
-    // }
+    if (env.has("breadth-limit")) {
+        int limit = std::stoi(env.get("breadth-limit"));
+        if (limit <= 0)
+            fail("error: breadth limit must be 1 or more");
+        TopologicallySortedSCCGraph::BREADTH_LIMIT = limit;
+     }
+     if (env.has("depth-limit")) {
+        int limit = std::stoi(env.get("depth-limit"));
+        if (limit <= 0)
+            fail("error: depth limit must be 1 or more");
+        TopologicallySortedSCCGraph::DEPTH_LIMIT = limit;
+     }
+     if (env.has("lookahead")) {
+        if (env.has("breadth-limit") || env.has("depth-limit"))
+            fail("error: only one of either lookahead or depth-limit and breadth-limit may be specified");
+        int lookahead = std::stoi(env.get("lookahead"));
+        if (lookahead <= 0)
+            fail("error: lookahead must be 1 or more");
+        TopologicallySortedSCCGraph::LOOKAHEAD = lookahead;
+     }
+
 
     /* collect all input directories for the c pre-processor */
     if (env.has("include-dir")) {
