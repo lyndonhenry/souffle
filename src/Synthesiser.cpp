@@ -1178,6 +1178,100 @@ void Synthesiser::emitCode(std::ostream& out, const RamStatement& stmt) {
             }
         }
 
+#ifdef USE_MPI
+        // -- mpi statements --
+
+        void visitRecv(const RamRecv& recv, std::ostream& os) override {
+            os << "mpi::xtest(";
+            {
+                // source
+                os << "mpi::rankOfJob(" << recv.getSourceStratum() << "), ";
+                // tag
+                os << "mpi::tagOf(" << recv.getRelation().getName() << "), ";
+                // count
+                os << "1, ";
+                // callback
+                os << "[&](Status& status) -> void {";
+                {
+                    os << "mpi::recv<ram::Relation, RamDomain>(";
+                    {
+                        // data
+                        os << "*" << recv.getRelation().getName() << ", ";
+                        // length
+                        os << recv.getRelation().getArity() << ", ";
+                        // status
+                        os << "status";
+                    }
+                    os << ")";
+                }
+                os << "}";
+            }
+            os << ");";
+        }
+
+        void visitRecvCallback(const RamRecvCallback& recvCb, std::ostream& os) override {
+            os << "mpi::xtest(";
+            {
+                // source
+                os << "mpi::rankOfJob(" << recvCb.getSourceStratum() << "), ";
+                // tag
+                os << "mpi::tagOf(" << recvCb.getRelation().getName() << "), ";
+                // count
+                os << "1, ";
+                // callback
+                os << "[&](Status& status) -> void {";
+                {
+                    os << "mpi::recv<ram::Relation, RamDomain>(";
+                    {
+                        // data
+                        os << "*" << recvCb.getRelation().getName() << ", ";
+                        // length
+                        os << recvCb.getRelation().getArity() << ", ";
+                        // status
+                        os << "status";
+                    }
+                    os << ")";
+                    visit(recvCb.getBody(), os);
+                }
+                os << "}";
+            }
+            os << ");";
+        }
+
+        void visitSend(const RamSend& send, std::ostream& os) override {
+            os << "mpi::xwait(";
+            {
+                os << "mpi::isend(";
+                // data
+                {
+                    os << "*" << send.getRelation().getName() << ", ";
+                    // destinations
+                    os << "std::unordered_set<int>({";
+                    {
+                        auto it = send.getDestinationStrata().begin();
+                        os << "mpi::rankOfJob(" << *it << ")";
+                        ++it;
+                        while (it != send.getDestinationStrata().end()) {
+                            os << ", mpi::rankOfJob(" << *it << ")";
+                        }
+                    }
+                    os << "}), ";
+                    // tag
+                    os << "mpi::tagOf(" << send.getRelation().getName() << ")";
+                }
+                os << ");";
+            }
+            os << ");";
+        }
+
+        void visitWaitSend(const RamWaitSend&, std::ostream& os) override {
+            os << "mpi::xwait();";
+        }
+
+        void visitWaitRecv(const RamWaitRecv&, std::ostream& os) override {
+            os << "mpi::xtest();";
+        }
+#endif
         // -- safety net --
 
         void visitNode(const RamNode& node, std::ostream& /*out*/) override {
@@ -1204,11 +1298,26 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
 
     std::string classname = "Sf_" + id;
 
+#ifdef USE_MPI
+    if (Global::config().get("engine") == "mpi") {
+        os << "#define USE_MPI\n";
+    } else {
+        os << "#undef USE_MPI\n";
+    }
+#endif
+
     // generate C++ program
     os << "#include \"souffle/CompiledSouffle.h\"\n";
     if (Global::config().has("provenance")) {
         os << "#include \"souffle/Explain.h\"\n";
     }
+
+#ifdef USE_MPI
+    if (Global::config().get("engine") == "mpi") {
+        os << "#include \"souffle/Mpi.h\"\n";
+    }
+#endif
+
     os << "\n";
     os << "namespace souffle {\n";
     os << "using namespace ram;\n";
@@ -1249,15 +1358,23 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
 
     // declare symbol table
     os << "// -- initialize symbol table --\n";
-    os << "SymbolTable symTable\n";
-    if (symTable.size() > 0) {
-        os << "{\n";
-        for (size_t i = 0; i < symTable.size(); i++) {
-            os << "\tR\"_(" << symTable.resolve(i) << ")_\",\n";
+#ifdef USE_MPI
+    if (Global::config().get("engine") == "mpi") {
+        os << "SymbolTable symTable;";
+    } else
+#endif
+    {
+        os << "SymbolTable symTable\n";
+        if (symTable.size() > 0) {
+            os << "{\n";
+            for (size_t i = 0; i < symTable.size(); i++) {
+                os << "\tR\"_(" << symTable.resolve(i) << ")_\",\n";
+            }
+            os << "}";
         }
-        os << "}";
+        os << ";";
     }
-    os << ";";
+
     if (Global::config().has("profile")) {
         os << "private:\n";
         size_t numFreq = 0;
@@ -1390,7 +1507,14 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
         });
         if (hasAtLeastOneStrata) {
             os << "switch (stratumIndex) {\n";
-            os << "case ((size_t) -1):\ngoto STRATUM_0;\nbreak;\n";
+#ifdef USE_MPI
+            if (Global::config().get("engine") == "mpi") {
+                os << "case ((size_t) -1):\ngoto STRATUM_" << (size_t)-1 << ";\nbreak;\n";
+            } else
+#endif
+            {
+                os << "case ((size_t) -1):\ngoto STRATUM_0;\nbreak;\n";
+            }
             os << ss.str();
             os << "}\n";
         }
@@ -1404,9 +1528,17 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
         os << "{\n";
         emitCode(os, stratum.getBody());
         os << "}\n";
-        if (Global::config().has("engine")) {
-            os << "if (stratumIndex != (size_t) -1) goto EXIT;\n";
+#ifdef USE_MPI
+        if (Global::config().get("engine") == "mpi") {
+            os << "goto EXIT;";
+        } else
+#endif
+        {
+            if (Global::config().has("engine")) {
+                os << "if (stratumIndex != (size_t) -1) goto EXIT;\n";
+            }
         }
+
         os << "/* END STRATUM " << stratum.getIndex() << " */\n";
     });
 
@@ -1544,6 +1676,25 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
     });
     os << "}\n";  // end of dumpOutputs() method
 
+#ifdef USE_MPI
+    if (Global::config().get("engine") == "mpi") {
+        os << "public: void initializeSymbolTable() {";
+        os << "symTable = SymbolTable(\n";
+        if (symTable.size() > 0) {
+            os << "{\n";
+            for (size_t i = 0; i < symTable.size(); i++) {
+                os << "\tR\"_(" << symTable.resolve(i) << ")_\",\n";
+            }
+            os << "}";
+        }
+        os << ");";
+        os << "}";
+        os << "public: void registerSymbolTableMessageHandlers() {";
+        os << "symTable.registerMessageHandlers()";
+        os << "}";
+    }
+#endif
+
     os << "public:\n";
     os << "const SymbolTable &getSymbolTable() const override {\n";
     os << "return symTable;\n";
@@ -1603,6 +1754,11 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
     os << "#else\n";
     os << "}\n";
     os << "int main(int argc, char** argv)\n{\n";
+#ifdef USE_MPI
+    if (Global::config().get("engine") == "mpi") {
+        os << "mpi::init(argc, argv);";
+    }
+#endif
     os << "try{\n";
 
     // parse arguments
@@ -1634,13 +1790,45 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
         os << classname + " obj;\n";
     }
 
-    os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), opt.getStratumIndex());\n";
+#ifdef USE_MPI
+    if (Global::config().get("engine") == "mpi") {
+        size_t stratumCount = 0;
+        visitDepthFirst(*(prog.getMain()), [&](const RamStratum& stratum) { ++stratumCount; });
+        os << "mpi::numberOfJobs(" << stratumCount << ");";
+        visitDepthFirst(*(prog.getMain()), [&](const RamCreate& create) {
+            // TODO (lyndonhenry): should do this more efficiently, just need to ensure relation names map to
+            // the same tag on all nodes
+            os << "mpi::tagOf(" << create.getRelation().getName() << ");";
+        });
+        os << "if (mpi::commRank() == 0) {";
+        {
+            os << "obj.initializeSymbolTable();";
+            os << "obj.registerSymbolTableMessageHandlers();";
+            os << "obj.runAll(opt.getIntputFileDir(), opt.getOutputFileDir(), -1);";
+        }
+        os << "} else {";
+        {
+            os << "for (auto job : mpi::jobsOfRank(mpi::commRank())) {";
+            os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), job);\n";
+            os << "}";
+        }
+        os << "}";
+    } else
+#endif
+    {
+        os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), opt.getStratumIndex());\n";
+    }
     if (Global::config().get("provenance") == "1") {
         os << "explain(obj, true, false);\n";
     } else if (Global::config().get("provenance") == "2") {
         os << "explain(obj, true, true);\n";
     }
 
+#ifdef USE_MPI
+    if (Global::config().get("engine") == "mpi") {
+        os << "mpi::finalize();";
+    }
+#endif
     os << "return 0;\n";
     os << "} catch(std::exception &e) { souffle::SignalHandler::instance()->error(e.what());}\n";
     os << "}\n";

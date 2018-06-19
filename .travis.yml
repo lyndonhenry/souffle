@@ -59,6 +59,18 @@ aliases:
         - fakeroot
     before_script: ".travis/init_make_package.sh"
     script: ".travis/linux/make_package.sh"
+  - &linuxgccmpich
+    <<: *linuxgcc
+    addons:
+        packages:
+        - mpich
+    before_script: ".travis/init_test_mpi.sh"
+  - &linuxclangmpich
+    <<: *linuxclang
+    addons:
+        packages:
+        - mpich
+    before_script: ".travis/init_test_mpi.sh"
   - &osxgcc
     stage: Testing
     os: osx
@@ -73,6 +85,14 @@ aliases:
     install: ".travis/osx/install.sh"
     compiler: clang
     language: cpp
+  - &osxgccmpich
+    <<: *osxgcc
+    before_script: ".travis/init_test_mpi.sh"
+    install: ".travis/osx/install_withgcc_mpich.sh"
+  - &osxclangmpich
+    <<: *osxgcc
+    before_script: ".travis/init_test_mpi.sh"
+    install: ".travis/osx/install_withgcc_mpich.sh"
   - &osxpackage
     <<: *osxclang
     stage: Packaging
@@ -124,6 +144,23 @@ jobs:
     env:
     - *gcc_environment
     - SOUFFLE_CATEGORY=FastEvaluation,Interface,Profile,Provenance SOUFFLE_CONFS="-c -j8 -efile"
+
+# Testing stage with mpi (-c -j8 -empi, FastEvaluation and select others)
+  - <<: *linuxgccmpich
+    env:
+    - *gcc_environment
+    - SOUFFLE_CATEGORY=FastEvaluation,Unit,Interface,Profile,Provenance SOUFFLE_CONFS="-c -j8 -empi"
+  - <<: *linuxclangmpich
+    env:
+    - *clang_environment
+    - SOUFFLE_CATEGORY=FastEvaluation,Unit,Interface,Profile,Provenance SOUFFLE_CONFS="-c -j8 -empi"
+  - <<: *osxclangmpich
+    env:
+    - SOUFFLE_CATEGORY=FastEvaluation,Unit,Interface,Profile,Provenance SOUFFLE_CONFS="-c -j8 -empi"
+  - <<: *osxgccmpich
+    env:
+    - *gcc_environment
+    - SOUFFLE_CATEGORY=FastEvaluation,Unit,Interface,Profile,Provenance SOUFFLE_CONFS="-c -j8 -empi"
 
 # Testing stage (-j8,-c -j8)
   - <<: *linuxgcc

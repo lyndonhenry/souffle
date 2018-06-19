@@ -37,8 +37,7 @@ souffle_profile_SOURCES = souffle_prof.cpp profilerlib/Cell.h   \
                           profilerlib/Tui.h                     \
                           profilerlib/html_string.h             \
                           profilerlib/UserInputReader.cpp       \
-                          profilerlib/UserInputReader.h         \
-                          FileFormatConverter.h  
+                          profilerlib/UserInputReader.h
 
 DIR := ${CURDIR}
 
@@ -54,6 +53,10 @@ endif
 
 if SQLITE
 sqlite_sources = ReadStreamSQLite.h WriteStreamSQLite.h
+endif
+
+if MPI
+mpi_sources = Mpi.h
 endif
 
 souffle_sources = \
@@ -113,7 +116,8 @@ souffle_sources = \
               PrecedenceGraph.cpp   PrecedenceGraph.h   \
               MagicSet.cpp          MagicSet.h          \
               InlineRelationsTransformer.cpp            \
-              $(sqlite_sources)     $(libz_sources)     \
+              $(sqlite_sources)                         \
+              $(libz_sources)                           \
               ReadStream.h                              \
               ReadStreamCSV.h                           \
               WriteStream.h                             \
@@ -129,8 +133,9 @@ souffle_sources = \
               IndexSetAnalysis.cpp   IndexSetAnalysis.h \
               ProvenanceTransformer.cpp                 \
               Global.cpp            Global.h            \
-              LogStatement.h                         \
-              ProfileEvent.h
+              LogStatement.h                            \
+              ProfileEvent.h                            \
+              $(mpi_sources)
 
 # -- build souffle as a library so it can be reused in testing
 noinst_LTLIBRARIES = libsouffle.la
@@ -190,7 +195,8 @@ soufflepublic_HEADERS = CompiledOptions.h       \
                         ExplainTree.h           \
                         ExplainProvenance.h     \
                         ExplainProvenanceSLD.h  \
-                        ProfileEvent.h
+                        ProfileEvent.h          \
+                        $(mpi_sources)
 
 # files to clean
 CLEANFILES = $(BUILT_SOURCES)  parser.cc scanner.cc parser.hh stack.hh
@@ -324,11 +330,13 @@ test_parallel_utils_test_CXXFLAGS = $(souffle_bin_CPPFLAGS) -I @abs_top_srcdir@/
 test_parallel_utils_test_SOURCES = test/parallel_utils_test.cpp
 test_parallel_utils_test_LDADD = libsouffle.la
 
-# file format converter
-check_PROGRAMS += test/file_format_converter_test
-test_file_format_converter_test_CXXFLAGS = $(souffle_bin_CPPFLAGS) -I @abs_top_srcdir@/src/test -DBUILDDIR='"@abs_top_builddir@/src/"'
-test_file_format_converter_test_SOURCES = test/file_format_converter_test.cpp
-test_file_format_converter_test_LDADD = libsouffle.la
+if MPI
+# mpi interface
+check_PROGRAMS += test/mpi_test
+test_mpi_test_CXXFLAGS = $(souffle_bin_CPPFLAGS) -I @abs_top_srcdir@/src/test -DBUILDDIR='"@abs_top_builddir@/src/"'
+test_mpi_test_SOURCES = test/mpi_test.cpp
+test_mpi_test_LDADD = libsouffle.la
+endif
 
 # make all check-programs tests
 TESTS = $(check_PROGRAMS)

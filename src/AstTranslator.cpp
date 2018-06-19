@@ -56,6 +56,7 @@
 #include <map>
 #include <memory>
 #include <typeinfo>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -100,23 +101,38 @@ IODirectives getInputIODirectives(const AstRelation* rel, std::string filePath =
         }
     }
 
+    // set the relation name
     directives.setRelationName(getRelationName(rel->getName()));
-    // Set a default IO type of file and a default filename if not supplied.
+
+    // set a default io type of file, if none is set yet
     if (!directives.has("IO")) {
         directives.setIOType("file");
     }
-    // load intermediate relations from correct files
-    if (directives.getIOType() == "file" && (!directives.has("filename") || isIntermediate)) {
-        directives.setFileName(directives.getRelationName() + inputFileExt);
-    }
-    // all intermediate relations are given the default delimiter and have no headers
-    if (isIntermediate) {
-        directives.set("delimiter", "\t");
-        directives.set("headers", "false");
-    }
-    // if filename is not an absolute path, concat with cmd line facts directory
-    if (directives.getIOType() == "file" && directives.getFileName().front() != '/') {
-        directives.setFileName(inputFilePath + "/" + directives.getFileName());
+
+    // if the io type is file...
+    if (directives.getIOType() == "file") {
+        if (isIntermediate || !directives.has("filename")) {
+            // set its filename by the relation name and previously determined file extension
+            directives.setFileName(directives.getRelationName() + inputFileExt);
+        }
+        // if a relation is intermediate...
+        if (isIntermediate) {
+            // set it as intermediate
+            directives.set("intermediate", "true");
+
+            // set the default delimiter and headers
+            directives.set("delimiter", "\t");
+            directives.set("headers", "false");
+        } else {
+            // otherwise, don't set it as intermediate
+            directives.set("intermediate", "false");
+        }
+        // if the relation is intermediate, has no file name, or has a file name that is not an absolute
+        // path...
+        if (directives.getFileName().front() != '/') {
+            // set its directory by the previously determined file path
+            directives.setFileName(inputFilePath + "/" + directives.getFileName());
+        }
     }
 
     return directives;
@@ -152,17 +168,44 @@ std::vector<IODirectives> getOutputIODirectives(const AstRelation* rel, const Ty
         ioDirectives.setFileName(getRelationName(rel->getName()) + outputFileExt);
         outputDirectives.push_back(ioDirectives);
     }
+
     for (auto& ioDirectives : outputDirectives) {
         ioDirectives.setRelationName(getRelationName(rel->getName()));
         if (!ioDirectives.has("IO")) {
             ioDirectives.setIOType("file");
         }
-        if (ioDirectives.getIOType() == "file" && !ioDirectives.has("filename")) {
-            ioDirectives.setFileName(ioDirectives.getRelationName() + outputFileExt);
+
+        const bool isIntermediate =
+                (Global::config().has("engine") && outputFilePath == Global::config().get("output-dir") &&
+                        outputFileExt == ".facts");
+
+        // if the io type is file...
+        if (ioDirectives.getIOType() == "file") {
+            if (isIntermediate || !ioDirectives.has("filename")) {
+                // set its filename by the relation name and previously determined file extension
+                ioDirectives.setFileName(ioDirectives.getRelationName() + outputFileExt);
+            }
+            // if a relation is intermediate...
+            if (isIntermediate) {
+                // set it as intermediate
+                ioDirectives.set("intermediate", "true");
+
+                // set the default delimiter and headers
+                ioDirectives.set("delimiter", "\t");
+                ioDirectives.set("headers", "false");
+            } else {
+                // otherwise, don't set it as intermediate
+                ioDirectives.set("intermediate", "false");
+            }
+            // if the relation is intermediate, has no file name, or has a file name that is not an absolute
+            // path...
+            if (ioDirectives.getFileName().front() != '/') {
+                // set its directory by the previously determined file path
+                ioDirectives.setFileName(outputFilePath + "/" + ioDirectives.getFileName());
+            }
         }
-        if (ioDirectives.getIOType() == "file" && ioDirectives.getFileName().front() != '/') {
-            ioDirectives.setFileName(outputFilePath + "/" + ioDirectives.get("filename"));
-        }
+
+        // TODO (lyndonhenry): is setting attribute names necessary for intermediate relations?
         if (!ioDirectives.has("attributeNames")) {
             std::string delimiter("\t");
             if (ioDirectives.has("delimiter")) {
@@ -1250,6 +1293,91 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
         return std::make_unique<RamProgram>(std::move(res));
     }
 
+    // a function to create relations
+    const auto& makeRamCreate = [&](std::unique_ptr<RamStatement>& current, const AstRelation* relation,
+            const std::string relationNamePrefix) {
+        appendStmt(
+                current, std::make_unique<RamCreate>(std::unique_ptr<RamRelation>(getRamRelation(relation,
+                                 &typeEnv, relationNamePrefix + getRelationName(relation->getName()),
+                                 relation->getArity(), !relationNamePrefix.empty(), relation->isHashset()))));
+    };
+
+    // a function to load relations
+    const auto& makeRamLoad = [&](std::unique_ptr<RamStatement>& current, const AstRelation* relation,
+            const std::string& inputDirectory, const std::string& fileExtension) {
+        appendStmt(current,
+                std::make_unique<RamLoad>(std::unique_ptr<RamRelation>(getRamRelation(relation, &typeEnv,
+                                                  getRelationName(relation->getName()), relation->getArity(),
+                                                  false, relation->isHashset())),
+                        getInputIODirectives(relation, Global::config().get(inputDirectory), fileExtension)));
+    };
+
+    // a function to print the size of relations
+    const auto& makeRamPrintSize = [&](std::unique_ptr<RamStatement>& current, const AstRelation* relation) {
+        appendStmt(current, std::make_unique<RamPrintSize>(std::unique_ptr<RamRelation>(
+                                    getRamRelation(relation, &typeEnv, getRelationName(relation->getName()),
+                                            relation->getArity(), false, relation->isHashset()))));
+    };
+
+    // a function to store relations
+    const auto& makeRamStore = [&](std::unique_ptr<RamStatement>& current, const AstRelation* relation,
+            const std::string& outputDirectory, const std::string& fileExtension) {
+        appendStmt(current,
+                std::make_unique<RamStore>(std::unique_ptr<RamRelation>(getRamRelation(relation, &typeEnv,
+                                                   getRelationName(relation->getName()), relation->getArity(),
+                                                   false, relation->isHashset())),
+                        getOutputIODirectives(
+                                relation, &typeEnv, Global::config().get(outputDirectory), fileExtension)));
+    };
+
+    // a function to drop relations
+    const auto& makeRamDrop = [&](std::unique_ptr<RamStatement>& current, const AstRelation* relation) {
+        appendStmt(current, std::make_unique<RamDrop>(
+                                    getRamRelation(relation, &typeEnv, getRelationName(relation->getName()),
+                                            relation->getArity(), false, relation->isHashset())));
+    };
+
+#ifdef USE_MPI
+    const auto& makeRamSend = [&](std::unique_ptr<RamStatement>& current, const AstRelation* relation,
+            const std::unordered_set<size_t> destinationStrata) {
+        appendStmt(current, std::make_unique<RamSend>(
+                                    getRamRelation(relation, &typeEnv, getRelationName(relation->getName()),
+                                            relation->getArity(), false, relation->isHashset()),
+                                    destinationStrata));
+
+    };
+
+    const auto& makeRamRecv = [&](
+            std::unique_ptr<RamStatement>& current, const AstRelation* relation, const size_t sourceStrata) {
+        appendStmt(current, std::make_unique<RamRecv>(
+                                    getRamRelation(relation, &typeEnv, getRelationName(relation->getName()),
+                                            relation->getArity(), false, relation->isHashset()),
+                                    sourceStrata));
+
+    };
+
+    const auto& makeRamRecvStore = [&](std::unique_ptr<RamStatement>& current, const AstRelation* relation,
+            const size_t sourceStrata, const std::string& outputDirectory, const std::string& fileExtension) {
+        appendStmt(current, std::make_unique<RamRecvCallback>(
+                                    getRamRelation(relation, &typeEnv, getRelationName(relation->getName()),
+                                            relation->getArity(), false, relation->isHashset()),
+                                    sourceStrata,
+                                    std::make_unique<RamStore>(
+                                            std::unique_ptr<RamRelation>(getRamRelation(relation, &typeEnv,
+                                                    getRelationName(relation->getName()),
+                                                    relation->getArity(), false, relation->isHashset())),
+                                            getOutputIODirectives(relation, &typeEnv,
+                                                    Global::config().get(outputDirectory), fileExtension))));
+
+    };
+
+    const auto& makeRamWaitSend = [&](
+            std::unique_ptr<RamStatement>& current) { appendStmt(current, std::make_unique<RamWaitSend>()); };
+
+    const auto& makeRamWaitRecv = [&](
+            std::unique_ptr<RamStatement>& current) { appendStmt(current, std::make_unique<RamWaitRecv>()); };
+#endif
+
     // maintain the index of the SCC within the topological order
     unsigned index = 0;
 
@@ -1274,77 +1402,52 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
         // make a variable for all relations that are expired at the current SCC
         const auto& internExps = expirySchedule.at(index).expired();
 
-        // a function to create relations
-        const auto& makeRamCreate = [&](const AstRelation* relation, const std::string relationNamePrefix) {
-            appendStmt(current,
-                    std::make_unique<RamCreate>(std::unique_ptr<RamRelation>(getRamRelation(relation,
-                            &typeEnv, relationNamePrefix + getRelationName(relation->getName()),
-                            relation->getArity(), !relationNamePrefix.empty(), relation->isHashset()))));
-        };
-
-        // a function to load relations
-        const auto& makeRamLoad = [&](const AstRelation* relation, const std::string& inputDirectory,
-                const std::string& fileExtension) {
-            appendStmt(current,
-                    std::make_unique<RamLoad>(std::unique_ptr<RamRelation>(getRamRelation(relation, &typeEnv,
-                                                      getRelationName(relation->getName()),
-                                                      relation->getArity(), false, relation->isHashset())),
-                            getInputIODirectives(
-                                    relation, Global::config().get(inputDirectory), fileExtension)));
-        };
-
-        // a function to print the size of relations
-        const auto& makeRamPrintSize = [&](const AstRelation* relation) {
-            appendStmt(current, std::make_unique<RamPrintSize>(std::unique_ptr<RamRelation>(getRamRelation(
-                                        relation, &typeEnv, getRelationName(relation->getName()),
-                                        relation->getArity(), false, relation->isHashset()))));
-        };
-
-        // a function to store relations
-        const auto& makeRamStore = [&](const AstRelation* relation, const std::string& outputDirectory,
-                const std::string& fileExtension) {
-            appendStmt(current,
-                    std::make_unique<RamStore>(std::unique_ptr<RamRelation>(getRamRelation(relation, &typeEnv,
-                                                       getRelationName(relation->getName()),
-                                                       relation->getArity(), false, relation->isHashset())),
-                            getOutputIODirectives(relation, &typeEnv, Global::config().get(outputDirectory),
-                                    fileExtension)));
-        };
-
-        // a function to drop relations
-        const auto& makeRamDrop = [&](const AstRelation* relation) {
-            appendStmt(current, std::make_unique<RamDrop>(getRamRelation(relation, &typeEnv,
-                                        getRelationName(relation->getName()), relation->getArity(), false,
-                                        relation->isHashset())));
-        };
-
         // create all internal relations of the current scc
         for (const auto& relation : allInterns) {
-            makeRamCreate(relation, "");
+            makeRamCreate(current, relation, "");
             // create new and delta relations if required
             if (isRecursive) {
-                makeRamCreate(relation, "delta_");
-                makeRamCreate(relation, "new_");
+                makeRamCreate(current, relation, "delta_");
+                makeRamCreate(current, relation, "new_");
             }
         }
 
-        // load all internal input relations from the facts dir with a .facts extension
-        for (const auto& relation : internIns) {
-            makeRamLoad(relation, "fact-dir", ".facts");
-        }
-
-        // if a communication engine has been specified...
-        if (Global::config().has("engine")) {
-            // load all external output predecessor relations from the output dir with a .csv extension
+#ifdef USE_MPI
+        if (Global::config().get("engine") == "mpi") {
+            // recv all internal input relations from the master process
+            for (const auto& relation : internIns) {
+                makeRamRecv(current, relation, -1);
+            }
+            // recv all external output predecessor relations from their source slave process
             for (const auto& relation : externOutPreds) {
-                makeRamLoad(relation, "output-dir", ".csv");
+                makeRamRecv(current, relation, sccGraph.getSCC(relation));
             }
-            // load all external output predecessor relations from the output dir with a .facts extension
+            // recv all external output predecessor relations from their source slave process
             for (const auto& relation : externNonOutPreds) {
-                makeRamLoad(relation, "output-dir", ".facts");
+                makeRamRecv(current, relation, sccGraph.getSCC(relation));
+            }
+            // wait for all receptions to complete
+            makeRamWaitRecv(current);
+        } else
+#endif
+        {
+            // load all internal input relations from the facts dir with a .facts extension
+            for (const auto& relation : internIns) {
+                makeRamLoad(current, relation, "fact-dir", ".facts");
+            }
+
+            // if a communication engine has been specified...
+            if (Global::config().has("engine")) {
+                // load all external output predecessor relations from the output dir with a .csv extension
+                for (const auto& relation : externOutPreds) {
+                    makeRamLoad(current, relation, "output-dir", ".csv");
+                }
+                // load all external output predecessor relations from the output dir with a .facts extension
+                for (const auto& relation : externNonOutPreds) {
+                    makeRamLoad(current, relation, "output-dir", ".facts");
+                }
             }
         }
-
         // compute the relations themselves
         std::unique_ptr<RamStatement> bodyStatement =
                 (!isRecursive) ? translateNonRecursiveRelation(*((const AstRelation*)*allInterns.begin()),
@@ -1356,23 +1459,42 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
         // print the size of all printsize relations in the current SCC
         for (const auto& relation : allInterns) {
             if (relation->isPrintSize()) {
-                makeRamPrintSize(relation);
+                makeRamPrintSize(current, relation);
             }
         }
-
-        // if a communication engine is enabled...
-        if (Global::config().has("engine")) {
-            // store all internal non-output relations with external successors to the output dir with a
-            // .facts extension
+#ifdef USE_MPI
+        if (Global::config().get("engine") == "mpi") {
+            // send all internal non-output relations with external successors to their destination slave
+            // processes
             for (const auto& relation : internNonOutsWithExternSuccs) {
-                makeRamStore(relation, "output-dir", ".facts");
+                makeRamSend(current, relation, sccGraph.getSuccessorSCCs(relation));
+            }
+            // send all internal output relations to the master process
+            for (const auto& relation : internOuts) {
+                makeRamSend(current, relation, sccGraph.getSuccessorSCCs(relation));
+            }
+            // wait for all sends to complete
+            makeRamWaitSend(current);
+        } else
+#endif
+        {
+            // if a communication engine is enabled...
+            if (Global::config().has("engine")) {
+                // store all internal non-output relations with external successors to the output dir with a
+                // .facts extension
+                for (const auto& relation : internNonOutsWithExternSuccs) {
+                    makeRamStore(current, relation, "output-dir", ".facts");
+                }
+            }
+
+            // store all internal output relations to the output dir with a .csv extension
+            for (const auto& relation : internOuts) {
+                makeRamStore(current, relation, "output-dir", ".csv");
             }
         }
 
-        // store all internal output relations to the output dir with a .csv extension
-        for (const auto& relation : internOuts) {
-            makeRamStore(relation, "output-dir", ".csv");
-        }
+        // TODO (lyndonhenry): should find a way to drop relations as soon as they are written, or before any
+        // are written if they are not written
 
         // if provenance is not enabled...
         if (!Global::config().has("provenance")) {
@@ -1380,20 +1502,20 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
             if (Global::config().has("engine")) {
                 // drop all internal relations
                 for (const auto& relation : allInterns) {
-                    makeRamDrop(relation);
+                    makeRamDrop(current, relation);
                 }
                 // drop external output predecessor relations
                 for (const auto& relation : externOutPreds) {
-                    makeRamDrop(relation);
+                    makeRamDrop(current, relation);
                 }
                 // drop external non-output predecessor relations
                 for (const auto& relation : externNonOutPreds) {
-                    makeRamDrop(relation);
+                    makeRamDrop(current, relation);
                 }
             } else {
                 // otherwise, drop all  relations expired as per the topological order
                 for (const auto& relation : internExps) {
-                    makeRamDrop(relation);
+                    makeRamDrop(current, relation);
                 }
             }
         }
@@ -1401,10 +1523,50 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
         if (current) {
             // append the current SCC as a stratum to the sequence
             appendStmt(res, std::make_unique<RamStratum>(std::move(current), index));
+
             // increment the index of the current SCC
             index++;
         }
     }
+
+#ifdef USE_MPI
+    if (Global::config().get("engine") == "mpi") {
+        // make a new ram statement for the master process
+        std::unique_ptr<RamStatement> current;
+
+        // load all internal input relations from the facts dir with a .facts extension, and send them to
+        // their slave processes
+        // for each node in scc graph
+        index = 0;
+        for (const auto scc : sccOrder) {
+            for (const auto& relation : sccGraph.getInternalInputRelations(scc)) {
+                makeRamLoad(current, relation, "fact-dir", ".facts");
+                const auto destinations = std::unordered_set<size_t>({index});
+                makeRamSend(current, relation, destinations);
+            }
+            ++index;
+        }
+
+        // wait for all sends to complete
+        makeRamWaitSend(current);
+
+        // recv all internal output relations from their slave processes, and store them to the output dir
+        // with a .csv extension
+        index = 0;
+        for (const auto scc : sccOrder) {
+            for (const auto& relation : sccGraph.getInternalOutputRelations(scc)) {
+                makeRamRecvStore(current, relation, index, "output-dir", ".csv");
+            }
+            ++index;
+        }
+
+        // wait for all sends receives to complete
+        makeRamWaitRecv(current);
+
+        // append the master process as a stratum with index -1
+        appendStmt(res, std::make_unique<RamStratum>(std::move(current), -1));
+    }
+#endif
 
     // add main timer if profiling
     if (res && Global::config().has("profile")) {

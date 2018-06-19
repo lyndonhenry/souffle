@@ -67,6 +67,18 @@ if test "$BUILD_TYPE" == "Debug" ; then
   CXXFLAGS="$CXXFLAGS -O0 -g3"
 fi
 
+# Enable MPI
+AC_ARG_ENABLE(
+  [mpi],
+  [AS_HELP_STRING([--enable-mpi], [Enable MPI])]
+)
+AS_IF([test "x$enable_mpi" = "xyes"], [
+    AS_VAR_APPEND(CXXFLAGS, [" -DUSE_MPI "])
+    AS_VAR_APPEND(CXXFLAGS, [" $(mpiCC --showme:compile) "])
+    AS_VAR_APPEND(LDFLAGS, [" $(mpiCC --showme:link) "])
+])
+AM_CONDITIONAL([MPI], [test "x$enable_mpi" = "xyes"])
+
 AC_ISC_POSIX
 AC_PROG_CPP
 AC_PROG_CC
@@ -291,6 +303,7 @@ AC_CONFIG_LINKS([include/souffle/WriteStreamCSV.h:src/WriteStreamCSV.h])
 AC_CONFIG_LINKS([include/souffle/WriteStreamSQLite.h:src/WriteStreamSQLite.h])
 AC_CONFIG_LINKS([include/souffle/SymbolMask.h:src/SymbolMask.h])
 AC_CONFIG_LINKS([include/souffle/SymbolTable.h:src/SymbolTable.h])
+AC_CONFIG_LINKS([include/souffle/Mpi.h:src/Mpi.h])
 
 AM_MISSING_PROG([AUTOM4TE], [autom4te])
 

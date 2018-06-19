@@ -26,6 +26,7 @@
 #include <map>
 #include <set>
 #include <stack>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -132,6 +133,11 @@ public:
         return sccToRelation.size();
     }
 
+    /** Get the SCC of the given relation. */
+    const int getSCC(const AstRelation* rel) const {
+        return relationToScc.at(rel);
+    }
+
     /** Get all successor SCCs of a given SCC. */
     const std::set<unsigned>& getSuccessorSCCs(const unsigned scc) const {
         return successors.at(scc);
@@ -140,6 +146,28 @@ public:
     /** Get all predecessor SCCs of a given SCC. */
     const std::set<unsigned>& getPredecessorSCCs(const unsigned scc) const {
         return predecessors.at(scc);
+    }
+
+    /** Get all SCCs containing a successor of a given relation. */
+    const std::unordered_set<size_t> getSuccessorSCCs(const AstRelation* relation) const {
+        std::unordered_set<size_t> successorSccs;
+        const auto scc = relationToScc.at(relation);
+        for (const auto& successor : precedenceGraph->graph().successors(relation)) {
+            const auto successorScc = relationToScc.at(successor);
+            if (successorScc != scc) successorSccs.insert(successorScc);
+        }
+        return successorSccs;
+    }
+
+    /** Get all SCCs containing a predecessor of a given relation. */
+    const std::unordered_set<size_t> getPredecessorSCCs(const AstRelation* relation) const {
+        std::unordered_set<size_t> predecessorSccs;
+        const auto scc = relationToScc.at(relation);
+        for (const auto& predecessor : precedenceGraph->graph().predecessors(relation)) {
+            const auto predecessorScc = relationToScc.at(predecessor);
+            if (predecessorScc != scc) predecessorSccs.insert(predecessorScc);
+        }
+        return predecessorSccs;
     }
 
     /** Get all internal relations of a given SCC. */

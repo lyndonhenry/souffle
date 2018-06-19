@@ -41,6 +41,10 @@
 #include "Explain.h"
 #endif
 
+#ifdef USE_MPI
+#include "Mpi.h"
+#endif
+
 #include <cassert>
 #include <chrono>
 #include <cstdlib>
@@ -73,7 +77,15 @@ void executeBinary(const std::string& binaryFilename) {
     }
 
     // run the executable
-    int exitCode = system(binaryFilename.c_str());
+    int exitCode;
+#ifdef USE_MPI
+    if (Global::config().get("engine") == "mpi") {
+        exitCode = system(("mpiexec " + binaryFilename).c_str());
+    } else
+#endif
+    {
+        exitCode = system(binaryFilename.c_str());
+    }
 
     // remove temp files
     if (Global::config().get("dl-program").empty()) {
@@ -114,6 +126,10 @@ void compileToBinary(std::string compileCmd, const std::string& sourceFilename) 
 int main(int argc, char** argv) {
     /* Time taking for overall runtime */
     auto souffle_start = std::chrono::high_resolution_clock::now();
+
+#ifdef USE_MPI
+    mpi::init(argc, argv);
+#endif
 
     /* have all to do with command line arguments in its own scope, as these are accessible through the global
      * configuration only */
@@ -265,9 +281,15 @@ int main(int argc, char** argv) {
                 throw std::invalid_argument("Error: Use of engine option not yet available for interpreter.");
             }
             const auto& engine = Global::config().get("engine");
-            if (engine != "file") {
+            if (engine != "file" && engine != "mpi") {
                 throw std::invalid_argument("Error: Use of engine '" + engine + "' is not supported.");
             }
+#ifndef USE_MPI
+            if (engine == "mpi") {
+                throw std::invalid_argument(
+                        "Error: Use of engine '" + engine + "' requires configure option '--enable-mpi'.");
+            }
+#endif
         }
     }
 
@@ -485,6 +507,11 @@ int main(int argc, char** argv) {
             std::cerr << e.what() << std::endl;
         }
     }
+
+// finalize mpi, this is necessary for the symbol table
+#ifdef USE_MPI
+    mpi::finalize();
+#endif
 
     /* Report overall run-time in verbose mode */
     if (Global::config().has("verbose")) {
