@@ -129,6 +129,9 @@ int main(int argc, char** argv) {
 
 #ifdef USE_MPI
     mpi::init(argc, argv);
+    if (mpi::commRank() != 0) {
+        throw std::runtime_error("Error: Souffle can only be run with one MPI process.");
+    }
 #endif
 
     /* have all to do with command line arguments in its own scope, as these are accessible through the global

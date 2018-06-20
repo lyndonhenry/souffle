@@ -76,6 +76,8 @@ SymbolMask getSymbolMask(const AstRelation& rel, const TypeEnvironment& typeEnv)
     return res;
 }
 
+
+
 /**
  * Converts the given relation identifier into a relation name.
  */
@@ -83,150 +85,114 @@ std::string getRelationName(const AstRelationIdentifier& id) {
     return toString(join(id.getNames(), "-"));
 }
 
-IODirectives getInputIODirectives(const AstRelation* rel, std::string filePath = std::string(),
-        const std::string& fileExt = std::string()) {
-    const std::string inputFilePath = (filePath.empty()) ? Global::config().get("fact-dir") : filePath;
-    const std::string inputFileExt = (fileExt.empty()) ? ".facts" : fileExt;
+IODirectives& makeIODirectives(IODirectives & directives, const AstRelation* rel, const std::string& filePath, const std::string& fileExt, const bool isIntermediate) {
 
-    const bool isIntermediate =
-            (Global::config().has("engine") && inputFilePath == Global::config().get("output-dir") &&
-                    inputFileExt == ".facts");
-
-    IODirectives directives;
-    for (const auto& current : rel->getIODirectives()) {
-        if (current->isInput()) {
-            for (const auto& currentPair : current->getIODirectiveMap()) {
-                directives.set(currentPair.first, currentPair.second);
-            }
-        }
-    }
-
-    // set the relation name
     directives.setRelationName(getRelationName(rel->getName()));
 
-    // set a default io type of file, if none is set yet
+    // set a default IO type of file and a default filename if not supplied
     if (!directives.has("IO")) {
         directives.setIOType("file");
     }
-
-    // if the io type is file...
+    // load intermediate relations from correct files
     if (directives.getIOType() == "file") {
-        if (isIntermediate || !directives.has("filename")) {
-            // set its filename by the relation name and previously determined file extension
-            directives.setFileName(directives.getRelationName() + inputFileExt);
-        }
-        // if a relation is intermediate...
+        // all intermediate relations are given the default delimiter and have no headers
         if (isIntermediate) {
-            // set it as intermediate
             directives.set("intermediate", "true");
-
-            // set the default delimiter and headers
             directives.set("delimiter", "\t");
             directives.set("headers", "false");
-        } else {
-            // otherwise, don't set it as intermediate
-            directives.set("intermediate", "false");
         }
-        // if the relation is intermediate, has no file name, or has a file name that is not an absolute
-        // path...
-        if (directives.getFileName().front() != '/') {
-            // set its directory by the previously determined file path
-            directives.setFileName(inputFilePath + "/" + directives.getFileName());
+        if (!directives.has("filename") || isIntermediate) {
+            directives.setFileName(directives.getRelationName() + fileExt);
+        }
+        // if filename is not an absolute path, concat with cmd line facts directory
+        if (directives.getIOType() == "file" && directives.getFileName().front() != '/') {
+            directives.setFileName(filePath + "/" + directives.getFileName());
         }
     }
-
     return directives;
 }
 
-std::vector<IODirectives> getOutputIODirectives(const AstRelation* rel, const TypeEnvironment* typeEnv,
-        std::string filePath = std::string(), const std::string& fileExt = std::string()) {
-    const std::string outputFilePath = (filePath.empty()) ? Global::config().get("output-dir") : filePath;
-    const std::string outputFileExt = (fileExt.empty()) ? ".csv" : fileExt;
-
-    std::vector<IODirectives> outputDirectives;
-    // If IO directives have been specified then set them up
-    for (const auto& current : rel->getIODirectives()) {
-        if (current->isOutput()) {
-            IODirectives ioDirectives;
-            for (const auto& currentPair : current->getIODirectiveMap()) {
-                ioDirectives.set(currentPair.first, currentPair.second);
-            }
-            outputDirectives.push_back(ioDirectives);
-        }
-    }
-
-    if (Global::config().get("output-dir") == "-") {
-        // If stdout is requested then remove all directives from the datalog file.
-        outputDirectives.clear();
-        IODirectives ioDirectives;
-        ioDirectives.setIOType("stdout");
-        ioDirectives.set("headers", "true");
-        outputDirectives.push_back(ioDirectives);
-    } else if (outputDirectives.empty()) {
-        IODirectives ioDirectives;
-        ioDirectives.setIOType("file");
-        ioDirectives.setFileName(getRelationName(rel->getName()) + outputFileExt);
-        outputDirectives.push_back(ioDirectives);
-    }
-
-    for (auto& ioDirectives : outputDirectives) {
-        ioDirectives.setRelationName(getRelationName(rel->getName()));
-        if (!ioDirectives.has("IO")) {
-            ioDirectives.setIOType("file");
-        }
+    IODirectives getInputIODirectives(const AstRelation* rel, std::string filePath = std::string(),
+                                      const std::string& fileExt = std::string()) {
+        const std::string inputFilePath = (filePath.empty()) ? Global::config().get("fact-dir") : filePath;
+        const std::string inputFileExt = (fileExt.empty()) ? ".facts" : fileExt;
 
         const bool isIntermediate =
-                (Global::config().has("engine") && outputFilePath == Global::config().get("output-dir") &&
-                        outputFileExt == ".facts");
+                (Global::config().has("engine") && inputFilePath == Global::config().get("output-dir") &&
+                 inputFileExt == ".facts");
 
-        // if the io type is file...
-        if (ioDirectives.getIOType() == "file") {
-            if (isIntermediate || !ioDirectives.has("filename")) {
-                // set its filename by the relation name and previously determined file extension
-                ioDirectives.setFileName(ioDirectives.getRelationName() + outputFileExt);
-            }
-            // if a relation is intermediate...
-            if (isIntermediate) {
-                // set it as intermediate
-                ioDirectives.set("intermediate", "true");
-
-                // set the default delimiter and headers
-                ioDirectives.set("delimiter", "\t");
-                ioDirectives.set("headers", "false");
-            } else {
-                // otherwise, don't set it as intermediate
-                ioDirectives.set("intermediate", "false");
-            }
-            // if the relation is intermediate, has no file name, or has a file name that is not an absolute
-            // path...
-            if (ioDirectives.getFileName().front() != '/') {
-                // set its directory by the previously determined file path
-                ioDirectives.setFileName(outputFilePath + "/" + ioDirectives.getFileName());
+        IODirectives directives;
+        for (const auto& current : rel->getIODirectives()) {
+            if (current->isInput()) {
+                for (const auto& currentPair : current->getIODirectiveMap()) {
+                    directives.set(currentPair.first, currentPair.second);
+                }
             }
         }
 
-        // TODO (lyndonhenry): is setting attribute names necessary for intermediate relations?
-        if (!ioDirectives.has("attributeNames")) {
-            std::string delimiter("\t");
-            if (ioDirectives.has("delimiter")) {
-                delimiter = ioDirectives.get("delimiter");
-            }
-            std::vector<std::string> attributeNames;
-            for (unsigned int i = 0; i < rel->getArity(); i++) {
-                attributeNames.push_back(rel->getAttribute(i)->getAttributeName());
-            }
+        makeIODirectives(directives, rel, inputFilePath, inputFileExt, isIntermediate);
 
-            if (Global::config().has("provenance")) {
-                std::vector<std::string> originalAttributeNames(
-                        attributeNames.begin(), attributeNames.end() - 2);
-                ioDirectives.set("attributeNames", toString(join(originalAttributeNames, delimiter)));
-            } else {
-                ioDirectives.set("attributeNames", toString(join(attributeNames, delimiter)));
-            }
-        }
+        return directives;
     }
-    return outputDirectives;
-}
+
+    std::vector<IODirectives> getOutputIODirectives(const AstRelation* rel, const TypeEnvironment* typeEnv,
+                                                    std::string filePath = std::string(), const std::string& fileExt = std::string()) {
+        const std::string outputFilePath = (filePath.empty()) ? Global::config().get("output-dir") : filePath;
+        const std::string outputFileExt = (fileExt.empty()) ? ".csv" : fileExt;
+
+        std::vector<IODirectives> outputDirectives;
+        // If IO directives have been specified then set them up
+        for (const auto& current : rel->getIODirectives()) {
+            if (current->isOutput()) {
+                IODirectives ioDirectives;
+                for (const auto& currentPair : current->getIODirectiveMap()) {
+                    ioDirectives.set(currentPair.first, currentPair.second);
+                }
+                outputDirectives.push_back(ioDirectives);
+            }
+        }
+
+        if (Global::config().get("output-dir") == "-") {
+            // If stdout is requested then remove all directives from the datalog file.
+            outputDirectives.clear();
+            IODirectives ioDirectives;
+            ioDirectives.setIOType("stdout");
+            ioDirectives.set("headers", "true");
+            outputDirectives.push_back(ioDirectives);
+        } else if (outputDirectives.empty()) {
+            IODirectives ioDirectives;
+            ioDirectives.setIOType("file");
+            outputDirectives.push_back(ioDirectives);
+        }
+         const bool isIntermediate =
+                (Global::config().has("engine") && outputFilePath == Global::config().get("output-dir") &&
+                 outputFileExt == ".facts");
+
+        for (auto& ioDirectives : outputDirectives) {
+
+            makeIODirectives(ioDirectives, rel, outputFilePath, outputFileExt, isIntermediate);
+
+            if (!ioDirectives.has("attributeNames")) {
+                std::string delimiter("\t");
+                if (ioDirectives.has("delimiter")) {
+                    delimiter = ioDirectives.get("delimiter");
+                }
+                std::vector<std::string> attributeNames;
+                for (unsigned int i = 0; i < rel->getArity(); i++) {
+                    attributeNames.push_back(rel->getAttribute(i)->getAttributeName());
+                }
+
+                if (Global::config().has("provenance")) {
+                    std::vector<std::string> originalAttributeNames(
+                            attributeNames.begin(), attributeNames.end() - 2);
+                    ioDirectives.set("attributeNames", toString(join(originalAttributeNames, delimiter)));
+                } else {
+                    ioDirectives.set("attributeNames", toString(join(attributeNames, delimiter)));
+                }
+            }
+        }
+        return outputDirectives;
+    }
 
 std::unique_ptr<RamRelation> getRamRelation(const AstRelation* rel, const TypeEnvironment* typeEnv,
         std::string name, size_t arity, const bool istemp = false, const bool hashset = false) {
@@ -1464,6 +1430,7 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
         }
 #ifdef USE_MPI
         if (Global::config().get("engine") == "mpi") {
+            // @TODO: must ensure this sends output relations to both their successor and the master
             // send all internal non-output relations with external successors to their destination slave
             // processes
             for (const auto& relation : internNonOutsWithExternSuccs) {

@@ -546,13 +546,17 @@ void numberOfJobs(const int count) {
 }
 
 const std::unordered_set<int> jobsOfRank(const int rank) {
-    // @TODO: must implement this function
-    return std::unordered_set<int>(0);
+    // TODO (lyndonhenry): should implement this more efficiently
+    std::unordered_set<int> jobs;
+    for (int i = rank - 1; i < _jobCount; i += mpi::commSize()) {
+       jobs.insert(i);
+    }
+    return jobs;
 }
 
+
 const int rankOfJob(const int job) {
-    // @TODO: must implement this function
-    return -1;
+    return (job % commSize()) + 1;
 }
 }
 
@@ -597,9 +601,21 @@ void xtest() {
 namespace {
 std::unordered_set<Request> _requests;
 
-void xwait(const Request& request) {
+void xwait(Request& request) {
     // @TODO: must implement this function
-    // _requests.insert(std::move(request));
+    /*
+    _requests.insert(std::move(request));
+    */
+}
+
+
+void xwait(std::unordered_set<Request>& requests) {
+    // @TODO: must implement this function
+    /*
+    for (auto& request : requests) {
+       _requests.insert(std::move(request));
+    }
+    */
 }
 
 void xwait() {
