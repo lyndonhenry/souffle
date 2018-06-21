@@ -1192,7 +1192,7 @@ void Synthesiser::emitCode(std::ostream& out, const RamStatement& stmt) {
                 // count
                 os << "1, ";
                 // callback
-                os << "[&](Status& status) -> void {";
+                os << "[&](souffle::mpi::Status& status) -> void {";
                 {
                     os << "souffle::mpi::recv<ram::Relation, RamDomain>(";
                     {
@@ -1218,11 +1218,12 @@ void Synthesiser::emitCode(std::ostream& out, const RamStatement& stmt) {
                 // source
                 os << "souffle::mpi::rankOfJob(" << recvCb.getSourceStratum() << "), ";
                 // tag
-                os << "souffle::mpi::tagOf(\"" << synthesiser.getRelationName(recvCb.getRelation()) << "\"), ";
+                os << "souffle::mpi::tagOf(\"" << synthesiser.getRelationName(recvCb.getRelation())
+                   << "\"), ";
                 // count
                 os << "1, ";
                 // callback
-                os << "[&](Status& status) -> void {";
+                os << "[&](souffle::mpi::Status& status) -> void {";
                 {
                     os << "souffle::mpi::recv<ram::Relation, RamDomain>(";
                     {
@@ -1233,7 +1234,7 @@ void Synthesiser::emitCode(std::ostream& out, const RamStatement& stmt) {
                         // status
                         os << "status";
                     }
-                    os << ")";
+                    os << ");";
                     visit(recvCb.getBody(), os);
                 }
                 os << "}";
@@ -1244,18 +1245,15 @@ void Synthesiser::emitCode(std::ostream& out, const RamStatement& stmt) {
 
         void visitSend(const RamSend& send, std::ostream& os) override {
             os << "\n#ifdef USE_MPI\n";
-            os << "souffle::mpi::xwait(";
+            os << "{";
+            os << "auto requests = souffle::mpi::isend(";
+            // data
+            { os << "*" << synthesiser.getRelationName(send.getRelation()) << ", "; }
             {
-                os << "souffle::mpi::isend(";
-                // data
-                {
-                    os << "*" << synthesiser.getRelationName(send.getRelation()) << ", ";
-                }
-                {
-                    // destinations
-                    os << "std::unordered_set<int>(";
-                    auto it = send.getDestinationStrata().begin();
-                    if (it != send.getDestinationStrata().end()) {
+                // destinations
+                os << "std::unordered_set<int>(";
+                auto it = send.getDestinationStrata().begin();
+                if (it != send.getDestinationStrata().end()) {
                     os << "{";
                     os << "souffle::mpi::rankOfJob(" << *it << ")";
                     ++it;
@@ -1264,16 +1262,16 @@ void Synthesiser::emitCode(std::ostream& out, const RamStatement& stmt) {
                         ++it;
                     }
                     os << "}";
-                    }
-                    os << "), ";
                 }
-                {
-                    // tag
-                    os << "souffle::mpi::tagOf(\"" << synthesiser.getRelationName(send.getRelation()) << "\")";
-                }
-                os << ")";
+                os << "), ";
+            }
+            {
+                // tag
+                os << "souffle::mpi::tagOf(\"" << synthesiser.getRelationName(send.getRelation()) << "\")";
             }
             os << ");";
+            os << "souffle::mpi::xwait(requests);";
+            os << "}";
             os << "\n#endif\n";
         }
 
@@ -1315,8 +1313,7 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
 
     std::string classname = "Sf_" + id;
 
-
-    // turn off mpi support if not enabled as the execution engine
+// turn off mpi support if not enabled as the execution engine
 #ifdef USE_MPI
     if (Global::config().get("engine") != "mpi") {
         os << "#undef USE_MPI\n";
@@ -1693,7 +1690,6 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
 
 #ifdef USE_MPI
     if (Global::config().get("engine") == "mpi") {
-
         os << "\n#ifdef USE_MPI\n";
         os << "public:\n void initializeSymbolTable() {";
         os << "symTable = SymbolTable(";

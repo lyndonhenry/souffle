@@ -222,7 +222,7 @@ Status test(const Request& request) {
     return status;
 }
 
-std::vector<Status> test(const std::vector<Request>& requests) {
+std::vector<Status> test(const std::unordered_set<Request>& requests) {
     auto statuses = std::vector<Status>(requests.size());
     size_t i = 0;
     for (const auto& request : requests) {
@@ -242,7 +242,7 @@ Status wait(const Request& request) {
     return status;
 }
 
-std::vector<Status> wait(const std::vector<Request>& requests) {
+std::vector<Status> wait(const std::unordered_set<Request>& requests) {
     auto statuses = std::vector<Status>(requests.size());
     size_t i = 0;
     for (const auto& request : requests) {
@@ -330,15 +330,15 @@ Request isend(const Status& status) {
 }
 
 template <typename S>
-std::vector<Request> isend(const S& data, const std::unordered_set<int>& destinations, const int tag) {
-    std::vector<Request> requests(destinations.size());
+std::unordered_set<Request> isend(const S& data, const std::unordered_set<int>& destinations, const int tag) {
+    std::unordered_set<Request> requests(destinations.size());
     for (const auto& destination : destinations) {
-        requests.push_back(std::move(isend(data, destination, tag)));
+        requests.insert(std::move(isend(data, destination, tag)));
     }
     return requests;
 }
 
-std::vector<Request> isend(const std::unordered_set<int>& destinations, const int tag) {
+std::unordered_set<Request> isend(const std::unordered_set<int>& destinations, const int tag) {
     auto data = std::vector<char>(0);
     return isend(data, destinations, tag);
 }
@@ -360,7 +360,7 @@ Request isend(const T& data, const size_t length, const Status& status) {
 }
 
 template <typename T, typename S>
-std::vector<Request> isend(
+std::unordered_set<Request> isend(
         const T& data, const size_t length, const std::unordered_set<int>& destinations, const int tag) {
     std::vector<S> buffer(data.size() * length);
     auto it = buffer.begin();
@@ -549,11 +549,10 @@ const std::unordered_set<int> jobsOfRank(const int rank) {
     // TODO (lyndonhenry): should implement this more efficiently
     std::unordered_set<int> jobs;
     for (int i = rank - 1; i < _jobCount; i += mpi::commSize()) {
-       jobs.insert(i);
+        jobs.insert(i);
     }
     return jobs;
 }
-
 
 const int rankOfJob(const int job) {
     return (job % commSize()) + 1;
@@ -603,11 +602,8 @@ std::unordered_set<Request> _requests;
 
 void xwait(Request& request) {
     // @TODO: must implement this function
-    /*
-    _requests.insert(std::move(request));
-    */
+    // _requests.insert(std::move(request));
 }
-
 
 void xwait(std::unordered_set<Request>& requests) {
     // @TODO: must implement this function
