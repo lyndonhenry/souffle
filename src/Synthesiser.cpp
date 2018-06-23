@@ -1514,14 +1514,8 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
             ss << "case " << stratum.getIndex() << ":\ngoto STRATUM_" << stratum.getIndex() << ";\nbreak;\n";
         });
         if (hasAtLeastOneStrata) {
+            // @TODO: must deal with this
             os << "switch (stratumIndex) {\n";
-#ifdef USE_MPI
-            if (Global::config().get("engine") == "mpi") {
-                os << "\n#ifdef USE_MPI\n";
-                os << "case ((size_t) -1):\ngoto STRATUM_" << (size_t)-1 << ";\nbreak;\n";
-                os << "\n#endif\n";
-            } else
-#endif
             {
                 os << "case ((size_t) -1):\ngoto STRATUM_0;\nbreak;\n";
             }
