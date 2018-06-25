@@ -1194,7 +1194,7 @@ void Synthesiser::emitCode(std::ostream& out, const RamStatement& stmt) {
                 // callback
                 os << "[&](souffle::mpi::Status& status) -> void {";
                 {
-                    os << "souffle::mpi::recv<ram::Relation, RamDomain>(";
+                    os << "souffle::mpi::recv<RamDomain>(";
                     {
                         // data
                         os << "*" << synthesiser.getRelationName(recv.getRelation()) << ", ";
@@ -1225,7 +1225,7 @@ void Synthesiser::emitCode(std::ostream& out, const RamStatement& stmt) {
                 // callback
                 os << "[&](souffle::mpi::Status& status) -> void {";
                 {
-                    os << "souffle::mpi::recv<ram::Relation, RamDomain>(";
+                    os << "souffle::mpi::recv<RamDomain>(";
                     {
                         // data
                         os << "*" << synthesiser.getRelationName(recvCb.getRelation()) << ", ";
@@ -1246,9 +1246,11 @@ void Synthesiser::emitCode(std::ostream& out, const RamStatement& stmt) {
         void visitSend(const RamSend& send, std::ostream& os) override {
             os << "\n#ifdef USE_MPI\n";
             os << "{";
-            os << "auto requests = souffle::mpi::isend(";
+            os << "auto requests = souffle::mpi::isend<RamDomain>(";
             // data
             { os << "*" << synthesiser.getRelationName(send.getRelation()) << ", "; }
+            // arity
+            { os << send.getRelation().getArity() << ", "; }
             {
                 // destinations
                 os << "std::unordered_set<int>(";
@@ -1514,9 +1516,14 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
             ss << "case " << stratum.getIndex() << ":\ngoto STRATUM_" << stratum.getIndex() << ";\nbreak;\n";
         });
         if (hasAtLeastOneStrata) {
-            // @TODO: must deal with this
             os << "switch (stratumIndex) {\n";
+#ifdef USE_MPI
+            if (Global::config().get("engine") == "mpi") {
+                // do nothing here, the stratum of index ((size_t) -1) is added in the ast transform
+            } else
+#endif
             {
+                // otherwise use stratum 0 if index is -1
                 os << "case ((size_t) -1):\ngoto STRATUM_0;\nbreak;\n";
             }
             os << ss.str();

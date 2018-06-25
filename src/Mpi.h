@@ -16,7 +16,7 @@
 
 #pragma once
 
-// @TODO: must find a way to remove this line without so many warnings
+// TODO (lyndonhenry): should remove all the warnings rather than ignoring the:
 #pragma GCC diagnostic ignored "-Wunused-function"
 
 #include <cassert>
@@ -26,12 +26,11 @@
 #include <unordered_set>
 #include <vector>
 
-// @TODO: must change this to just <mpi.h> before PR
-#include </usr/include/mpi/mpi.h>
+#include <mpi.h>
 
-// @TODO: must do documentation for all of this file, and comments for everything else
 namespace souffle {
 
+// TODO (lyndonhenry): should do documentation for this whole namespace
 namespace mpi {
 
 typedef std::unique_ptr<MPI_Request> Request;
@@ -343,30 +342,25 @@ std::unordered_set<Request> isend(const std::unordered_set<int>& destinations, c
     return isend(data, destinations, tag);
 }
 
-template <typename T, typename S>
+template <typename S, typename T>
 Request isend(const T& data, const size_t length, const int destination, const int tag) {
-    std::vector<S> buffer(data.size() * length);
-    auto it = buffer.begin();
-    for (const auto& element : data) {
-        buffer.insert(it, element.begin(), element.end());
-        it += length;
-    }
-    return isend(buffer, destination, tag);
+    const auto destinations = std::vector<int>({destination});
+    return isend<S>(data, length, destinations, tag);
 }
 
-template <typename T, typename S>
+template <typename S, typename T>
 Request isend(const T& data, const size_t length, const Status& status) {
-    return isend<T, S>(data, length, status->MPI_SOURCE, status->MPI_TAG);
+    return isend<S>(data, length, status->MPI_SOURCE, status->MPI_TAG);
 }
 
-template <typename T, typename S>
-std::unordered_set<Request> isend(
-        const T& data, const size_t length, const std::unordered_set<int>& destinations, const int tag) {
+template <typename S, typename T>
+std::unordered_set<Request> isend(const T& data, const size_t length, const std::unordered_set<int>& destinations, const int tag) {
     std::vector<S> buffer(data.size() * length);
-    auto it = buffer.begin();
+    size_t i = 0;
     for (const auto& element : data) {
-        buffer.insert(it, element.begin(), element.end());
-        it += length;
+        for (size_t j = 0; j < length; ++j) {
+            buffer[i] = element[j];
+        }
     }
     return isend(buffer, destinations, tag);
 }
@@ -415,37 +409,33 @@ void send(const std::unordered_set<int>& destinations, const int tag) {
     send(data, destinations, tag);
 }
 
-template <typename T, typename S>
-void send(const T& data, const int destination, const size_t length, const int tag) {
-    std::vector<S> buffer(data.size() * length);
-    auto it = buffer.begin();
-    for (const auto& element : data) {
-        buffer.insert(it, element.begin(), element.end());
-        it += length;
-    }
-    send(buffer, destination, tag);
+template <typename S, typename T>
+void send(const T& data, const size_t length, const int destination, const int tag) {
+    const auto destinations = std::vector<int>({destination});
+    send<S>(data, length, destinations, tag);
 }
 
-template <typename T, typename S>
+template <typename S, typename T>
 void send(const T& data, const size_t length, const Status& status) {
-    send<T, S>(data, length, status->MPI_SOURCE, status->MPI_TAG);
+    send<S>(data, length, status->MPI_SOURCE, status->MPI_TAG);
 }
 
-template <typename T, typename S>
+template <typename S, typename T>
 void send(const T& data, const size_t length, const std::unordered_set<int>& destinations, const int tag) {
     std::vector<S> buffer(data.size() * length);
-    auto it = buffer.begin();
+    size_t i = 0;
     for (const auto& element : data) {
-        buffer.insert(it, element.begin(), element.end());
-        it += length;
+        for (size_t j = 0; j < length; ++j) {
+            buffer[i] = element[j];
+        }
     }
     send(buffer, destinations, tag);
 }
 }
 
 namespace {
-// @TODO (lyndonhenry): should maybe figure out how to do this namespace for irecv, not so easy with
-// unpacking, may need callbacks
+// TODO (lyndonhenry): should maybe figure out how to do this namespace for irecv, not so easy with
+// unpacking, may need callbacks, but might not even be useful
 template <typename R>
 Request irecv(std::vector<R>& data, Status& status) {
     assert(status);
@@ -491,26 +481,26 @@ void recv(R& data, const int source, const int tag) {
     recv(data, status);
 }
 
-template <typename T, typename R>
+template <typename R, typename T>
 void recv(T& data, const size_t length, Status& status) {
     std::vector<R> newData;
     recv(newData, status);
     auto it = newData.begin();
     while (it != newData.end()) {
         auto element = std::unique_ptr<R[]>(new R[length]);
-        R** pointer = element.get();
-        for (int i = 0; i < length; ++i) {
-            (*pointer)[i] = *it;
+        for (size_t i = 0; i < length; ++i) {
+            element[i] = *it;
             ++it;
         }
+        const R* pointer = element.get();
         data.insert(pointer);
     }
 }
 
-template <typename T, typename R>
+template <typename R, typename T>
 void recv(T& data, const size_t length, const int source, const int tag) {
     auto status = probe(source, tag);
-    recv<T, R>(data, length, status);
+    recv<R>(data, length, status);
 }
 
 template <typename T>
@@ -601,17 +591,17 @@ namespace {
 std::unordered_set<Request> _requests;
 
 void xwait(Request& request) {
-    // @TODO: must implement this function
-    // _requests.insert(std::move(request));
+    // @TODO: must make sure this actually works
+    _requests.insert(std::move(request));
 }
 
 void xwait(std::unordered_set<Request>& requests) {
-    // @TODO: must implement this function
-    /*
+    // @TODO: must make sure this actually works
+    // https://stackoverflow.com/questions/25515284/is-it-possible-to-move-an-item-out-of-a-stdset
     for (auto& request : requests) {
-       _requests.insert(std::move(request));
+        _requests.insert(std::unique_ptr<MPI_Request>(request.release()));
     }
-    */
+    requests.clear();
 }
 
 void xwait() {
