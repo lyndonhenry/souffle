@@ -161,6 +161,11 @@ protected:
     LINK(PrintSize, RelationStatement);
     LINK(LogSize, RelationStatement);
 
+#ifdef USE_MPI
+    LINK(Send, RelationStatement);
+    LINK(Recv, RelationStatement);
+#endif
+
     LINK(RelationStatement, Statement);
 
     LINK(Merge, Statement);
@@ -173,12 +178,6 @@ protected:
     LINK(LogTimer, Statement);
     LINK(DebugInfo, Statement);
     LINK(Stratum, Statement);
-
-#ifdef USE_MPI
-    // @TODO: must ensure that this is the right way to do this
-    LINK(Send, Statement);
-    LINK(Recv, Statement);
-#endif
 
     LINK(Statement, Node);
 

@@ -82,10 +82,7 @@ enum RamNodeType {
     // mpi
     ,
     RN_Send,
-    RN_WaitSend,
     RN_Recv,
-    RN_RecvCallback,
-    RN_WaitRecv
 #endif
 
 };

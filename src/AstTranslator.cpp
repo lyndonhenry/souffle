@@ -1411,7 +1411,7 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
             }
             // send all internal output relations to the master process
             for (const auto& relation : internOuts) {
-                makeRamSend(current, relation, -1);
+                makeRamSend(current, relation, std::unordered_set<size_t>({(size_t)-1}));
             }
         } else
 #endif

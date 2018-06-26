@@ -16,7 +16,7 @@
 
 #pragma once
 
-// TODO (lyndonhenry): should remove all the warnings rather than ignoring the:
+// @TODO: must remove all the warnings rather than ignoring this
 #pragma GCC diagnostic ignored "-Wunused-function"
 
 #include <cassert>
@@ -390,6 +390,7 @@ const std::unordered_set<int> jobsOfRank(const int rank) {
 
 const int rankOfJob(const int job) {
     return (job % commSize()) + 1;
+}
 }
 }
 }

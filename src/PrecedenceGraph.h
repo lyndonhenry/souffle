@@ -223,7 +223,7 @@ public:
                 }
             }
         }
-        return internsExternSuccs;
+        return internsWithExternSuccs;
     }
 
     /** Get all internal non-output relations of a given SCC with external successors. */
