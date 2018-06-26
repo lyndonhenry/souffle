@@ -1771,8 +1771,7 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
             // set tags for each relation
             visitDepthFirst(*(prog.getMain()), [&](const RamCreate& create) {
                 // TODO (lyndonhenry): should do this more efficiently, just need to ensure relation names map
-                // to
-                // the same tag on all nodes
+                // to the same tag on all nodes
                 os << "souffle::mpi::tagOf(\"" << getRelationName(create.getRelation()) << "\");";
             });
 
