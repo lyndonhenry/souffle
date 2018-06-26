@@ -1210,31 +1210,21 @@ void Synthesiser::emitCode(std::ostream& out, const RamStatement& stmt) {
         void visitSend(const RamSend& send, std::ostream& os) override {
             os << "\n#ifdef USE_MPI\n";
             os << "{";
+            // TODO (lyndonhenry): should do this more efficiently with an initializer list to initialize the
+            // set
+            os << "std::unordered_set<int> strata;";
+            for (const auto stratum : send.getDestinationStrata()) {
+                os << "strata.insert(souffle::mpi::rankOfJob(" << stratum << "));";
+            }
             os << "souffle::mpi::send<RamDomain>(";
             // data
             { os << "*" << synthesiser.getRelationName(send.getRelation()) << ", "; }
             // arity
             { os << send.getRelation().getArity() << ", "; }
-            {
-                // destinations
-                os << "std::unordered_set<int>(";
-                auto it = send.getDestinationStrata().begin();
-                if (it != send.getDestinationStrata().end()) {
-                    os << "{";
-                    os << "souffle::mpi::rankOfJob(" << *it << ")";
-                    ++it;
-                    while (it != send.getDestinationStrata().end()) {
-                        os << ", souffle::mpi::rankOfJob(" << *it << ")";
-                        ++it;
-                    }
-                    os << "}";
-                }
-                os << "), ";
-            }
-            {
-                // tag
-                os << "souffle::mpi::tagOf(\"" << synthesiser.getRelationName(send.getRelation()) << "\")";
-            }
+            // destinations
+            { os << "strata, "; }
+            // tag
+            { os << "souffle::mpi::tagOf(\"" << synthesiser.getRelationName(send.getRelation()) << "\")"; }
             os << ");";
             os << "}";
             os << "\n#endif\n";
@@ -1267,10 +1257,15 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
 
     std::string classname = "Sf_" + id;
 
-// turn off mpi support if not enabled as the execution engine
 #ifdef USE_MPI
+    // turn off mpi support if not enabled as the execution engine
     if (Global::config().get("engine") != "mpi") {
         os << "#undef USE_MPI\n";
+    } else
+            // otherwise, if mpi is enabled and verbose is enabled...
+            if (Global::config().has("verbose")) {
+        // turn on mpi debugging
+        os << "#define MPI_DEBUG\n";
     }
 #endif
 
@@ -1649,7 +1644,6 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
 
 #ifdef USE_MPI
     if (Global::config().get("engine") == "mpi") {
-        // @TODO: must ensure multithreading works here
         os << "\n#ifdef USE_MPI\n";
         os << "public:\n void initSymbolTable() {";
         os << "symTable = SymbolTable(";
@@ -1777,10 +1771,11 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
         os << "if (souffle::mpi::commRank() == 0) {";
         {
             os << "obj.initSymbolTable();";
-            os << "std::thread symTableThread(souffle::SymbolTable::handleMpi, obj.getSymbolTable());";
+            os << "std::thread symbolTableThread(souffle::SymbolTable::handleMpiMessages, "
+                  "obj.getSymbolTable());";
             os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), -1);";
             os << "souffle::mpi::send(0, souffle::mpi::tagOf(\"@SYMBOL_TABLE_EXIT\"));";
-            os << "symTableThread.join();";
+            os << "symbolTableThread.join();";
         }
         os << "} else {";
         {

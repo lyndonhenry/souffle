@@ -22,6 +22,7 @@
 
 #ifdef USE_MPI
 #include "Mpi.h"
+#include <thread>
 #endif
 
 #include <cassert>
@@ -34,41 +35,115 @@
 namespace souffle {
 
 /**
- * @SYMBOL_TABLE_class SymbolTable
+ * SymbolTable
  *
  * Global pool of re-usable strings
  *
  * SymbolTable stores Datalog symbols and converts them to numbers and vice versa.
  */
 class SymbolTable {
-private:
 #ifdef USE_MPI
+
+private:
+    int EXIT;
+    int LOOKUP;
+    int LOOKUP_EXISTING;
+    int UNSAFE_LOOKUP;
+    int RESOLVE;
+    int UNSAFE_RESOLVE;
+    int SIZE;
+    int PRINT;
+    int INSERT_STRING;
+    int INSERT_VECTOR_STRING;
+
     mutable std::unordered_map<std::string, size_t> strToNumCache;
     mutable std::unordered_map<size_t, std::string> numToStrCache;
-    RamDomain cacheLookup(const std::string& symbol, const std::string& name) const {
+
+    static std::thread mpiThread;
+
+    RamDomain cacheLookup(const std::string& symbol, const int tag) const {
         auto it = strToNumCache.find(symbol);
         if (it != strToNumCache.end()) {
             return it->second;
         }
-        mpi::send(symbol, 0, mpi::tagOf(name));
+        mpi::send(symbol, 0, tag);
         RamDomain index;
-        mpi::recv(index, 0, mpi::tagOf(name));
+        mpi::recv(index, 0, tag);
         strToNumCache.insert(std::pair<std::string, size_t>(symbol, index));
         return numToStrCache.insert(std::pair<size_t, std::string>(index, symbol)).first->first;
     }
-    const std::string& cacheResolve(const RamDomain index, const std::string& name) const {
+    const std::string& cacheResolve(const RamDomain index, const int tag) const {
         auto it = numToStrCache.find(index);
         if (it != numToStrCache.end()) {
             return it->second;
         }
-        mpi::send(index, 0, mpi::tagOf(name));
+        mpi::send(index, 0, tag);
         std::string symbol;
-        mpi::recv(symbol, 0, mpi::tagOf(name));
+        mpi::recv(symbol, 0, tag);
         numToStrCache.insert(std::pair<size_t, std::string>(index, symbol));
         return strToNumCache.insert(std::pair<std::string, size_t>(symbol, index)).first->first;
     }
+
+    void registerMpiTags() {
+        EXIT = mpi::tagOf("@SYMBOL_TABLE_EXIT");
+        LOOKUP = mpi::tagOf("@SYMBOL_TABLE_LOOKUP");
+        LOOKUP_EXISTING = mpi::tagOf("@SYMBOL_TABLE_LOOKUP_EXISTING");
+        UNSAFE_LOOKUP = mpi::tagOf("@SYMBOL_TABLE_UNSAFE_LOOKUP");
+        RESOLVE = mpi::tagOf("@SYMBOL_TABLE_RESOLVE");
+        UNSAFE_RESOLVE = mpi::tagOf("@SYMBOL_TABLE_UNSAFE_RESOLVE");
+        SIZE = mpi::tagOf("@SYMBOL_TABLE_SIZE");
+        PRINT = mpi::tagOf("@SYMBOL_TABLE_PRINT");
+        INSERT_STRING = mpi::tagOf("@SYMBOL_TABLE_INSERT_STRING");
+        INSERT_VECTOR_STRING = mpi::tagOf("@SYMBOL_TABLE_INSERT_VECTOR_STRING");
+    }
+
+public:
+    static void handleMpiMessages(SymbolTable symbolTable) {
+        assert(mpi::commRank() == 0);
+
+        while (true) {
+            auto status = mpi::probe();
+            if (status->MPI_TAG == symbolTable.EXIT) {
+                return;
+            } else if (status->MPI_TAG == symbolTable.LOOKUP) {
+                std::string symbol;
+                mpi::recv(symbol, status);
+                mpi::send(symbolTable.lookup(symbol), status);
+            } else if (status->MPI_TAG == symbolTable.LOOKUP_EXISTING) {
+                std::string symbol;
+                mpi::recv(symbol, status);
+                mpi::send(symbolTable.lookupExisting(symbol), status);
+            } else if (status->MPI_TAG == symbolTable.UNSAFE_LOOKUP) {
+                std::string symbol;
+                mpi::recv(symbol, status);
+                mpi::send(symbolTable.unsafeLookup(symbol), status);
+            } else if (status->MPI_TAG == symbolTable.RESOLVE) {
+                RamDomain index;
+                mpi::recv(index, status);
+                mpi::send(symbolTable.resolve(index), status);
+            } else if (status->MPI_TAG == symbolTable.UNSAFE_RESOLVE) {
+                RamDomain index;
+                mpi::recv(index, status);
+                mpi::send(symbolTable.unsafeResolve(index), status);
+            } else if (status->MPI_TAG == symbolTable.SIZE) {
+                mpi::send(symbolTable.size(), status);
+            } else if (status->MPI_TAG == symbolTable.PRINT) {
+                symbolTable.print(std::cout);
+            } else if (status->MPI_TAG == symbolTable.INSERT_STRING) {
+                std::string symbol;
+                mpi::recv(symbol, status);
+                symbolTable.insert(symbol);
+            } else if (status->MPI_TAG == symbolTable.INSERT_VECTOR_STRING) {
+                std::vector<std::string> symbols;
+                mpi::recv(symbols, status);
+                symbolTable.insert(symbols);
+            }
+        }
+    }
+
 #endif
 
+private:
     /** A lock to synchronize parallel accesses */
     mutable Lock access;
 
@@ -103,15 +178,26 @@ private:
 
 public:
     /** Empty constructor. */
-    SymbolTable() = default;
+    SymbolTable() {
+#ifdef USE_MPI
+        registerMpiTags();
+#endif
+    }
 
     /** Copy constructor, performs a deep copy. */
-    SymbolTable(const SymbolTable& other) : numToStr(other.numToStr), strToNum(other.strToNum) {}
+    SymbolTable(const SymbolTable& other) : numToStr(other.numToStr), strToNum(other.strToNum) {
+#ifdef USE_MPI
+        registerMpiTags();
+#endif
+    }
 
     /** Copy constructor for r-value reference. */
     SymbolTable(SymbolTable&& other) noexcept {
         numToStr.swap(other.numToStr);
         strToNum.swap(other.strToNum);
+#ifdef USE_MPI
+        registerMpiTags();
+#endif
     }
 
     SymbolTable(std::initializer_list<std::string> symbols) {
@@ -119,6 +205,9 @@ public:
         for (const auto& symbol : symbols) {
             newSymbol(symbol);
         }
+#ifdef USE_MPI
+        registerMpiTags();
+#endif
     }
 
     /** Destructor, frees memory allocated for all strings. */
@@ -131,6 +220,9 @@ public:
         }
         numToStr = other.numToStr;
         strToNum = other.strToNum;
+#ifdef USE_MPI
+        registerMpiTags();
+#endif
         return *this;
     }
 
@@ -138,75 +230,18 @@ public:
     SymbolTable& operator=(SymbolTable&& other) noexcept {
         numToStr.swap(other.numToStr);
         strToNum.swap(other.strToNum);
+#ifdef USE_MPI
+        registerMpiTags();
+#endif
         return *this;
     }
-
-#ifdef USE_MPI
-
-    /** Handles mpi messages. */
-    static void handleMpi(SymbolTable symbolTable) {
-        assert(mpi::commRank() == 0);
-
-        const auto EXIT = mpi::tagOf("@SYMBOL_TABLE_EXIT");
-
-        const auto LOOKUP = mpi::tagOf("@SYMBOL_TABLE_LOOKUP");
-        const auto LOOKUP_EXISTING = mpi::tagOf("@SYMBOL_TABLE_LOOKUP_EXISTING");
-        const auto UNSAFE_LOOKUP = mpi::tagOf("@SYMBOL_TABLE_UNSAFE_LOOKUP");
-        const auto RESOLVE = mpi::tagOf("@SYMBOL_TABLE_RESOLVE");
-        const auto UNSAFE_RESOLVE = mpi::tagOf("@SYMBOL_TABLE_UNSAFE_RESOLVE");
-        const auto SIZE = mpi::tagOf("@SYMBOL_TABLE_SIZE");
-        const auto PRINT = mpi::tagOf("@SYMBOL_TABLE_PRINT");
-        const auto INSERT_STRING = mpi::tagOf("@SYMBOL_TABLE_INSERT_STRING");
-        const auto INSERT_VECTOR_STRING = mpi::tagOf("@SYMBOL_TABLE_INSERT_VECTOR_STRING");
-
-        while (true) {
-            auto status = mpi::probe();
-            if (status->MPI_TAG == EXIT) {
-                return;
-            } else if (status->MPI_TAG == LOOKUP) {
-                std::string symbol;
-                mpi::recv(symbol, status);
-                mpi::send(symbolTable.lookup(symbol), status);
-            } else if (status->MPI_TAG == LOOKUP_EXISTING) {
-                std::string symbol;
-                mpi::recv(symbol, status);
-                mpi::send(symbolTable.lookupExisting(symbol), status);
-            } else if (status->MPI_TAG == UNSAFE_LOOKUP) {
-                std::string symbol;
-                mpi::recv(symbol, status);
-                mpi::send(symbolTable.unsafeLookup(symbol), status);
-            } else if (status->MPI_TAG == RESOLVE) {
-                RamDomain index;
-                mpi::recv(index, status);
-                mpi::send(symbolTable.resolve(index), status);
-            } else if (status->MPI_TAG == UNSAFE_RESOLVE) {
-                RamDomain index;
-                mpi::recv(index, status);
-                mpi::send(symbolTable.unsafeResolve(index), status);
-            } else if (status->MPI_TAG == SIZE) {
-                mpi::send(symbolTable.size(), status);
-            } else if (status->MPI_TAG == PRINT) {
-                symbolTable.print(std::cout);
-            } else if (status->MPI_TAG == INSERT_STRING) {
-                std::string symbol;
-                mpi::recv(symbol, status);
-                symbolTable.insert(symbol);
-            } else if (status->MPI_TAG == INSERT_VECTOR_STRING) {
-                std::vector<std::string> symbols;
-                mpi::recv(symbols, status);
-                symbolTable.insert(symbols);
-            }
-        }
-    }
-
-#endif
 
     /** Find the index of a symbol in the table, inserting a new symbol if it does not exist there
      * already. */
     RamDomain lookup(const std::string& symbol) {
 #ifdef USE_MPI
         if (mpi::commRank() != 0) {
-            return cacheLookup(symbol, "@SYMBOL_TABLE_LOOKUP");
+            return cacheLookup(symbol, LOOKUP);
         } else
 #endif
         {
@@ -220,7 +255,7 @@ public:
     RamDomain lookupExisting(const std::string& symbol) const {
 #ifdef USE_MPI
         if (mpi::commRank() != 0) {
-            return cacheLookup(symbol, "@SYMBOL_TABLE_LOOKUP_EXISTING");
+            return cacheLookup(symbol, LOOKUP_EXISTING);
         } else
 #endif
         {
@@ -240,7 +275,7 @@ public:
     RamDomain unsafeLookup(const std::string& symbol) {
 #ifdef USE_MPI
         if (mpi::commRank() != 0) {
-            return cacheLookup(symbol, "@SYMBOL_TABLE_UNSAFE_LOOKUP");
+            return cacheLookup(symbol, UNSAFE_LOOKUP);
         } else
 #endif
             return newSymbolOfIndex(symbol);
@@ -252,7 +287,7 @@ public:
     const std::string& resolve(const RamDomain index) const {
 #ifdef USE_MPI
         if (mpi::commRank() != 0) {
-            return cacheResolve(index, "@SYMBOL_TABLE_RESOLVE");
+            return cacheResolve(index, RESOLVE);
         } else
 #endif
         {
@@ -271,7 +306,7 @@ public:
     const std::string& unsafeResolve(const RamDomain index) const {
 #ifdef USE_MPI
         if (mpi::commRank() != 0) {
-            return cacheResolve(index, "@SYMBOL_TABLE_UNSAFE_RESOLVE");
+            return cacheResolve(index, UNSAFE_RESOLVE);
         } else
 #endif
             return numToStr[static_cast<size_t>(index)];
@@ -281,9 +316,9 @@ public:
     size_t size() const {
 #ifdef USE_MPI
         if (mpi::commRank() != 0) {
-            mpi::send(0, mpi::tagOf("@SYMBOL_TABLE_SIZE"));
+            mpi::send(0, SIZE);
             size_t size;
-            mpi::recv(size, 0, mpi::tagOf("@SYMBOL_TABLE_SIZE"));
+            mpi::recv(size, 0, SIZE);
             return size;
         } else
 #endif
@@ -296,7 +331,7 @@ public:
     void insert(const std::vector<std::string>& symbols) {
 #ifdef USE_MPI
         if (mpi::commRank() != 0) {
-            mpi::send(symbols, 0, mpi::tagOf("@SYMBOL_TABLE_INSERT_VECTOR_STRING"));
+            mpi::send(symbols, 0, INSERT_VECTOR_STRING);
         } else
 #endif
         {
@@ -315,7 +350,7 @@ public:
     void insert(const std::string& symbol) {
 #ifdef USE_MPI
         if (mpi::commRank() != 0) {
-            mpi::send(symbol, 0, mpi::tagOf("@SYMBOL_TABLE_INSERT_STRING"));
+            mpi::send(symbol, 0, INSERT_STRING);
         } else
 #endif
         {
@@ -329,7 +364,7 @@ public:
     void print(std::ostream& out) const {
 #ifdef USE_MPI
         if (mpi::commRank() != 0) {
-            mpi::send(0, mpi::tagOf("@SYMBOL_TABLE_PRINT"));
+            mpi::send(0, PRINT);
         } else
 #endif
         {

@@ -16,7 +16,7 @@
 
 #pragma once
 
-// @TODO: must remove all the warnings rather than ignoring this, move all mpi into one class
+// TODO (lyndonhenry): shoulf remove the source of these warnings rather than just suppressing them
 #pragma GCC diagnostic ignored "-Wunused-function"
 
 #include <cassert>
@@ -28,14 +28,47 @@
 
 #include <mpi.h>
 
+// TODO (lyndonhenry): should add more debugging functionality here
+#ifdef MPI_DEBUG
+
+#define MPI_Send(data, size, type, destination, tag, communicator)                                \
+    ([&]() {                                                                                      \
+        int commRank, commSize;                                                                   \
+        MPI_Comm_size(MPI_COMM_WORLD, &commSize);                                                 \
+        MPI_Comm_rank(MPI_COMM_WORLD, &commRank);                                                 \
+        std::cout << "(Mpi_Comm_rank = " << commRank << ", MPI_Comm_size = " << commSize << "): " \
+                  << "MPI_send(data = " << data << ", size = " << size << ", type = " << type     \
+                  << ", destination = " << destination << ", tag = " << tag                       \
+                  << ", communicator = " << communicator << ")" << std::endl;                     \
+        MPI_Send(data, size, type, destination, tag, communicator);                               \
+    })()
+
+#define MPI_Recv(data, size, type, source, tag, communicator, status)                             \
+    ([&]() {                                                                                      \
+        int commRank, commSize;                                                                   \
+        MPI_Comm_size(MPI_COMM_WORLD, &commSize);                                                 \
+        MPI_Comm_rank(MPI_COMM_WORLD, &commRank);                                                 \
+        MPI_Recv(data, size, type, source, tag, communicator, status);                            \
+        std::cout << "(Mpi_Comm_rank = " << commRank << ", MPI_Comm_size = " << commSize << "): " \
+                  << "MPI_recv(data = " << data << ", size = " << size << ", type = " << type     \
+                  << ", destination = " << source << ", tag = " << tag                            \
+                  << ", communicator = " << communicator << ")" << std::endl;                     \
+    })()
+
+#endif
+
 namespace souffle {
-// TODO (lyndonhenry): should do documentation for this whole namespace
+
+// TODO (lyndonhenry): should do documentation for this whole class
 namespace mpi {
 
-typedef std::unique_ptr<MPI_Status> Status;
-
+/* typedefs */
 namespace {
+typedef std::unique_ptr<MPI_Status> Status;
+}
 
+/* datatype */
+namespace {
 template <typename T>
 class datatype;
 
@@ -132,36 +165,7 @@ public:
 };
 }
 
-namespace {
-
-int init(int argc, char* argv[]) {
-    return MPI_Init(&argc, &argv);
-}
-}
-
-namespace {
-
-void finalize() {
-    MPI_Finalize();
-}
-}
-
-namespace {
-int commSize() {
-    int size;
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
-    return size;
-}
-}
-
-namespace {
-int commRank() {
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    return rank;
-}
-}
-
+/* getCount */
 namespace {
 template <typename T>
 int getCount(std::unique_ptr<MPI_Status>& status) {
@@ -172,6 +176,7 @@ int getCount(std::unique_ptr<MPI_Status>& status) {
 }
 }
 
+/* pack */
 namespace {
 template <typename T>
 void pack(const T& oldData, std::vector<char>& newData);
@@ -207,8 +212,8 @@ void pack<std::vector<std::string>>(const std::vector<std::string>& oldData, std
 }
 }
 
+/* unpack */
 namespace {
-
 template <typename T>
 void unpack(const std::vector<char>& oldData, T& newData);
 
@@ -233,11 +238,49 @@ void unpack<std::vector<std::string>>(const std::vector<char>& oldData, std::vec
 }
 }
 
+/* init */
+namespace {
+int init(int argc, char* argv[]) {
+    auto flag = MPI_Init(&argc, &argv);
+    return flag;
+}
+}
+
+/* finalize */
+namespace {
+
+void finalize() {
+    MPI_Finalize();
+}
+}
+
+/* commSize */
+namespace {
+int commSize() {
+    int size;
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    return size;
+}
+}
+
+/* commRank */
+namespace {
+int commRank() {
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    return rank;
+}
+}
+
+/* probe */
 namespace {
 Status probe(const int source, const int tag) {
     auto status = Status(new MPI_Status());
     MPI_Probe(source, tag, MPI_COMM_WORLD, status.get());
     assert(status);
+
     return status;
 }
 
@@ -250,6 +293,7 @@ Status probe(const Status& status) {
 }
 }
 
+/* send */
 namespace {
 template <typename S>
 void send(const std::vector<S>& data, const int destination, const int tag) {
@@ -319,6 +363,7 @@ void send(const T& data, const size_t length, const std::unordered_set<int>& des
 }
 }
 
+/* recv */
 namespace {
 template <typename R>
 void recv(std::vector<R>& data, Status& status) {
@@ -386,16 +431,21 @@ void recv(const int source, const int tag) {
 }
 }
 
+/* custom */
+namespace {
+// TODO (lyndonhenry): everything from here are extensions to mpi, they should be moved elsewhere
+
 namespace {
 
-// TODO (lyndonhenry): should maybe re-structure this namespace, and perhaps also for this whole file in
-// general
-
-namespace {
-
-std::unordered_map<std::string, int> _tagOfMap;
 const int tagOf(const std::string& name) {
-    return _tagOfMap.insert(std::pair<std::string, int>(name, (int)_tagOfMap.size())).first->second;
+    // TODO (lyndonhenry): should do this less verbosely
+    static std::unordered_map<std::string, int> _tagOfMap;
+    auto it = _tagOfMap.find(name);
+    if (it != _tagOfMap.end()) {
+        return it->second;
+    }
+    _tagOfMap.insert(std::pair<std::string, int>(name, _tagOfMap.size()));
+    return _tagOfMap.size();
 }
 }
 
@@ -405,7 +455,6 @@ int _jobCount;
 void numberOfJobs(const int count) {
     _jobCount = count;
 }
-
 const std::unordered_set<int> jobsOfRank(const int rank) {
     // TODO (lyndonhenry): should implement this more efficiently
     std::unordered_set<int> jobs;
@@ -416,7 +465,7 @@ const std::unordered_set<int> jobsOfRank(const int rank) {
 }
 
 const int rankOfJob(const int job) {
-    return (job % commSize()) + 1;
+    return (job % (commSize() - 1)) + 1;
 }
 }
 }

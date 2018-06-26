@@ -1,0 +1,82 @@
+## ------------------------------------------------- ##
+## souffle 0.0.1-2123-g64e7f40b test suite: Souffle. ##
+## ------------------------------------------------- ##
+
+testsuite: command line was:
+  $ ./tests/testsuite 9
+
+## --------- ##
+## Platform. ##
+## --------- ##
+
+hostname = lh2
+uname -m = x86_64
+uname -r = 4.15.0-23-generic
+uname -s = Linux
+uname -v = #25-Ubuntu SMP Wed May 23 18:02:16 UTC 2018
+
+/usr/bin/uname -p = unknown
+/bin/uname -X     = unknown
+
+/bin/arch              = unknown
+/usr/bin/arch -k       = unknown
+/usr/convex/getsysinfo = unknown
+/usr/bin/hostinfo      = unknown
+/bin/machine           = unknown
+/usr/bin/oslevel       = unknown
+/bin/universe          = unknown
+
+PATH: /home/lyndonhenry/.local/bin
+PATH: /home/lyndonhenry/.local/share/umake/ide
+PATH: /home/lyndonhenry/index/souffle
+PATH: /home/lyndonhenry/.local/share/umake/bin
+PATH: /usr/local/sbin
+PATH: /usr/local/bin
+PATH: /usr/sbin
+PATH: /usr/bin
+PATH: /sbin
+PATH: /bin
+PATH: /usr/games
+PATH: /usr/local/games
+PATH: /snap/bin
+
+## ---------------- ##
+## Tested programs. ##
+## ---------------- ##
+
+## ------------------ ##
+## Running the tests. ##
+## ------------------ ##
+testsuite: starting at: Tue Jun 26 19:25:19 AEST 2018
+testsuite: ending at: Tue Jun 26 19:25:19 AEST 2018
+testsuite: test suite duration: 0h 0m 0s
+
+## ------------- ##
+## Test results. ##
+## ------------- ##
+
+ERROR: 1 test was run,
+1 failed unexpectedly.
+
+## ------------------------ ##
+## Summary of the failures. ##
+## ------------------------ ##
+Failed tests:
+souffle 0.0.1-2123-g64e7f40b test suite: Souffle test groups:
+
+ NUM: FILE-NAME:LINE     TEST-GROUP-NAME
+      KEYWORDS
+
+   9: syntactic.at:15    hash -empi -c -j8
+
+## ---------------------- ##
+## Detailed failed tests. ##
+## ---------------------- ##
+
+#                             -*- compilation -*-
+9. syntactic.at:15: testing hash -empi -c -j8 ...
+/syntactic.at:15: "$SOUFFLE" -empi -c -j8 -D. -F "$TESTS"/syntactic/hash/facts "$TESTS"/syntactic/hash/hash.dl 1>hash.out 2>hash.err
+/syntactic.at:15: exit code was 127, expected 0
+9. syntactic.at:15: 9. hash -empi -c -j8 (syntactic.at:15): FAILED (syntactic.at:15)
+
+
