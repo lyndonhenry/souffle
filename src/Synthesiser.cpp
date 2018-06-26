@@ -1211,42 +1211,10 @@ void Synthesiser::emitCode(std::ostream& out, const RamStatement& stmt) {
             os << "\n#endif\n";
         }
 
-        void visitRecvCallback(const RamRecvCallback& recvCb, std::ostream& os) override {
-            os << "\n#ifdef USE_MPI\n";
-            os << "souffle::mpi::xtest(";
-            {
-                // source
-                os << "souffle::mpi::rankOfJob(" << recvCb.getSourceStratum() << "), ";
-                // tag
-                os << "souffle::mpi::tagOf(\"" << synthesiser.getRelationName(recvCb.getRelation())
-                   << "\"), ";
-                // count
-                os << "1, ";
-                // callback
-                os << "[&](souffle::mpi::Status& status) -> void {";
-                {
-                    os << "souffle::mpi::recv<RamDomain>(";
-                    {
-                        // data
-                        os << "*" << synthesiser.getRelationName(recvCb.getRelation()) << ", ";
-                        // length
-                        os << recvCb.getRelation().getArity() << ", ";
-                        // status
-                        os << "status";
-                    }
-                    os << ");";
-                    visit(recvCb.getBody(), os);
-                }
-                os << "}";
-            }
-            os << ");";
-            os << "\n#endif\n";
-        }
-
         void visitSend(const RamSend& send, std::ostream& os) override {
             os << "\n#ifdef USE_MPI\n";
             os << "{";
-            os << "auto requests = souffle::mpi::isend<RamDomain>(";
+            os << "souffle::mpi::send<RamDomain>(";
             // data
             { os << "*" << synthesiser.getRelationName(send.getRelation()) << ", "; }
             // arity
@@ -1272,22 +1240,10 @@ void Synthesiser::emitCode(std::ostream& out, const RamStatement& stmt) {
                 os << "souffle::mpi::tagOf(\"" << synthesiser.getRelationName(send.getRelation()) << "\")";
             }
             os << ");";
-            os << "souffle::mpi::xwait(requests);";
             os << "}";
             os << "\n#endif\n";
         }
 
-        void visitWaitSend(const RamWaitSend&, std::ostream& os) override {
-            os << "\n#ifdef USE_MPI\n";
-            os << "souffle::mpi::xwait();";
-            os << "\n#endif\n";
-        }
-
-        void visitWaitRecv(const RamWaitRecv&, std::ostream& os) override {
-            os << "\n#ifdef USE_MPI\n";
-            os << "souffle::mpi::xtest();";
-            os << "\n#endif\n";
-        }
 #endif
         // -- safety net --
 
@@ -1691,8 +1647,10 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
 
 #ifdef USE_MPI
     if (Global::config().get("engine") == "mpi") {
+        // @TODO: must ensure multithreading works here
         os << "\n#ifdef USE_MPI\n";
-        os << "public:\n void initializeSymbolTable() {";
+        os << "private:\n std::thread symTableThread;"
+        os << "public:\n void forkSymbolTable() {";
         os << "symTable = SymbolTable(";
         if (symTable.size() > 0) {
             os << "{\n";
@@ -1702,9 +1660,12 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
             os << "}";
         }
         os << ");";
+        os << "symTableThread(symTable.handleMpi);";
         os << "}\n";
-        os << "public:\n void registerSymbolTableMessageHandlers() {";
-        os << "symTable.registerMessageHandlers();";
+        os << "public:\n void joinSymbolTable() {";
+        os << "souffle::mpi::send(0, mpi::tagOf(\"@SYMBOL_TABLE_TERMINATE\");";
+        os << "symTableThread.join();"
+        os << "";
         os << "}";
         os << "\n#endif\n";
     }
@@ -1820,9 +1781,9 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
         });
         os << "if (souffle::mpi::commRank() == 0) {";
         {
-            os << "obj.initializeSymbolTable();";
-            os << "obj.registerSymbolTableMessageHandlers();";
+            os << "obj.forkSymbolTable();";
             os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), -1);";
+            os << "obj.joinSymbolTable();";
         }
         os << "} else {";
         {

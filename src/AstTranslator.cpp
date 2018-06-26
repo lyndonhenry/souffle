@@ -1319,26 +1319,6 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
 
     };
 
-    const auto& makeRamRecvStore = [&](std::unique_ptr<RamStatement>& current, const AstRelation* relation,
-            const size_t sourceStrata, const std::string& outputDirectory, const std::string& fileExtension) {
-        appendStmt(current, std::make_unique<RamRecvCallback>(
-                                    getRamRelation(relation, &typeEnv, getRelationName(relation->getName()),
-                                            relation->getArity(), false, relation->isHashset()),
-                                    sourceStrata,
-                                    std::make_unique<RamStore>(
-                                            std::unique_ptr<RamRelation>(getRamRelation(relation, &typeEnv,
-                                                    getRelationName(relation->getName()),
-                                                    relation->getArity(), false, relation->isHashset())),
-                                            getOutputIODirectives(relation, &typeEnv,
-                                                    Global::config().get(outputDirectory), fileExtension))));
-
-    };
-
-    const auto& makeRamWaitSend = [&](
-            std::unique_ptr<RamStatement>& current) { appendStmt(current, std::make_unique<RamWaitSend>()); };
-
-    const auto& makeRamWaitRecv = [&](
-            std::unique_ptr<RamStatement>& current) { appendStmt(current, std::make_unique<RamWaitRecv>()); };
 #endif
 
     // maintain the index of the SCC within the topological order
@@ -1359,6 +1339,8 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
         const auto& internOuts = sccGraph.getInternalOutputRelations(scc);
         const auto& externOutPreds = sccGraph.getExternalOutputPredecessorRelations(scc);
         const auto& externNonOutPreds = sccGraph.getExternalNonOutputPredecessorRelations(scc);
+        const auto& internsWithExternSuccs =
+                sccGraph.getInternalRelationsWithExternalSuccessors(scc);
         const auto& internNonOutsWithExternSuccs =
                 sccGraph.getInternalNonOutputRelationsWithExternalSuccessors(scc);
 
@@ -1389,8 +1371,6 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
             for (const auto& relation : externNonOutPreds) {
                 makeRamRecv(current, relation, sccGraph.getSCC(relation));
             }
-            // wait for all receptions to complete
-            makeRamWaitRecv(current);
         } else
 #endif
         {
@@ -1427,18 +1407,13 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
         }
 #ifdef USE_MPI
         if (Global::config().get("engine") == "mpi") {
-            // @TODO: must ensure this sends output relations to both their successor and the master
-            // send all internal non-output relations with external successors to their destination slave
-            // processes
-            for (const auto& relation : internNonOutsWithExternSuccs) {
+            for (const auto& relation : internsWithExternSuccs) {
                 makeRamSend(current, relation, sccGraph.getSuccessorSCCs(relation));
             }
             // send all internal output relations to the master process
             for (const auto& relation : internOuts) {
-                makeRamSend(current, relation, sccGraph.getSuccessorSCCs(relation));
+                makeRamSend(current, relation, -1);
             }
-            // wait for all sends to complete
-            makeRamWaitSend(current);
         } else
 #endif
         {
@@ -1511,21 +1486,16 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
             ++index;
         }
 
-        // wait for all sends to complete
-        makeRamWaitSend(current);
-
         // recv all internal output relations from their slave processes, and store them to the output dir
         // with a .csv extension
         index = 0;
         for (const auto scc : sccOrder) {
             for (const auto& relation : sccGraph.getInternalOutputRelations(scc)) {
-                makeRamRecvStore(current, relation, index, "output-dir", ".csv");
+                makeRamRecv(current, relation, index);
+                makeRamStore(current, relation, "output-dir", ".csv");
             }
             ++index;
         }
-
-        // wait for all sends receives to complete
-        makeRamWaitRecv(current);
 
         // append the master process as a stratum with index -1
         appendStmt(res, std::make_unique<RamStratum>(std::move(current), -1));

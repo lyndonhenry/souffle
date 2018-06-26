@@ -142,65 +142,72 @@ public:
     }
 
 #ifdef USE_MPI
-    /** Registers message handlers for all public member functions, these send responses to requesting
-     * processes
-     * using MPI. */
-    void registerMessageHandlers() {
+
+private:
+
+    /** Handles mpi messages. */
+    void handleMpi() {
         assert(mpi::commRank() == 0);
 
-        mpi::xtest(MPI_ANY_SOURCE, mpi::tagOf("@SYMBOL_TABLE_LOOKUP"), 0, [&](mpi::Status& status) -> void {
+        // @TODO: must say this symbol is special
+        const auto TERMINATE = mpi::tagOf("@SYMBOL_TABLE_TERMINATE");
+
+        const auto LOOKUP = mpi::tagOf("@SYMBOL_TABLE_LOOKUP");
+        const auto LOOKUP_EXISTING = mpi::tagOf("@SYMBOL_TABLE_LOOKUP_EXISTING");
+        const auto UNSAFE_LOOKUP = mpi::tagOf("@SYMBOL_TABLE_UNSAFE_LOOKUP");
+        const auto RESOLVE = mpi::tagOf("@SYMBOL_TABLE_RESOLVE");
+        const auto UNSAFE_RESOLVE = mpi::tagOf("@SYMBOL_TABLE_UNSAFE_RESOLVE");
+        const auto SIZE = mpi::tagOf("@SYMBOL_TABLE_SIZE");
+        const auto PRINT = mpi::tagOf("@SYMBOL_TABLE_PRINT");
+        const auto INSERT_STRING = mpi::tagOf("@SYMBOL_TABLE_INSERT_STRING");
+        const auto INSERT_VECTOR_STRING = mpi::tagOf("@SYMBOL_TABLE_INSERT_VECTOR_STRING");
+
+        while (true) {
+        auto status = mpi::probe();
+        if (status->MPI_TAG == TERMINATE) {
+            return;
+        } else if (status->MPI_TAG == LOOKUP) {
             std::string symbol;
             mpi::recv(symbol, status);
             mpi::send(lookup(symbol), status);
-        });
+        } else if (status->MPI_TAG == LOOKUP_EXISTING) {
 
-        mpi::xtest(MPI_ANY_SOURCE, mpi::tagOf("@SYMBOL_TABLE_LOOKUP_EXISTING"), 0,
-                [&](mpi::Status& status) -> void {
                     std::string symbol;
                     mpi::recv(symbol, status);
                     mpi::send(lookupExisting(symbol), status);
-                });
+        }
+        } else if (status->MPI_TAG == UNSAFE_LOOKUP) {
 
-        mpi::xtest(MPI_ANY_SOURCE, mpi::tagOf("@SYMBOL_TABLE_UNSAFE_LOOKUP"), 0,
-                [&](mpi::Status& status) -> void {
                     std::string symbol;
                     mpi::recv(symbol, status);
-                    mpi::send(lookupExisting(symbol), status);
-                });
-
-        mpi::xtest(MPI_ANY_SOURCE, mpi::tagOf("@SYMBOL_TABLE_RESOLVE"), 0, [&](mpi::Status& status) -> void {
-            RamDomain index;
+                    mpi::send(unsafeLookup(symbol), status);
+        } else if (status->MPI_TAG == RESOLVE) {
+        RamDomain index;
             mpi::recv(index, status);
             mpi::send(resolve(index), status);
-        });
-
-        mpi::xtest(MPI_ANY_SOURCE, mpi::tagOf("@SYMBOL_TABLE_UNSAFE_RESOLVE"), 0,
-                [&](mpi::Status& status) -> void {
-                    RamDomain index;
+        } else if (status->MPI_TAG == UNSAFE_RESOLVE) {
+        RamDomain index;
                     mpi::recv(index, status);
                     mpi::send(unsafeResolve(index), status);
-                });
+        } else if (status->MPI_TAG == SIZE) {
+         mpi::send(size(), status);
+        } else if (status->MPI_TAG == PRINT) {
+         print(std::cout);
+        } else if (status->MPI_TAG == INSERT_STRING) {
 
-        mpi::xtest(MPI_ANY_SOURCE, mpi::tagOf("@SYMBOL_TABLE_SIZE"), 0,
-                [&](mpi::Status& status) -> void { mpi::send(size(), status); });
-
-        mpi::xtest(MPI_ANY_SOURCE, mpi::tagOf("@SYMBOL_TABLE_PRINT"), 0,
-                [&](mpi::Status& status) -> void { print(std::cout); });
-
-        mpi::xtest(MPI_ANY_SOURCE, mpi::tagOf("@SYMBOL_TABLE_INSERT_STRING"), 0,
-                [&](mpi::Status& status) -> void {
                     std::string symbol;
                     mpi::recv(symbol, status);
                     insert(symbol);
-                });
+        } else if (status->MPI_TAG == INSERT_VECTOR_STRING) {
 
-        mpi::xtest(MPI_ANY_SOURCE, mpi::tagOf("@SYMBOL_TABLE_INSERT_VECTOR_STRING"), 0,
-                [&](mpi::Status& status) -> void {
                     std::vector<std::string> symbols;
                     mpi::recv(symbols, status);
                     insert(symbols);
-                });
+        }
+
     }
+
+
 #endif
 
     /** Find the index of a symbol in the table, inserting a new symbol if it does not exist there

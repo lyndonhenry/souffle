@@ -127,10 +127,7 @@ struct RamVisitor : public ram_visitor_tag {
 #ifdef USE_MPI
             // mpi
             FORWARD(Send);
-            FORWARD(WaitSend);
             FORWARD(Recv);
-            FORWARD(RecvCallback);
-            FORWARD(WaitRecv);
 #endif
 
 #undef FORWARD
@@ -180,10 +177,7 @@ protected:
 #ifdef USE_MPI
     // @TODO: must ensure that this is the right way to do this
     LINK(Send, Statement);
-    LINK(WaitSend, Statement);
     LINK(Recv, Statement);
-    LINK(RecvCallback, Statement);
-    LINK(WaitRecv, Statement);
 #endif
 
     LINK(Statement, Node);

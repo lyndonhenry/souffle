@@ -188,6 +188,7 @@ public:
         return externOutPreds;
     }
 
+
     /** Get all external non-output predecessor relations of a given SCC. */
     const std::set<const AstRelation*> getExternalNonOutputPredecessorRelations(const unsigned scc) const {
         std::set<const AstRelation*> externNonOutPreds;
@@ -211,6 +212,22 @@ public:
         }
         return internOuts;
     }
+
+    /** Get all internal relations of a given SCC with external successors. */
+    const std::set<const AstRelation*> getInternalRelationsWithExternalSuccessors(
+            const unsigned scc) const {
+        std::set<const AstRelation*> internsWithExternSuccs;
+        for (const auto& relation : getInternalRelations(scc)) {
+            for (const auto& successor : precedenceGraph->graph().successors(relation)) {
+                if ((unsigned)relationToScc.at(successor) != scc) {
+                    internsWithExternSuccs.insert(relation);
+                    break;
+                }
+            }
+        }
+        return internsExternSuccs;
+    }
+
 
     /** Get all internal non-output relations of a given SCC with external successors. */
     const std::set<const AstRelation*> getInternalNonOutputRelationsWithExternalSuccessors(
