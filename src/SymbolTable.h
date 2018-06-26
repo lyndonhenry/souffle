@@ -144,7 +144,7 @@ public:
 #ifdef USE_MPI
 
     /** Handles mpi messages. */
-    void handleMpi() {
+    static void handleMpi(SymbolTable symbolTable) {
         assert(mpi::commRank() == 0);
 
         const auto EXIT = mpi::tagOf("@SYMBOL_TABLE_EXIT");
@@ -166,35 +166,35 @@ public:
             } else if (status->MPI_TAG == LOOKUP) {
                 std::string symbol;
                 mpi::recv(symbol, status);
-                mpi::send(lookup(symbol), status);
+                mpi::send(symbolTable.lookup(symbol), status);
             } else if (status->MPI_TAG == LOOKUP_EXISTING) {
                 std::string symbol;
                 mpi::recv(symbol, status);
-                mpi::send(lookupExisting(symbol), status);
+                mpi::send(symbolTable.lookupExisting(symbol), status);
             } else if (status->MPI_TAG == UNSAFE_LOOKUP) {
                 std::string symbol;
                 mpi::recv(symbol, status);
-                mpi::send(unsafeLookup(symbol), status);
+                mpi::send(symbolTable.unsafeLookup(symbol), status);
             } else if (status->MPI_TAG == RESOLVE) {
                 RamDomain index;
                 mpi::recv(index, status);
-                mpi::send(resolve(index), status);
+                mpi::send(symbolTable.resolve(index), status);
             } else if (status->MPI_TAG == UNSAFE_RESOLVE) {
                 RamDomain index;
                 mpi::recv(index, status);
-                mpi::send(unsafeResolve(index), status);
+                mpi::send(symbolTable.unsafeResolve(index), status);
             } else if (status->MPI_TAG == SIZE) {
-                mpi::send(size(), status);
+                mpi::send(symbolTable.size(), status);
             } else if (status->MPI_TAG == PRINT) {
-                print(std::cout);
+                symbolTable.print(std::cout);
             } else if (status->MPI_TAG == INSERT_STRING) {
                 std::string symbol;
                 mpi::recv(symbol, status);
-                insert(symbol);
+                symbolTable.insert(symbol);
             } else if (status->MPI_TAG == INSERT_VECTOR_STRING) {
                 std::vector<std::string> symbols;
                 mpi::recv(symbols, status);
-                insert(symbols);
+                symbolTable.insert(symbols);
             }
         }
     }

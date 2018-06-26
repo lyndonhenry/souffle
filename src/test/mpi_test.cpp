@@ -30,22 +30,6 @@ TEST(mpi, mpi) {
         EXPECT_EQ(mpi::commRank(), 0);
         EXPECT_EQ(mpi::commSize(), 1);
     }
-
-    {
-        std::vector<int> sendBuffer = {0, 1, 2};
-        std::vector<int> recvBuffer;
-        (void)mpi::isend(sendBuffer, 0, mpi::tagOf("isendRecvVectorInt"));
-        mpi::recv(recvBuffer, 0, mpi::tagOf("isendRecvVectorInt"));
-        EXPECT_EQ(sendBuffer, recvBuffer);
-    }
-
-    {
-        std::string sendBuffer = "abc";
-        std::string recvBuffer;
-        (void)mpi::isend(sendBuffer, 0, mpi::tagOf("isendRecvString"));
-        mpi::recv(recvBuffer, 0, mpi::tagOf("isendRecvString"));
-        EXPECT_EQ(sendBuffer, recvBuffer);
-    }
 }
 }
 }

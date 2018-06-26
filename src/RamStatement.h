@@ -862,10 +862,10 @@ class RamStratum : public RamStatement {
 protected:
     /** Body of stratum */
     std::unique_ptr<RamStatement> body;
-    const size_t index;
+    const int index;
 
 public:
-    RamStratum(std::unique_ptr<RamStatement> b, const size_t i)
+    RamStratum(std::unique_ptr<RamStatement> b, const int i)
             : RamStatement(RN_Stratum), body(std::move(b)), index(i) {}
 
     /** Get stratum body */
@@ -874,7 +874,7 @@ public:
     }
 
     /** Get stratum index */
-    const size_t getIndex() const {
+    const int getIndex() const {
         return index;
     }
 
@@ -999,13 +999,13 @@ protected:
 
 class RamRecv : public RamRelationStatement {
 private:
-    const size_t sourceStratum;
+    const int sourceStratum;
 
 public:
-    RamRecv(std::unique_ptr<RamRelation> r, const size_t s)
+    RamRecv(std::unique_ptr<RamRelation> r, const int s)
             : RamRelationStatement(RN_Recv, std::move(r)), sourceStratum(s) {}
 
-    const size_t getSourceStratum() const {
+    const int getSourceStratum() const {
         return sourceStratum;
     }
 
@@ -1033,13 +1033,13 @@ protected:
 
 class RamSend : public RamRelationStatement {
 private:
-    const std::unordered_set<size_t> destinationStrata;
+    const std::unordered_set<int> destinationStrata;
 
 public:
-    RamSend(std::unique_ptr<RamRelation> r, const std::unordered_set<size_t> s)
+    RamSend(std::unique_ptr<RamRelation> r, const std::unordered_set<int> s)
             : RamRelationStatement(RN_Send, std::move(r)), destinationStrata(s) {}
 
-    const std::unordered_set<size_t> getDestinationStrata() const {
+    const std::unordered_set<int> getDestinationStrata() const {
         return destinationStrata;
     }
 

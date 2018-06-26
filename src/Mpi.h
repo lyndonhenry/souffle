@@ -16,7 +16,7 @@
 
 #pragma once
 
-// @TODO: must remove all the warnings rather than ignoring this
+// @TODO: must remove all the warnings rather than ignoring this, move all mpi into one class
 #pragma GCC diagnostic ignored "-Wunused-function"
 
 #include <cassert>
@@ -29,80 +29,107 @@
 #include <mpi.h>
 
 namespace souffle {
-
 // TODO (lyndonhenry): should do documentation for this whole namespace
 namespace mpi {
 
 typedef std::unique_ptr<MPI_Status> Status;
 
 namespace {
+
 template <typename T>
-MPI_Datatype datatype();
+class datatype;
 
 template <>
-MPI_Datatype datatype<short>() {
-    return MPI_SHORT;
-}
-
+class datatype<short> {
+public:
+    static inline MPI_Datatype get() {
+        return MPI_SHORT;
+    }
+};
 template <>
-MPI_Datatype datatype<int>() {
-    return MPI_INT;
-}
-
+class datatype<int> {
+public:
+    static inline MPI_Datatype get() {
+        return MPI_INT;
+    }
+};
 template <>
-MPI_Datatype datatype<long>() {
-    return MPI_LONG;
-}
-
+class datatype<long> {
+public:
+    static inline MPI_Datatype get() {
+        return MPI_LONG;
+    }
+};
 template <>
-MPI_Datatype datatype<long long>() {
-    return MPI_LONG_LONG;
-}
-
+class datatype<long long> {
+public:
+    static inline MPI_Datatype get() {
+        return MPI_LONG_LONG;
+    }
+};
 template <>
-MPI_Datatype datatype<unsigned char>() {
-    return MPI_UNSIGNED_CHAR;
-}
-
+class datatype<unsigned char> {
+public:
+    static inline MPI_Datatype get() {
+        return MPI_UNSIGNED_CHAR;
+    }
+};
 template <>
-MPI_Datatype datatype<unsigned short>() {
-    return MPI_UNSIGNED_SHORT;
-}
-
+class datatype<unsigned short> {
+public:
+    static inline MPI_Datatype get() {
+        return MPI_UNSIGNED_SHORT;
+    }
+};
 template <>
-MPI_Datatype datatype<unsigned>() {
-    return MPI_UNSIGNED;
-}
-
+class datatype<unsigned> {
+public:
+    static inline MPI_Datatype get() {
+        return MPI_UNSIGNED;
+    }
+};
 template <>
-MPI_Datatype datatype<unsigned long>() {
-    return MPI_UNSIGNED_LONG;
-}
-
+class datatype<unsigned long> {
+public:
+    static inline MPI_Datatype get() {
+        return MPI_UNSIGNED_LONG;
+    }
+};
 template <>
-MPI_Datatype datatype<unsigned long long>() {
-    return MPI_UNSIGNED_LONG_LONG;
-}
-
+class datatype<unsigned long long> {
+public:
+    static inline MPI_Datatype get() {
+        return MPI_UNSIGNED_LONG_LONG;
+    }
+};
 template <>
-MPI_Datatype datatype<float>() {
-    return MPI_FLOAT;
-}
-
+class datatype<float> {
+public:
+    static inline MPI_Datatype get() {
+        return MPI_FLOAT;
+    }
+};
 template <>
-MPI_Datatype datatype<double>() {
-    return MPI_DOUBLE;
-}
-
+class datatype<double> {
+public:
+    static inline MPI_Datatype get() {
+        return MPI_DOUBLE;
+    }
+};
 template <>
-MPI_Datatype datatype<long double>() {
-    return MPI_LONG_DOUBLE;
-}
-
+class datatype<long double> {
+public:
+    static inline MPI_Datatype get() {
+        return MPI_LONG_DOUBLE;
+    }
+};
 template <>
-MPI_Datatype datatype<char>() {
-    return MPI_BYTE;
-}
+class datatype<char> {
+public:
+    static inline MPI_Datatype get() {
+        return MPI_BYTE;
+    }
+};
 }
 
 namespace {
@@ -140,7 +167,7 @@ template <typename T>
 int getCount(std::unique_ptr<MPI_Status>& status) {
     assert(status);
     int count;
-    MPI_Get_count(status.get(), datatype<T>(), &count);
+    MPI_Get_count(status.get(), datatype<T>::get(), &count);
     return count;
 }
 }
@@ -161,13 +188,13 @@ void pack<std::vector<std::string>>(const std::vector<std::string>& oldData, std
         ++i;
     }
     int firstPackSize;
-    MPI_Datatype firstType = datatype<int>();
+    MPI_Datatype firstType = datatype<int>::get();
     MPI_Pack_size((int)first.size(), firstType, MPI_COMM_WORLD, &firstPackSize);
     int secondPackSize;
-    MPI_Datatype secondType = datatype<int>();
+    MPI_Datatype secondType = datatype<int>::get();
     MPI_Pack_size((int)second.size(), secondType, MPI_COMM_WORLD, &secondPackSize);
     int lastPackSize;
-    MPI_Datatype lastType = datatype<char>();
+    MPI_Datatype lastType = datatype<char>::get();
     MPI_Pack_size((int)last.size(), lastType, MPI_COMM_WORLD, &lastPackSize);
     newData.resize((size_t)firstPackSize + secondPackSize + lastPackSize);
     int position = 0;
@@ -189,14 +216,14 @@ template <>
 void unpack<std::vector<std::string>>(const std::vector<char>& oldData, std::vector<std::string>& newData) {
     int position = 0;
     std::vector<int> first(1);
-    MPI_Unpack(&oldData[0], (int)oldData.size(), &position, &first[0], (int)first.capacity(), datatype<int>(),
-            MPI_COMM_WORLD);
+    MPI_Unpack(&oldData[0], (int)oldData.size(), &position, &first[0], (int)first.capacity(),
+            datatype<int>::get(), MPI_COMM_WORLD);
     std::vector<int> second((size_t)first.at(0));
     MPI_Unpack(&oldData[0], (int)oldData.size(), &position, &second[0], (int)second.capacity(),
-            datatype<int>(), MPI_COMM_WORLD);
+            datatype<int>::get(), MPI_COMM_WORLD);
     std::vector<char> last(oldData.size() - position);
-    MPI_Unpack(&oldData[0], (int)oldData.size(), &position, &last[0], (int)last.capacity(), datatype<char>(),
-            MPI_COMM_WORLD);
+    MPI_Unpack(&oldData[0], (int)oldData.size(), &position, &last[0], (int)last.capacity(),
+            datatype<char>::get(), MPI_COMM_WORLD);
     auto from = last.begin();
     for (auto length : second) {
         auto to = from + length;
@@ -226,7 +253,7 @@ Status probe(const Status& status) {
 namespace {
 template <typename S>
 void send(const std::vector<S>& data, const int destination, const int tag) {
-    MPI_Send(&data[0], (int)data.size(), datatype<S>(), destination, tag, MPI_COMM_WORLD);
+    MPI_Send(&data[0], (int)data.size(), datatype<S>::get(), destination, tag, MPI_COMM_WORLD);
 }
 
 template <>
@@ -298,7 +325,7 @@ void recv(std::vector<R>& data, Status& status) {
     assert(status);
     int count = getCount<R>(status);
     data.resize((size_t)count);
-    MPI_Recv(&data[0], count, datatype<R>(), status->MPI_SOURCE, status->MPI_TAG, MPI_COMM_WORLD,
+    MPI_Recv(&data[0], count, datatype<R>::get(), status->MPI_SOURCE, status->MPI_TAG, MPI_COMM_WORLD,
             status.get());
 }
 

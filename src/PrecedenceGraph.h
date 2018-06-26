@@ -111,17 +111,17 @@ private:
     std::map<const AstRelation*, int> relationToScc;
 
     /** Adjacency lists for the SCC graph */
-    std::vector<std::set<unsigned>> successors;
+    std::vector<std::set<int>> successors;
 
     /** Predecessor set for the SCC graph */
-    std::vector<std::set<unsigned>> predecessors;
+    std::vector<std::set<int>> predecessors;
 
     /** Relations contained in a SCC */
     std::vector<std::set<const AstRelation*>> sccToRelation;
 
     /** Recursive scR method for computing SCC */
-    void scR(const AstRelation* relation, std::map<const AstRelation*, int>& preOrder, unsigned& counter,
-            std::stack<const AstRelation*>& S, std::stack<const AstRelation*>& P, unsigned& numSCCs);
+    void scR(const AstRelation* relation, std::map<const AstRelation*, int>& preOrder, size_t& counter,
+            std::stack<const AstRelation*>& S, std::stack<const AstRelation*>& P, size_t& numSCCs);
 
 public:
     static constexpr const char* name = "scc-graph";
@@ -139,18 +139,18 @@ public:
     }
 
     /** Get all successor SCCs of a given SCC. */
-    const std::set<unsigned>& getSuccessorSCCs(const unsigned scc) const {
+    const std::set<int>& getSuccessorSCCs(const int scc) const {
         return successors.at(scc);
     }
 
     /** Get all predecessor SCCs of a given SCC. */
-    const std::set<unsigned>& getPredecessorSCCs(const unsigned scc) const {
+    const std::set<int>& getPredecessorSCCs(const int scc) const {
         return predecessors.at(scc);
     }
 
     /** Get all SCCs containing a successor of a given relation. */
-    const std::unordered_set<size_t> getSuccessorSCCs(const AstRelation* relation) const {
-        std::unordered_set<size_t> successorSccs;
+    const std::unordered_set<int> getSuccessorSCCs(const AstRelation* relation) const {
+        std::unordered_set<int> successorSccs;
         const auto scc = relationToScc.at(relation);
         for (const auto& successor : precedenceGraph->graph().successors(relation)) {
             const auto successorScc = relationToScc.at(successor);
@@ -160,8 +160,8 @@ public:
     }
 
     /** Get all SCCs containing a predecessor of a given relation. */
-    const std::unordered_set<size_t> getPredecessorSCCs(const AstRelation* relation) const {
-        std::unordered_set<size_t> predecessorSccs;
+    const std::unordered_set<int> getPredecessorSCCs(const AstRelation* relation) const {
+        std::unordered_set<int> predecessorSccs;
         const auto scc = relationToScc.at(relation);
         for (const auto& predecessor : precedenceGraph->graph().predecessors(relation)) {
             const auto predecessorScc = relationToScc.at(predecessor);
@@ -171,16 +171,16 @@ public:
     }
 
     /** Get all internal relations of a given SCC. */
-    const std::set<const AstRelation*> getInternalRelations(const unsigned scc) const {
+    const std::set<const AstRelation*> getInternalRelations(const int scc) const {
         return sccToRelation.at(scc);
     }
 
     /** Get all external output predecessor relations of a given SCC. */
-    const std::set<const AstRelation*> getExternalOutputPredecessorRelations(const unsigned scc) const {
+    const std::set<const AstRelation*> getExternalOutputPredecessorRelations(const int scc) const {
         std::set<const AstRelation*> externOutPreds;
         for (const auto& relation : getInternalRelations(scc)) {
             for (const auto& predecessor : precedenceGraph->graph().predecessors(relation)) {
-                if ((unsigned)relationToScc.at(predecessor) != scc && predecessor->isOutput()) {
+                if (relationToScc.at(predecessor) != scc && predecessor->isOutput()) {
                     externOutPreds.insert(predecessor);
                 }
             }
@@ -189,11 +189,11 @@ public:
     }
 
     /** Get all external non-output predecessor relations of a given SCC. */
-    const std::set<const AstRelation*> getExternalNonOutputPredecessorRelations(const unsigned scc) const {
+    const std::set<const AstRelation*> getExternalNonOutputPredecessorRelations(const int scc) const {
         std::set<const AstRelation*> externNonOutPreds;
         for (const auto& relation : getInternalRelations(scc)) {
             for (const auto& predecessor : precedenceGraph->graph().predecessors(relation)) {
-                if ((unsigned)relationToScc.at(predecessor) != scc && !predecessor->isOutput()) {
+                if (relationToScc.at(predecessor) != scc && !predecessor->isOutput()) {
                     externNonOutPreds.insert(predecessor);
                 }
             }
@@ -202,7 +202,7 @@ public:
     }
 
     /** Get all internal output relations of a given SCC. */
-    const std::set<const AstRelation*> getInternalOutputRelations(const unsigned scc) const {
+    const std::set<const AstRelation*> getInternalOutputRelations(const int scc) const {
         std::set<const AstRelation*> internOuts;
         for (const auto& relation : getInternalRelations(scc)) {
             if (relation->isOutput()) {
@@ -213,11 +213,11 @@ public:
     }
 
     /** Get all internal relations of a given SCC with external successors. */
-    const std::set<const AstRelation*> getInternalRelationsWithExternalSuccessors(const unsigned scc) const {
+    const std::set<const AstRelation*> getInternalRelationsWithExternalSuccessors(const int scc) const {
         std::set<const AstRelation*> internsWithExternSuccs;
         for (const auto& relation : getInternalRelations(scc)) {
             for (const auto& successor : precedenceGraph->graph().successors(relation)) {
-                if ((unsigned)relationToScc.at(successor) != scc) {
+                if (relationToScc.at(successor) != scc) {
                     internsWithExternSuccs.insert(relation);
                     break;
                 }
@@ -228,12 +228,12 @@ public:
 
     /** Get all internal non-output relations of a given SCC with external successors. */
     const std::set<const AstRelation*> getInternalNonOutputRelationsWithExternalSuccessors(
-            const unsigned scc) const {
+            const int scc) const {
         std::set<const AstRelation*> internNonOutsWithExternSuccs;
         for (const auto& relation : getInternalRelations(scc)) {
             if (!relation->isOutput()) {
                 for (const auto& successor : precedenceGraph->graph().successors(relation)) {
-                    if ((unsigned)relationToScc.at(successor) != scc) {
+                    if (relationToScc.at(successor) != scc) {
                         internNonOutsWithExternSuccs.insert(relation);
                         break;
                     }
@@ -244,7 +244,7 @@ public:
     }
 
     /** Get all internal input relations of a given SCC. */
-    const std::set<const AstRelation*> getInternalInputRelations(const unsigned scc) const {
+    const std::set<const AstRelation*> getInternalInputRelations(const int scc) const {
         std::set<const AstRelation*> internIns;
         for (const auto& relation : getInternalRelations(scc)) {
             if (relation->isInput()) {
@@ -255,7 +255,7 @@ public:
     }
 
     /** Return if the given SCC is recursive. */
-    bool isRecursive(const unsigned scc) const {
+    bool isRecursive(const int scc) const {
         const std::set<const AstRelation*>& sccRelations = sccToRelation.at(scc);
         if (sccRelations.size() == 1) {
             const AstRelation* singleRelation = *sccRelations.begin();
@@ -279,21 +279,21 @@ private:
     SCCGraph* sccGraph = nullptr;
 
     /** The final topological ordering of the SCCs. */
-    std::vector<unsigned> sccOrder;
+    std::vector<int> sccOrder;
 
     /** Calculate the topological ordering cost of a permutation of as of yet unordered SCCs
     using the ordered SCCs. Returns -1 if the given vector is not a valid topological ordering. */
-    unsigned topologicalOrderingCost(const std::vector<unsigned>& permutationOfSCCs) const;
+    size_t topologicalOrderingCost(const std::vector<int>& permutationOfSCCs) const;
 
     /** Recursive component for the forwards algorithm computing the topological ordering of the SCCs. */
-    void computeTopologicalOrdering(const unsigned scc, std::vector<bool>& visited);
+    void computeTopologicalOrdering(const int scc, std::vector<bool>& visited);
 
 public:
     static constexpr const char* name = "topological-scc-graph";
 
     void run(const AstTranslationUnit& translationUnit) override;
 
-    const std::vector<unsigned>& order() const {
+    const std::vector<int>& order() const {
         return sccOrder;
     }
 

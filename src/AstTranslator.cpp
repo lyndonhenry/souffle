@@ -1302,7 +1302,7 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
 
 #ifdef USE_MPI
     const auto& makeRamSend = [&](std::unique_ptr<RamStatement>& current, const AstRelation* relation,
-            const std::unordered_set<size_t> destinationStrata) {
+            const std::unordered_set<int> destinationStrata) {
         appendStmt(current, std::make_unique<RamSend>(
                                     getRamRelation(relation, &typeEnv, getRelationName(relation->getName()),
                                             relation->getArity(), false, relation->isHashset()),
@@ -1311,7 +1311,7 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
     };
 
     const auto& makeRamRecv = [&](
-            std::unique_ptr<RamStatement>& current, const AstRelation* relation, const size_t sourceStrata) {
+            std::unique_ptr<RamStatement>& current, const AstRelation* relation, const int sourceStrata) {
         appendStmt(current, std::make_unique<RamRecv>(
                                     getRamRelation(relation, &typeEnv, getRelationName(relation->getName()),
                                             relation->getArity(), false, relation->isHashset()),
@@ -1322,7 +1322,7 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
 #endif
 
     // maintain the index of the SCC within the topological order
-    unsigned index = 0;
+    int index = 0;
 
     // iterate over each SCC according to the topological order
     for (const auto& scc : sccOrder) {
@@ -1411,7 +1411,7 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
             }
             // send all internal output relations to the master process
             for (const auto& relation : internOuts) {
-                makeRamSend(current, relation, std::unordered_set<size_t>({(size_t)-1}));
+                makeRamSend(current, relation, std::unordered_set<int>({-1}));
             }
         } else
 #endif
@@ -1479,7 +1479,7 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
         for (const auto scc : sccOrder) {
             for (const auto& relation : sccGraph.getInternalInputRelations(scc)) {
                 makeRamLoad(current, relation, "fact-dir", ".facts");
-                const auto destinations = std::unordered_set<size_t>({index});
+                const auto destinations = std::unordered_set<int>({index});
                 makeRamSend(current, relation, destinations);
             }
             ++index;
