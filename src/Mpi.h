@@ -37,22 +37,33 @@
         MPI_Comm_size(MPI_COMM_WORLD, &commSize);                                                 \
         MPI_Comm_rank(MPI_COMM_WORLD, &commRank);                                                 \
         std::cout << "(Mpi_Comm_rank = " << commRank << ", MPI_Comm_size = " << commSize << "): " \
-                  << "MPI_send(data = " << data << ", size = " << size << ", type = " << type     \
+                  << "MPI_Send(data = " << data << ", size = " << size << ", type = " << type     \
                   << ", destination = " << destination << ", tag = " << tag                       \
                   << ", communicator = " << communicator << ")" << std::endl;                     \
         MPI_Send(data, size, type, destination, tag, communicator);                               \
     })()
 
-#define MPI_Recv(data, size, type, source, tag, communicator, status)                             \
-    ([&]() {                                                                                      \
-        int commRank, commSize;                                                                   \
-        MPI_Comm_size(MPI_COMM_WORLD, &commSize);                                                 \
-        MPI_Comm_rank(MPI_COMM_WORLD, &commRank);                                                 \
-        MPI_Recv(data, size, type, source, tag, communicator, status);                            \
-        std::cout << "(Mpi_Comm_rank = " << commRank << ", MPI_Comm_size = " << commSize << "): " \
-                  << "MPI_recv(data = " << data << ", size = " << size << ", type = " << type     \
-                  << ", destination = " << source << ", tag = " << tag                            \
-                  << ", communicator = " << communicator << ")" << std::endl;                     \
+#define MPI_Recv(data, size, type, source, tag, communicator, status)                                    \
+    ([&]() {                                                                                             \
+        int commRank, commSize;                                                                          \
+        MPI_Comm_size(MPI_COMM_WORLD, &commSize);                                                        \
+        MPI_Comm_rank(MPI_COMM_WORLD, &commRank);                                                        \
+        MPI_Recv(data, size, type, source, tag, communicator, status);                                   \
+        std::cout << "(Mpi_Comm_rank = " << commRank << ", MPI_Comm_size = " << commSize << "): "        \
+                  << "MPI_Recv(data = " << data << ", size = " << size << ", type = " << type            \
+                  << ", source = " << source << ", tag = " << tag << ", communicator = " << communicator \
+                  << ")" << std::endl;                                                                   \
+    })()
+
+#define MPI_Probe(source, tag, communicator, status)                                                     \
+    ([&]() {                                                                                             \
+        int commRank, commSize;                                                                          \
+        MPI_Comm_size(MPI_COMM_WORLD, &commSize);                                                        \
+        MPI_Comm_rank(MPI_COMM_WORLD, &commRank);                                                        \
+        MPI_Probe(source, tag, communicator, status);                                                    \
+        std::cout << "(Mpi_Comm_rank = " << commRank << ", MPI_Comm_size = " << commSize << "): "        \
+                  << "MPI_Probe(source = " << status->MPI_SOURCE << ", tag = " << status->MPI_TAG << ")" \
+                  << std::endl;                                                                          \
     })()
 
 #endif
@@ -458,13 +469,26 @@ void numberOfJobs(const int count) {
 const std::unordered_set<int> jobsOfRank(const int rank) {
     // TODO (lyndonhenry): should implement this more efficiently
     std::unordered_set<int> jobs;
-    for (int i = rank - 1; i < _jobCount; i += mpi::commSize()) {
-        jobs.insert(i);
+    if (commSize() > 1) {
+        if (commRank() == 0) {
+            jobs.insert(-1);
+        } else {
+            for (int i = rank - 1; i < _jobCount; i += mpi::commSize()) {
+                jobs.insert(i);
+            }
+        }
+    } else {
+        for (int i = -1; i < _jobCount; ++i) {
+            jobs.insert(i);
+        }
     }
     return jobs;
 }
 
 const int rankOfJob(const int job) {
+    if (commSize() == 1 || job == -1) {
+        return 0;
+    }
     return (job % (commSize() - 1)) + 1;
 }
 }

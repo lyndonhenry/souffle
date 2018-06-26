@@ -1760,28 +1760,61 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
 #ifdef USE_MPI
     if (Global::config().get("engine") == "mpi") {
         os << "\n#ifdef USE_MPI\n";
-        size_t stratumCount = 0;
-        visitDepthFirst(*(prog.getMain()), [&](const RamStratum& stratum) { ++stratumCount; });
-        os << "souffle::mpi::numberOfJobs(" << stratumCount << ");";
-        visitDepthFirst(*(prog.getMain()), [&](const RamCreate& create) {
-            // TODO (lyndonhenry): should do this more efficiently, just need to ensure relation names map to
-            // the same tag on all nodes
-            os << "souffle::mpi::tagOf(\"" << getRelationName(create.getRelation()) << "\");";
-        });
+        // make lambda wrapping code common to both master and slave processes
+        os << "const auto wrapperLambda = [&]() {";
+        {
+            // set number of jobs
+            size_t stratumCount = 0;
+            visitDepthFirst(*(prog.getMain()), [&](const RamStratum& stratum) { ++stratumCount; });
+            os << "souffle::mpi::numberOfJobs(" << stratumCount - 1 << ");";
+
+            // set tags for each relation
+            visitDepthFirst(*(prog.getMain()), [&](const RamCreate& create) {
+                // TODO (lyndonhenry): should do this more efficiently, just need to ensure relation names map
+                // to
+                // the same tag on all nodes
+                os << "souffle::mpi::tagOf(\"" << getRelationName(create.getRelation()) << "\");";
+            });
+
+            // get strata for current process
+            os << "const auto strata =  souffle::mpi::jobsOfRank(souffle::mpi::commRank());";
+
+            // spawn thread for each strata
+            os << "std::vector<std::thread> mpiThreads(strata.size());";
+            os << "size_t i = 0;";
+            os << "for (const auto stratum : strata) {";
+            {
+                os << "mpiThreads[i] = std::thread([&]() {";
+                { os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), stratum);"; }
+                os << "});";
+                os << "++i;";
+            }
+            os << "}";
+
+            // join threads for all strata
+            os << "for (auto& mpiThread : mpiThreads) {";
+            { os << "mpiThread.join();"; }
+            os << "}";
+        }
+        os << "};";
+        // if the current process is the master...
         os << "if (souffle::mpi::commRank() == 0) {";
         {
+            // serve symbol table on master in new thread
             os << "obj.initSymbolTable();";
             os << "std::thread symbolTableThread(souffle::SymbolTable::handleMpiMessages, "
                   "obj.getSymbolTable());";
-            os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), -1);";
+            // execute wrapper lambda defined above
+            os << "wrapperLambda();";
+            // terminate symbol table thread
             os << "souffle::mpi::send(0, souffle::mpi::tagOf(\"@SYMBOL_TABLE_EXIT\"));";
             os << "symbolTableThread.join();";
         }
+        // otherwise...
         os << "} else {";
         {
-            os << "for (auto job : souffle::mpi::jobsOfRank(souffle::mpi::commRank())) {";
-            os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), job);\n";
-            os << "}";
+            // execute wrapper lambda defined above
+            os << "wrapperLambda();";
         }
         os << "}";
         os << "\n#endif\n";
