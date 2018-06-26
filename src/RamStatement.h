@@ -1071,7 +1071,6 @@ protected:
     }
 };
 
-
 #endif
 
 }  // end of namespace souffle

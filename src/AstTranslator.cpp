@@ -1339,8 +1339,7 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
         const auto& internOuts = sccGraph.getInternalOutputRelations(scc);
         const auto& externOutPreds = sccGraph.getExternalOutputPredecessorRelations(scc);
         const auto& externNonOutPreds = sccGraph.getExternalNonOutputPredecessorRelations(scc);
-        const auto& internsWithExternSuccs =
-                sccGraph.getInternalRelationsWithExternalSuccessors(scc);
+        const auto& internsWithExternSuccs = sccGraph.getInternalRelationsWithExternalSuccessors(scc);
         const auto& internNonOutsWithExternSuccs =
                 sccGraph.getInternalNonOutputRelationsWithExternalSuccessors(scc);
 

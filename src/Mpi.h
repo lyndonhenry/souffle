@@ -292,7 +292,6 @@ void send(const T& data, const size_t length, const std::unordered_set<int>& des
 }
 }
 
-
 namespace {
 template <typename R>
 void recv(std::vector<R>& data, Status& status) {
@@ -393,6 +392,5 @@ const int rankOfJob(const int job) {
     return (job % commSize()) + 1;
 }
 }
-
 }
 }

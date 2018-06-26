@@ -1649,8 +1649,7 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
     if (Global::config().get("engine") == "mpi") {
         // @TODO: must ensure multithreading works here
         os << "\n#ifdef USE_MPI\n";
-        os << "private:\n std::thread symTableThread;"
-        os << "public:\n void forkSymbolTable() {";
+        os << "private:\n std::thread symTableThread;" os << "public:\n void forkSymbolTable() {";
         os << "symTable = SymbolTable(";
         if (symTable.size() > 0) {
             os << "{\n";
@@ -1664,8 +1663,7 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
         os << "}\n";
         os << "public:\n void joinSymbolTable() {";
         os << "souffle::mpi::send(0, mpi::tagOf(\"@SYMBOL_TABLE_TERMINATE\");";
-        os << "symTableThread.join();"
-        os << "";
+        os << "symTableThread.join();" os << "";
         os << "}";
         os << "\n#endif\n";
     }
