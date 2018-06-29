@@ -84,11 +84,13 @@ void executeBinary(const std::string& binaryFilename) {
         exitCode = system(binaryFilename.c_str());
     }
 
-    // remove temp files
+// only remove temp files if we are not configuring with --enable-debug
+#ifndef NDEBUG
     if (Global::config().get("dl-program").empty()) {
         remove(binaryFilename.c_str());
         remove((binaryFilename + ".cpp").c_str());
     }
+#endif
 
     // exit with same code as executable
     if (exitCode != 0) {
@@ -191,7 +193,7 @@ int main(int argc, char** argv) {
 #endif
                             {"data-structure", 'd', "type", "", false,
                                     "Specify data structure (brie/btree/eqrel/rbtset/hashset)."},
-                            {"engine", 'e', "[ file ]", "", false,
+                            {"engine", 'e', "[ file | mpi ]", "", false,
                                     "Specify communication engine for distributed execution."},
                             {"verbose", 'v', "", "", false, "Verbose output."},
                             {"help", 'h', "", "", false, "Display this help message."}};

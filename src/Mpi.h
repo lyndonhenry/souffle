@@ -16,9 +16,6 @@
 
 #pragma once
 
-// TODO (lyndonhenry): shoulf remove the source of these warnings rather than just suppressing them
-#pragma GCC diagnostic ignored "-Wunused-function"
-
 #include <cassert>
 #include <functional>
 #include <memory>
@@ -27,6 +24,20 @@
 #include <vector>
 
 #include <mpi.h>
+
+
+
+// @TODO: it is important to make sure this allows self messages for stratum allocated to the same node, so that the final sends can be passed on and received -- you might want to do this in a function however
+#define MPI_Send(data, size, type, destination, tag, communicator) \
+    ([&]() { \
+        int commRank; \
+        MPI_Comm_rank(MPI_COMM_WORLD, &commRank); \
+        if (destination == commRank) { \
+            MPI_Bsend(data, size, type, destination, tag, communicator); \
+        } else { \
+            MPI_Send(data, size, type, destination, tag, communicator); \
+        } \
+    })()
 
 // TODO (lyndonhenry): should add more debugging functionality here
 #ifdef MPI_DEBUG
@@ -67,6 +78,8 @@
     })()
 
 #endif
+
+// @TODO: do not use anon namespaces in header files - put into private and public
 
 namespace souffle {
 
@@ -179,7 +192,7 @@ public:
 /* getCount */
 namespace {
 template <typename T>
-int getCount(std::unique_ptr<MPI_Status>& status) {
+inline int getCount(std::unique_ptr<MPI_Status>& status) {
     assert(status);
     int count;
     MPI_Get_count(status.get(), datatype<T>::get(), &count);
@@ -190,10 +203,11 @@ int getCount(std::unique_ptr<MPI_Status>& status) {
 /* pack */
 namespace {
 template <typename T>
-void pack(const T& oldData, std::vector<char>& newData);
+inline void pack(const T& oldData, std::vector<char>& newData);
 
 template <>
-void pack<std::vector<std::string>>(const std::vector<std::string>& oldData, std::vector<char>& newData) {
+inline void pack<std::vector<std::string>>(
+        const std::vector<std::string>& oldData, std::vector<char>& newData) {
     std::vector<int> first = {(int)oldData.size()};
     std::vector<int> second(oldData.size());
     std::vector<char> last;
@@ -226,10 +240,11 @@ void pack<std::vector<std::string>>(const std::vector<std::string>& oldData, std
 /* unpack */
 namespace {
 template <typename T>
-void unpack(const std::vector<char>& oldData, T& newData);
+inline void unpack(const std::vector<char>& oldData, T& newData);
 
 template <>
-void unpack<std::vector<std::string>>(const std::vector<char>& oldData, std::vector<std::string>& newData) {
+inline void unpack<std::vector<std::string>>(
+        const std::vector<char>& oldData, std::vector<std::string>& newData) {
     int position = 0;
     std::vector<int> first(1);
     MPI_Unpack(&oldData[0], (int)oldData.size(), &position, &first[0], (int)first.capacity(),
@@ -251,7 +266,7 @@ void unpack<std::vector<std::string>>(const std::vector<char>& oldData, std::vec
 
 /* init */
 namespace {
-int init(int argc, char* argv[]) {
+inline int init(int argc, char* argv[]) {
     auto flag = MPI_Init(&argc, &argv);
     return flag;
 }
@@ -260,14 +275,14 @@ int init(int argc, char* argv[]) {
 /* finalize */
 namespace {
 
-void finalize() {
+inline void finalize() {
     MPI_Finalize();
 }
 }
 
 /* commSize */
 namespace {
-int commSize() {
+inline int commSize() {
     int size;
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
@@ -277,7 +292,7 @@ int commSize() {
 
 /* commRank */
 namespace {
-int commRank() {
+inline int commRank() {
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
@@ -287,7 +302,7 @@ int commRank() {
 
 /* probe */
 namespace {
-Status probe(const int source, const int tag) {
+inline Status probe(const int source, const int tag) {
     auto status = Status(new MPI_Status());
     MPI_Probe(source, tag, MPI_COMM_WORLD, status.get());
     assert(status);
@@ -295,11 +310,11 @@ Status probe(const int source, const int tag) {
     return status;
 }
 
-Status probe() {
+inline Status probe() {
     return probe(MPI_ANY_SOURCE, MPI_ANY_TAG);
 }
 
-Status probe(const Status& status) {
+inline Status probe(const Status& status) {
     return probe(status->MPI_SOURCE, status->MPI_TAG);
 }
 }
@@ -307,62 +322,63 @@ Status probe(const Status& status) {
 /* send */
 namespace {
 template <typename S>
-void send(const std::vector<S>& data, const int destination, const int tag) {
+inline void send(const std::vector<S>& data, const int destination, const int tag) {
     MPI_Send(&data[0], (int)data.size(), datatype<S>::get(), destination, tag, MPI_COMM_WORLD);
 }
 
 template <>
-void send<std::string>(const std::vector<std::string>& data, const int destination, const int tag) {
+inline void send<std::string>(const std::vector<std::string>& data, const int destination, const int tag) {
     std::vector<char> newData;
     pack(data, newData);
     MPI_Send(&newData[0], (int)newData.size(), MPI_PACKED, destination, tag, MPI_COMM_WORLD);
 }
 
 template <typename S>
-void send(const S& data, const int destination, const int tag) {
+inline void send(const S& data, const int destination, const int tag) {
     std::vector<S> newData({data});
     send(newData, destination, tag);
 }
 
 template <typename S>
-void send(const S& data, const Status& status) {
+inline void send(const S& data, const Status& status) {
     send(data, status->MPI_SOURCE, status->MPI_TAG);
 }
 
-void send(const int destination, const int tag) {
+inline void send(const int destination, const int tag) {
     auto data = std::vector<char>(0);
     send(data, destination, tag);
 }
 
-void send(const Status& status) {
+inline void send(const Status& status) {
     send(status->MPI_SOURCE, status->MPI_TAG);
 }
 
 template <typename S>
-void send(const S& data, const std::unordered_set<int>& destinations, const int tag) {
+inline void send(const S& data, const std::unordered_set<int>& destinations, const int tag) {
     for (const auto destination : destinations) {
         send(data, destination, tag);
     }
 }
 
-void send(const std::unordered_set<int>& destinations, const int tag) {
+inline void send(const std::unordered_set<int>& destinations, const int tag) {
     auto data = std::vector<char>(0);
     send(data, destinations, tag);
 }
 
 template <typename S, typename T>
-void send(const T& data, const size_t length, const int destination, const int tag) {
+inline void send(const T& data, const size_t length, const int destination, const int tag) {
     const auto destinations = std::vector<int>({destination});
     send<S>(data, length, destinations, tag);
 }
 
 template <typename S, typename T>
-void send(const T& data, const size_t length, const Status& status) {
+inline void send(const T& data, const size_t length, const Status& status) {
     send<S>(data, length, status->MPI_SOURCE, status->MPI_TAG);
 }
 
 template <typename S, typename T>
-void send(const T& data, const size_t length, const std::unordered_set<int>& destinations, const int tag) {
+inline void send(
+        const T& data, const size_t length, const std::unordered_set<int>& destinations, const int tag) {
     std::vector<S> buffer(data.size() * length);
     size_t i = 0;
     for (const auto& element : data) {
@@ -377,7 +393,7 @@ void send(const T& data, const size_t length, const std::unordered_set<int>& des
 /* recv */
 namespace {
 template <typename R>
-void recv(std::vector<R>& data, Status& status) {
+inline void recv(std::vector<R>& data, Status& status) {
     assert(status);
     int count = getCount<R>(status);
     data.resize((size_t)count);
@@ -386,7 +402,7 @@ void recv(std::vector<R>& data, Status& status) {
 }
 
 template <>
-void recv<std::string>(std::vector<std::string>& data, Status& status) {
+inline void recv<std::string>(std::vector<std::string>& data, Status& status) {
     assert(status);
     int count = getCount<char>(status);
     std::vector<char> newData((size_t)count);
@@ -396,20 +412,20 @@ void recv<std::string>(std::vector<std::string>& data, Status& status) {
 }
 
 template <typename R>
-void recv(R& data, Status& status) {
+inline void recv(R& data, Status& status) {
     std::vector<R> newData;
     recv(newData, status);
     data = newData.at(0);
 }
 
 template <typename R>
-void recv(R& data, const int source, const int tag) {
+inline void recv(R& data, const int source, const int tag) {
     auto status = probe(source, tag);
     recv(data, status);
 }
 
 template <typename R, typename T>
-void recv(T& data, const size_t length, Status& status) {
+inline void recv(T& data, const size_t length, Status& status) {
     std::vector<R> newData;
     recv(newData, status);
     auto it = newData.begin();
@@ -425,18 +441,18 @@ void recv(T& data, const size_t length, Status& status) {
 }
 
 template <typename R, typename T>
-void recv(T& data, const size_t length, const int source, const int tag) {
+inline void recv(T& data, const size_t length, const int source, const int tag) {
     auto status = probe(source, tag);
     recv<R>(data, length, status);
 }
 
 template <typename T>
-void recv(Status& status) {
+inline void recv(Status& status) {
     auto data = std::vector<T>(0);
     recv(data, status);
 }
 
-void recv(const int source, const int tag) {
+inline void recv(const int source, const int tag) {
     auto data = std::vector<char>(0);
     recv(data, source, tag);
 }
@@ -448,7 +464,7 @@ namespace {
 
 namespace {
 
-const int tagOf(const std::string& name) {
+inline const int tagOf(const std::string& name) {
     // TODO (lyndonhenry): should do this less verbosely
     static std::unordered_map<std::string, int> _tagOfMap;
     auto it = _tagOfMap.find(name);
@@ -463,10 +479,10 @@ const int tagOf(const std::string& name) {
 namespace {
 int _jobCount;
 
-void numberOfJobs(const int count) {
+inline void numberOfJobs(const int count) {
     _jobCount = count;
 }
-const std::unordered_set<int> jobsOfRank(const int rank) {
+inline const std::unordered_set<int> jobsOfRank(const int rank) {
     // TODO (lyndonhenry): should implement this more efficiently
     std::unordered_set<int> jobs;
     if (commSize() > 1) {
@@ -485,7 +501,7 @@ const std::unordered_set<int> jobsOfRank(const int rank) {
     return jobs;
 }
 
-const int rankOfJob(const int job) {
+inline const int rankOfJob(const int job) {
     if (commSize() == 1 || job == -1) {
         return 0;
     }

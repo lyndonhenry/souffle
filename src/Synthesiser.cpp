@@ -1254,6 +1254,16 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
     const RamProgram& prog = unit.getP();
     auto* idxAnalysis = unit.getAnalysis<IndexSetAnalysis>();
 
+    // get number of strata in program
+    size_t stratumCount = 0;
+    visitDepthFirst(*(prog.getMain()), [&](const RamStratum& stratum) { ++stratumCount; });
+
+    // do not generate any code for entirely empty programs
+    if (stratumCount == 0) {
+        os << "int main(int, char**) { return 0; }";
+        return;
+    }
+
     // ---------------------------------------------------------------
     //                      Code Generation
     // ---------------------------------------------------------------
@@ -1551,7 +1561,7 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
     os << "public:\nvoid run(int stratumIndex = -1) override { runFunction<false>(\".\", \".\", "
           "stratumIndex); }\n";
     os << "public:\nvoid runAll(std::string inputDirectory = \".\", std::string outputDirectory = \".\", "
-          "size_t stratumIndex = (size_t) -1) "
+          "int stratumIndex = (size_t) -1) "
           "override { ";
     if (Global::config().has("live-profile")) {
         os << "std::thread profiler([]() { profile::Tui().runProf(); });\n";
@@ -1785,9 +1795,6 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
         // make lambda wrapping code common to both master and slave processes
         os << "const auto wrapperLambda = [&]() {";
         {
-            // set number of jobs
-            size_t stratumCount = 0;
-            visitDepthFirst(*(prog.getMain()), [&](const RamStratum& stratum) { ++stratumCount; });
             os << "souffle::mpi::numberOfJobs(" << stratumCount - 1 << ");";
 
             // set tags for each relation
@@ -1800,36 +1807,49 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
             // get strata for current process
             os << "const auto strata =  souffle::mpi::jobsOfRank(souffle::mpi::commRank());";
 
+            /* @TODO
             // spawn thread for each strata
             os << "std::vector<std::thread> mpiThreads(strata.size());";
             os << "size_t i = 0;";
+            */
             os << "for (const auto stratum : strata) {";
+            /*
             {
                 os << "mpiThreads[i] = std::thread([&]() {";
+            */
                 { os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), stratum);"; }
+            /* @TODO
                 os << "});";
                 os << "++i;";
             }
+            */
             os << "}";
 
+            /* @TODO
             // join threads for all strata
             os << "for (auto& mpiThread : mpiThreads) {";
             { os << "mpiThread.join();"; }
             os << "}";
+            */
         }
         os << "};";
         // if the current process is the master...
         os << "if (souffle::mpi::commRank() == 0) {";
         {
             // serve symbol table on master in new thread
+            // @TODO: must actually serve symbol table here
+            /*
             os << "obj.initSymbolTable();";
             os << "std::thread symbolTableThread(souffle::SymbolTable::handleMpiMessages, "
                   "obj.getSymbolTable());";
+            */
             // execute wrapper lambda defined above
             os << "wrapperLambda();";
+            /* @TODO: must actually serve symbol table here
             // terminate symbol table thread
             os << "souffle::mpi::send(0, souffle::mpi::tagOf(\"@SYMBOL_TABLE_EXIT\"));";
             os << "symbolTableThread.join();";
+            */
         }
         // otherwise...
         os << "} else {";

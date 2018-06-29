@@ -1050,6 +1050,7 @@ public:
         os << "SEND DATA FOR " << getRelation().getName() << " TO STRATUM {";
         auto it = destinationStrata.begin();
         os << *it;
+        ++it;
         while (it != destinationStrata.end()) {
             os << ", " << *it;
             ++it;
