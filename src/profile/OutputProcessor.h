@@ -6,17 +6,82 @@
  * - <souffle root>/licenses/SOUFFLE-UPL.txt
  */
 
-#include "profilerlib/OutputProcessor.h"
-#include "profilerlib/Cell.h"
-#include "profilerlib/CellInterface.h"
-#include "profilerlib/Iteration.h"
-#include "profilerlib/ProgramRun.h"
-#include "profilerlib/Relation.h"
-#include "profilerlib/Row.h"
-#include "profilerlib/Rule.h"
-#include "profilerlib/Table.h"
+#pragma once
+
+#include "profile/ProgramRun.h"
+#include "profile/StringUtils.h"
+#include "profile/Table.h"
+#include <memory>
+#include <string>
+#include <vector>
+
+namespace souffle {
+namespace profile {
+
+/*
+ * Class to format profiler data structures into tables
+ */
+class OutputProcessor {
+private:
+    std::shared_ptr<ProgramRun> programRun;
+
+public:
+    OutputProcessor() {
+        programRun = std::make_shared<ProgramRun>(ProgramRun());
+    }
+
+    inline std::shared_ptr<ProgramRun>& getProgramRun() {
+        return programRun;
+    }
+
+    Table getRelTable();
+
+    Table getRulTable();
+
+    Table getSubrulTable(std::string strRel, std::string strRul);
+
+    Table getAtomTable(std::string strRel, std::string strRul);
+
+    Table getVersions(std::string strRel, std::string strRul);
+
+    Table getVersionAtoms(std::string strRel, std::string strRul, int version);
+
+    std::string formatTime(double number) {
+        return Tools::formatTime(number);
+    }
+
+    std::string formatNum(int precision, long number) {
+        return Tools::formatNum(precision, number);
+    }
+
+    std::vector<std::vector<std::string>> formatTable(Table table, int precision) {
+        return Tools::formatTable(table, precision);
+    }
+};
+
+}  // namespace profile
+}  // namespace souffle
+/*
+ * Souffle - A Datalog Compiler
+ * Copyright (c) 2016, The Souffle Developers. All rights reserved
+ * Licensed under the Universal Permissive License v 1.0 as shown at:
+ * - https://opensource.org/licenses/UPL
+ * - <souffle root>/licenses/SOUFFLE-UPL.txt
+ */
+
+#include "profile/Cell.h"
+#include "profile/CellInterface.h"
+#include "profile/Iteration.h"
+#include "profile/ProgramRun.h"
+#include "profile/Relation.h"
+#include "profile/Row.h"
+#include "profile/Rule.h"
+#include "profile/Table.h"
 #include <memory>
 #include <unordered_map>
+
+namespace souffle {
+namespace profile {
 
 /*
  * rel table :
@@ -31,7 +96,7 @@
  * ROW[8] = PERFOR
  *
  */
-Table OutputProcessor::getRelTable() {
+Table inline OutputProcessor::getRelTable() {
     std::unordered_map<std::string, std::shared_ptr<Relation>>& relation_map = programRun->getRelation_map();
     Table table;
     for (auto& rel : relation_map) {
@@ -70,7 +135,7 @@ Table OutputProcessor::getRelTable() {
  * ROW[9] = VER
  * ROW[10]= REL_NAME
  */
-Table OutputProcessor::getRulTable() {
+Table inline OutputProcessor::getRulTable() {
     std::unordered_map<std::string, std::shared_ptr<Relation>>& relation_map = programRun->getRelation_map();
     std::unordered_map<std::string, std::shared_ptr<Row>> rule_map;
 
@@ -151,11 +216,11 @@ Table OutputProcessor::getRulTable() {
 
 /*
  * atom table :
- * ROW[0] = atom
- * ROW[1] = version
+ * ROW[0] = clause
+ * ROW[1] = atom
  * ROW[2] = frequency
  */
-Table OutputProcessor::getAtomTable(std::string strRel, std::string strRul) {
+Table inline OutputProcessor::getAtomTable(std::string strRel, std::string strRul) {
     std::unordered_map<std::string, std::shared_ptr<Relation>>& relation_map = programRun->getRelation_map();
 
     Table table;
@@ -172,11 +237,10 @@ Table OutputProcessor::getAtomTable(std::string strRel, std::string strRul) {
                 continue;
             }
             for (auto& atom : rul->getAtoms()) {
-                Row row(4);
-                row[0] = std::shared_ptr<CellInterface>(new Cell<std::string>(atom.first));
-                row[1] = std::shared_ptr<CellInterface>(new Cell<std::string>(std::get<0>(atom.second)));
-                row[2] = std::shared_ptr<CellInterface>(new Cell<long>(std::get<1>(atom.second)));
-                row[3] = std::shared_ptr<CellInterface>(new Cell<long>(std::get<2>(atom.second)));
+                Row row(3);
+                row[0] = std::shared_ptr<CellInterface>(new Cell<std::string>(std::get<0>(atom.first)));
+                row[1] = std::shared_ptr<CellInterface>(new Cell<std::string>(std::get<1>(atom.first)));
+                row[2] = std::shared_ptr<CellInterface>(new Cell<long>(atom.second));
 
                 table.addRow(std::make_shared<Row>(row));
             }
@@ -189,7 +253,7 @@ Table OutputProcessor::getAtomTable(std::string strRel, std::string strRul) {
  * subrule table :
  * ROW[0] = subrule
  */
-Table OutputProcessor::getSubrulTable(std::string strRel, std::string strRul) {
+Table inline OutputProcessor::getSubrulTable(std::string strRel, std::string strRul) {
     std::unordered_map<std::string, std::shared_ptr<Relation>>& relation_map = programRun->getRelation_map();
 
     Table table;
@@ -207,7 +271,7 @@ Table OutputProcessor::getSubrulTable(std::string strRel, std::string strRul) {
             }
             for (auto& atom : rul->getAtoms()) {
                 Row row(1);
-                row[0] = std::shared_ptr<CellInterface>(new Cell<std::string>(atom.first));
+                row[0] = std::shared_ptr<CellInterface>(new Cell<std::string>(std::get<0>(atom.first)));
 
                 table.addRow(std::make_shared<Row>(row));
             }
@@ -230,7 +294,7 @@ Table OutputProcessor::getSubrulTable(std::string strRel, std::string strRul) {
  * ROW[9] = VER
  * ROW[10]= REL_NAME
  */
-Table OutputProcessor::getVersions(std::string strRel, std::string strRul) {
+Table inline OutputProcessor::getVersions(std::string strRel, std::string strRul) {
     std::unordered_map<std::string, std::shared_ptr<Relation>>& relation_map = programRun->getRelation_map();
     std::unordered_map<std::string, std::shared_ptr<Row>> rule_map;
 
@@ -296,10 +360,9 @@ Table OutputProcessor::getVersions(std::string strRel, std::string strRul) {
  * atom table :
  * ROW[0] = rule
  * ROW[1] = atom
- * ROW[2] = version
  * ROW[3] = frequency
  */
-Table OutputProcessor::getVersionAtoms(std::string strRel, std::string srcLocator, int version) {
+Table inline OutputProcessor::getVersionAtoms(std::string strRel, std::string srcLocator, int version) {
     std::unordered_map<std::string, std::shared_ptr<Relation>>& relation_map = programRun->getRelation_map();
     Table table;
 
@@ -312,11 +375,11 @@ Table OutputProcessor::getVersionAtoms(std::string strRel, std::string srcLocato
                     if (rul->getLocator().compare(srcLocator) == 0 && rul->getVersion() == version) {
                         for (auto& atom : rul->getAtoms()) {
                             Row row(4);
-                            row[0] = std::shared_ptr<CellInterface>(new Cell<std::string>(atom.first));
+                            row[0] = std::shared_ptr<CellInterface>(
+                                    new Cell<std::string>(std::get<0>(atom.first)));
                             row[1] = std::shared_ptr<CellInterface>(
-                                    new Cell<std::string>(std::get<0>(atom.second)));
-                            row[2] = std::shared_ptr<CellInterface>(new Cell<long>(std::get<1>(atom.second)));
-                            row[3] = std::shared_ptr<CellInterface>(new Cell<long>(std::get<2>(atom.second)));
+                                    new Cell<std::string>(std::get<1>(atom.first)));
+                            row[2] = std::shared_ptr<CellInterface>(new Cell<long>(atom.second));
                             table.addRow(std::make_shared<Row>(row));
                         }
                     }
@@ -328,3 +391,6 @@ Table OutputProcessor::getVersionAtoms(std::string strRel, std::string srcLocato
 
     return table;
 }
+
+}  // namespace profile
+}  // namespace souffle

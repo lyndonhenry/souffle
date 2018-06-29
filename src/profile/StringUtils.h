@@ -6,21 +6,35 @@
  * - <souffle root>/licenses/SOUFFLE-UPL.txt
  */
 
-#include "profilerlib/StringUtils.h"
-#include "profilerlib/CellInterface.h"
-#include "profilerlib/Row.h"
-#include "profilerlib/Table.h"
+#pragma once
+
+#include "profile/CellInterface.h"
+#include "profile/Row.h"
+#include "profile/Table.h"
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <fstream>
 #include <iomanip>
+#include <ios>
 #include <memory>
 #include <sstream>
+#include <string>
+#include <vector>
+#include <unistd.h>
+
+namespace souffle {
+namespace profile {
 
 /*
- * Convert a number into a shorthand notation
- * eg. 1230000 -> 1.23M
+ * A series of functions necessary throughout the code
+ * Mostly string manipulation
  */
-std::string Tools::formatNum(int precision, long amount) {
+namespace Tools {
+static const std::string arr[] = {"K", "M", "B", "t", "q", "Q", "s", "S", "o", "n", "d", "U"};
+static const std::vector<std::string> abbreviations(arr, arr + sizeof(arr) / sizeof(arr[0]));
+
+inline std::string formatNum(int precision, long amount) {
     // assumes number is < 999*10^12
     if (amount == 0) {
         return "0";
@@ -101,13 +115,7 @@ std::string Tools::formatNum(int precision, long amount) {
     return NULL;
 }
 
-/*
- * Convert a double value to a shorthand form for readability
- * TODO: refactor for readability/cleanliness
- * TODO: add a Year string? Not really necessary
- * TODO: add microseconds?
- */
-std::string Tools::formatTime(double number) {
+inline std::string formatTime(double number) {
     if (std::isnan(number) || std::isinf(number)) {
         return "-";
     }
@@ -148,8 +156,7 @@ std::string Tools::formatTime(double number) {
     return ".000";
 }
 
-// convert a Table object into a 2D vector of strings
-std::vector<std::vector<std::string>> Tools::formatTable(Table table, int precision) {
+inline std::vector<std::vector<std::string>> formatTable(Table table, int precision) {
     std::vector<std::vector<std::string>> result;
     for (auto& row : table.getRows()) {
         std::vector<std::string> result_row;
@@ -165,8 +172,7 @@ std::vector<std::vector<std::string>> Tools::formatTable(Table table, int precis
     return result;
 }
 
-// split a string using another string
-std::vector<std::string> Tools::split(std::string str, std::string split_str) {
+inline std::vector<std::string> split(std::string str, std::string split_str) {
     // repeat value when splitting so "a   b" -> ["a","b"] not ["a","","","","b"]
     bool repeat = (split_str.compare(" ") == 0);
 
@@ -205,7 +211,7 @@ std::vector<std::string> Tools::split(std::string str, std::string split_str) {
     return elems;
 }
 
-std::vector<std::string> Tools::splitAtSemiColon(std::string str) {
+inline std::vector<std::string> splitAtSemiColon(std::string str) {
     for (size_t i = 0; i < str.size(); i++) {
         if (i > 0 && str[i] == ';' && str[i - 1] == '\\') {
             // I'm assuming this isn't a thing that will be naturally found in souffle profiler files
@@ -230,7 +236,7 @@ std::vector<std::string> Tools::splitAtSemiColon(std::string str) {
     return result;
 }
 
-std::string Tools::trimWhitespace(std::string str) {
+inline std::string trimWhitespace(std::string str) {
     std::string whitespace = " \t";
     size_t first = str.find_first_not_of(whitespace);
     if (first != std::string::npos) {
@@ -244,16 +250,21 @@ std::string Tools::trimWhitespace(std::string str) {
     return str;
 }
 
-std::string Tools::getworkingdir() {
+inline bool file_exists(const std::string& name) {
+    std::ifstream f(name.c_str());
+    return f.good();
+}
+
+inline std::string getworkingdir() {
     char cCurrentPath[FILENAME_MAX];
-    if (!GetCurrentDir(cCurrentPath, sizeof(cCurrentPath))) {
+    if (!getcwd(cCurrentPath, sizeof(cCurrentPath))) {
         return std::string();
     }
     cCurrentPath[sizeof(cCurrentPath) - 1] = '\0';
     return std::string(cCurrentPath);
 }
 
-std::string Tools::cleanString(std::string val) {
+inline std::string cleanString(std::string val) {
     if (val.size() < 2) {
         return val;
     }
@@ -264,9 +275,7 @@ std::string Tools::cleanString(std::string val) {
         if (start_pos < val.size()) {
             if (val[start_pos] == 'n' || val[start_pos] == 't') {
                 val.replace(start_pos, 1, " ");
-            }  // else if (str[start_pos] == '"') {
-
-            //}
+            }
         }
     }
 
@@ -274,10 +283,12 @@ std::string Tools::cleanString(std::string val) {
         val = val.substr(1, val.size() - 2);
     }
 
+    std::replace(val.begin(), val.end(), '\n', ' ');
+    std::replace(val.begin(), val.end(), '\t', ' ');
+
     return val;
 }
-
-std::string Tools::cleanJsonOut(std::string val) {
+inline std::string cleanJsonOut(std::string val) {
     if (val.size() < 2) {
         return val;
     }
@@ -293,8 +304,7 @@ std::string Tools::cleanJsonOut(std::string val) {
     }
     return val;
 }
-
-std::string Tools::escapeQuotes(std::string val) {
+inline std::string escapeQuotes(std::string val) {
     if (val.size() < 2) {
         return val;
     }
@@ -310,9 +320,7 @@ std::string Tools::escapeQuotes(std::string val) {
     }
     return val;
 }
-
-// TODO: is precision of 6 enough? Maybe check how large the precision value should be?
-std::string Tools::cleanJsonOut(double val) {
+inline std::string cleanJsonOut(double val) {
     if (std::isnan(val)) {
         return "NaN";
     }
@@ -321,9 +329,13 @@ std::string Tools::cleanJsonOut(double val) {
     return ss.str();
 }
 
-std::string Tools::stripWhitespace(std::string val) {
+inline std::string stripWhitespace(std::string val) {
     size_t first = val.find_first_not_of(' ');
     if (first == std::string::npos) return "";
     size_t last = val.find_last_not_of(' ');
     return val.substr(first, (last - first + 1));
 }
+}  // namespace Tools
+
+}  // namespace profile
+}  // namespace souffle
