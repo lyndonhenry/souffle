@@ -1483,8 +1483,8 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
             hasAtLeastOneStrata = true;
             // go to the stratum with the max value for int as a suffix if calling the master stratum
             auto i = stratum.getIndex();
-            i = (i == -1) ? std::numeric_limits<int>::max() : i;
-            ss << "case " << i << ":\ngoto STRATUM_" << i << ";\nbreak;\n";
+            auto j = (i == -1) ? std::numeric_limits<int>::max() : i;
+            ss << "case " << i << ":\ngoto STRATUM_" << j << ";\nbreak;\n";
         });
         if (hasAtLeastOneStrata) {
             os << "switch (stratumIndex) {\n";
@@ -1836,17 +1836,18 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
         // if the current process is the master...
         os << "if (souffle::mpi::commRank() == 0) {";
         {
-            // serve symbol table on master in new thread
             // @TODO: must actually serve symbol table here
             /*
+            // serve symbol table on master in new thread
             os << "obj.initSymbolTable();";
             os << "std::thread symbolTableThread(souffle::SymbolTable::handleMpiMessages, "
                   "obj.getSymbolTable());";
             */
             // execute wrapper lambda defined above
             os << "wrapperLambda();";
-            /* @TODO: must actually serve symbol table here
+            // @TODO: must actually serve symbol table here
             // terminate symbol table thread
+            /*
             os << "souffle::mpi::send(0, souffle::mpi::tagOf(\"@SYMBOL_TABLE_EXIT\"));";
             os << "symbolTableThread.join();";
             */

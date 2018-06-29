@@ -26,19 +26,6 @@
 #include <mpi.h>
 
 
-
-// @TODO: it is important to make sure this allows self messages for stratum allocated to the same node, so that the final sends can be passed on and received -- you might want to do this in a function however
-#define MPI_Send(data, size, type, destination, tag, communicator) \
-    ([&]() { \
-        int commRank; \
-        MPI_Comm_rank(MPI_COMM_WORLD, &commRank); \
-        if (destination == commRank) { \
-            MPI_Bsend(data, size, type, destination, tag, communicator); \
-        } else { \
-            MPI_Send(data, size, type, destination, tag, communicator); \
-        } \
-    })()
-
 // TODO (lyndonhenry): should add more debugging functionality here
 #ifdef MPI_DEBUG
 
@@ -321,16 +308,25 @@ inline Status probe(const Status& status) {
 
 /* send */
 namespace {
+inline void send(const void* data, const int count, const MPI_Datatype type, const int destination, const int tag, const MPI_Comm communicator) {
+    // @TODO: must ensure this allows self messages, that is where there is no corresponding reception
+    if (destination == commRank()) {
+        MPI_Bsend(data, count, type, destination, tag, communicator);
+    } else {
+        MPI_Ssend(data, count, type, destination, tag, communicator);
+    }
+}
+
 template <typename S>
 inline void send(const std::vector<S>& data, const int destination, const int tag) {
-    MPI_Send(&data[0], (int)data.size(), datatype<S>::get(), destination, tag, MPI_COMM_WORLD);
+    send(&data[0], (int)data.size(), datatype<S>::get(), destination, tag, MPI_COMM_WORLD);
 }
 
 template <>
 inline void send<std::string>(const std::vector<std::string>& data, const int destination, const int tag) {
     std::vector<char> newData;
     pack(data, newData);
-    MPI_Send(&newData[0], (int)newData.size(), MPI_PACKED, destination, tag, MPI_COMM_WORLD);
+    send(&newData[0], (int)newData.size(), MPI_PACKED, destination, tag, MPI_COMM_WORLD);
 }
 
 template <typename S>
@@ -392,12 +388,16 @@ inline void send(
 
 /* recv */
 namespace {
+inline void recv(void* data, const int count, const MPI_Datatype type, const int source, const int tag, const MPI_Comm communicator, MPI_Status* status) {
+    MPI_Recv(data, count, type, source, tag, MPI_COMM_WORLD, status);
+}
+
 template <typename R>
 inline void recv(std::vector<R>& data, Status& status) {
     assert(status);
     int count = getCount<R>(status);
     data.resize((size_t)count);
-    MPI_Recv(&data[0], count, datatype<R>::get(), status->MPI_SOURCE, status->MPI_TAG, MPI_COMM_WORLD,
+    recv(&data[0], count, datatype<R>::get(), status->MPI_SOURCE, status->MPI_TAG, MPI_COMM_WORLD,
             status.get());
 }
 
@@ -406,7 +406,7 @@ inline void recv<std::string>(std::vector<std::string>& data, Status& status) {
     assert(status);
     int count = getCount<char>(status);
     std::vector<char> newData((size_t)count);
-    MPI_Recv(&newData[0], count, MPI_PACKED, status->MPI_SOURCE, status->MPI_TAG, MPI_COMM_WORLD,
+    recv(&newData[0], count, MPI_PACKED, status->MPI_SOURCE, status->MPI_TAG, MPI_COMM_WORLD,
             status.get());
     unpack(newData, data);
 }
