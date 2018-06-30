@@ -1837,20 +1837,23 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
         os << "if (souffle::mpi::commRank() == 0) {";
         {
             // @TODO: must actually serve symbol table here
-            /*
             // serve symbol table on master in new thread
+
             os << "obj.initSymbolTable();";
             os << "std::thread symbolTableThread(souffle::SymbolTable::handleMpiMessages, "
                   "obj.getSymbolTable());";
-            */
+
+
             // execute wrapper lambda defined above
             os << "wrapperLambda();";
             // @TODO: must actually serve symbol table here
             // terminate symbol table thread
-            /*
+
+
             os << "souffle::mpi::send(0, souffle::mpi::tagOf(\"@SYMBOL_TABLE_EXIT\"));";
             os << "symbolTableThread.join();";
-            */
+
+
         }
         // otherwise...
         os << "} else {";

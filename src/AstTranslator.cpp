@@ -1452,6 +1452,18 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
         // TODO (lyndonhenry): should find a way to drop relations as soon as they are written, or before any
         // are written if they are not written
 
+#ifdef USE_MPI
+        if (Global::config().get("engine") == "mpi") {
+           // @TODO: must ensure that this works, or is necessary
+           // TODO (lyndonhenry): should clear relations where possible, as follows
+           /*
+            - p, q, r are relations, P = {p}, Q = {q}, R = {r} are strata, 1 = [P, Q], 2 = R are processes
+            - if p is needed by Q, we do not clear it or send it, otherwise we just clear it
+            - if p is needed by R, we send it, wait for a receive, and clear it
+           */
+        } else
+#endif
+        {
         // if provenance is not enabled...
         if (!Global::config().has("provenance")) {
             // if a communication engine is enabled...
@@ -1474,6 +1486,7 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
                     makeRamDrop(current, relation);
                 }
             }
+        }
         }
 
         if (current) {

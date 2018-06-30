@@ -25,48 +25,87 @@
 
 #include <mpi.h>
 
+// @TODO: must remove this line
+#undef NDEBUG
 
-// TODO (lyndonhenry): should add more debugging functionality here
-#ifdef MPI_DEBUG
+// TODO (lyndonhenry): should figure out a better way to do this debugging functionality, though it has to be done runtime
+#ifndef NDEBUG
 
-#define MPI_Send(data, size, type, destination, tag, communicator)                                \
-    ([&]() {                                                                                      \
-        int commRank, commSize;                                                                   \
-        MPI_Comm_size(MPI_COMM_WORLD, &commSize);                                                 \
-        MPI_Comm_rank(MPI_COMM_WORLD, &commRank);                                                 \
-        std::cout << "(Mpi_Comm_rank = " << commRank << ", MPI_Comm_size = " << commSize << "): " \
-                  << "MPI_Send(data = " << data << ", size = " << size << ", type = " << type     \
-                  << ", destination = " << destination << ", tag = " << tag                       \
-                  << ", communicator = " << communicator << ")" << std::endl;                     \
-        MPI_Send(data, size, type, destination, tag, communicator);                               \
+#include <iostream>
+#include <sstream>
+
+#define MPI_Send(data, count, type, destination, tag, communicator) \
+    ([&]() { \
+        int rank, size; \
+        MPI_Comm_size(communicator, &size); \
+        MPI_Comm_rank(communicator, &rank); \
+        std::stringstream ss; \
+         ss << "MPI_Comm_rank(MPI_Communicator communicator = " << communicator << ", int rank = " << rank << "); MPI_Comm_size(MPI_Communicator communicator = " << communicator << ", int size = " << size << "); MPI_Send(void* data = " << data << ", int count = " << count << ",  MPI_Datatype type = " << type << ", int destination = " << destination << ", int tag = " << tag << ", MPI_Comm communicator = " << communicator << ");" << std::endl; \
+          std::cerr << ss.str(); \
+        MPI_Send(data, count, type, destination, tag, communicator); \
     })()
 
-#define MPI_Recv(data, size, type, source, tag, communicator, status)                                    \
-    ([&]() {                                                                                             \
-        int commRank, commSize;                                                                          \
-        MPI_Comm_size(MPI_COMM_WORLD, &commSize);                                                        \
-        MPI_Comm_rank(MPI_COMM_WORLD, &commRank);                                                        \
-        MPI_Recv(data, size, type, source, tag, communicator, status);                                   \
-        std::cout << "(Mpi_Comm_rank = " << commRank << ", MPI_Comm_size = " << commSize << "): "        \
-                  << "MPI_Recv(data = " << data << ", size = " << size << ", type = " << type            \
-                  << ", source = " << source << ", tag = " << tag << ", communicator = " << communicator \
-                  << ")" << std::endl;                                                                   \
+#define MPI_Isend(data, count, type, destination, tag, communicator, request) \
+    ([&]() { \
+        int rank, size; \
+        MPI_Comm_size(communicator, &size); \
+        MPI_Comm_rank(communicator, &rank); \
+        std::stringstream ss; \
+        ss << "MPI_Comm_rank(MPI_Communicator communicator = " << communicator << ", int rank = " << rank << "); MPI_Comm_size(MPI_Communicator communicator = " << communicator << ", int size = " << size << "); MPI_Isend(void* data = " << data << ", int count = " << count << ",  MPI_Datatype type = " << type << ", int destination = " << destination << ", int tag = " << tag << ", MPI_Comm communicator = " << communicator << ", MPI_Request* request = " << request << ");" << std::endl; \
+         std::cerr << ss.str(); \
+        MPI_Isend(data, count, type, destination, tag, communicator, request); \
     })()
 
-#define MPI_Probe(source, tag, communicator, status)                                                     \
-    ([&]() {                                                                                             \
-        int commRank, commSize;                                                                          \
-        MPI_Comm_size(MPI_COMM_WORLD, &commSize);                                                        \
-        MPI_Comm_rank(MPI_COMM_WORLD, &commRank);                                                        \
-        MPI_Probe(source, tag, communicator, status);                                                    \
-        std::cout << "(Mpi_Comm_rank = " << commRank << ", MPI_Comm_size = " << commSize << "): "        \
-                  << "MPI_Probe(source = " << status->MPI_SOURCE << ", tag = " << status->MPI_TAG << ")" \
-                  << std::endl;                                                                          \
+#define MPI_Ssend(data, count, type, destination, tag, communicator) \
+    ([&]() { \
+        int rank, size; \
+        MPI_Comm_size(communicator, &size); \
+        MPI_Comm_rank(communicator, &rank); \
+        std::stringstream ss; \
+         ss << "MPI_Comm_rank(MPI_Communicator communicator = " << communicator << ", int rank = " << rank << "); MPI_Comm_size(MPI_Communicator communicator = " << communicator << ", int size = " << size << "); MPI_Ssend(void* data = " << data << ", int count = " << count << ",  MPI_Datatype type = " << type << ", int destination = " << destination << ", int tag = " << tag << ", MPI_Comm communicator = " << communicator << ");" << std::endl; \
+          std::cerr << ss.str(); \
+        MPI_Ssend(data, count, type, destination, tag, communicator); \
     })()
+
+#define MPI_Irecv(data, count, type, source, tag, communicator, request) \
+    ([&]() { \
+        int rank, size; \
+        MPI_Comm_size(communicator, &size); \
+        MPI_Comm_rank(communicator, &rank); \
+        std::stringstream ss; \
+        ss << "MPI_Comm_rank(MPI_Communicator communicator = " << communicator << ", int rank = " << rank << "); MPI_Comm_size(MPI_Communicator communicator = " << communicator << ", int size = " << size << "); MPI_Irecv(void* data = " << data << ", int count = " << count << ",  MPI_Datatype type = " << type << ", int source = " << source << ", int tag = " << tag << ", MPI_Comm communicator = " << communicator << ", MPI_Request* request = " << request << ");" << std::endl; \
+         std::cerr << ss.str(); \
+        MPI_Irecv(data, count, type, source, tag, communicator, request); \
+    })()
+
+#define MPI_Recv(data, count, type, source, tag, communicator, status) \
+    ([&]() { \
+        int rank, size; \
+        MPI_Comm_size(communicator, &size); \
+        MPI_Comm_rank(communicator, &rank); \
+        std::stringstream ss; \
+        ss << "MPI_Comm_rank(MPI_Communicator communicator = " << communicator << ", int rank = " << rank << "); MPI_Comm_size(MPI_Communicator communicator = " << communicator << ", int size = " << size << "); MPI_Recv(void* data = " << data << ", int count = " << count << ",  MPI_Datatype type = " << type << ", int source = " << source << ", int tag = " << tag << ", MPI_Comm communicator = " << communicator << ", MPI_Request* status = " << status << ");" << std::endl; \
+         std::cerr << ss.str(); \
+        MPI_Recv(data, count, type, source, tag, communicator, status); \
+    })()
+
+#define MPI_Probe(source, tag, communicator, status) \
+    ([&]() { \
+        int rank, size; \
+        MPI_Comm_size(communicator, &size); \
+        MPI_Comm_rank(communicator, &rank); \
+        std::stringstream ss; \
+        ss << "MPI_Comm_rank(MPI_Communicator communicator = " << communicator << ", int rank = " << rank << "); MPI_Comm_size(MPI_Communicator communicator = " << communicator << ", int size = " << size << "); MPI_Probe(int source = " << source << ", int tag = " << tag << ", MPI_Comm communicator = " << communicator << ", MPI_Request* status = " << status << ");" << std::endl; \
+         std::cerr << ss.str(); \
+        MPI_Probe(source, tag, communicator, status); \
+    })()
+
+// @TODO: must do mpi probe, see what the vector allocation error actually is
 
 #endif
 
 // @TODO: do not use anon namespaces in header files - put into private and public
+// @TODO: must move all of the implementation to a .cpp file, too much in header
 
 namespace souffle {
 
@@ -309,12 +348,18 @@ inline Status probe(const Status& status) {
 /* send */
 namespace {
 inline void send(const void* data, const int count, const MPI_Datatype type, const int destination, const int tag, const MPI_Comm communicator) {
-    // @TODO: must ensure this allows self messages, that is where there is no corresponding reception
-    if (destination == commRank()) {
-        MPI_Bsend(data, count, type, destination, tag, communicator);
-    } else {
-        MPI_Ssend(data, count, type, destination, tag, communicator);
-    }
+    // @TODO
+    // - isend with self sends and no garbage collection
+    // - isend with no self sends and no garbage collection
+    // - ssend with no self sends and no garbage collection
+    // - ssend with no self sends and garbage collection only for predicates not in later stratum at that node
+    // - isend with no self sends and garbage collection only for predicates not in later stratum at that node after send completes
+    // - both irecv and isend with garbage collection require promises/callbacks
+    // - no self send means that the symbol table thread must be halted in a manner other than a self message
+    //if (destination != commRank()) {
+        MPI_Request request;
+        MPI_Isend(data, count, type, destination, tag, communicator, &request);
+    //}
 }
 
 template <typename S>
@@ -389,7 +434,7 @@ inline void send(
 /* recv */
 namespace {
 inline void recv(void* data, const int count, const MPI_Datatype type, const int source, const int tag, const MPI_Comm communicator, MPI_Status* status) {
-    MPI_Recv(data, count, type, source, tag, MPI_COMM_WORLD, status);
+    MPI_Recv(data, count, type, source, tag, communicator, status);
 }
 
 template <typename R>
@@ -472,7 +517,7 @@ inline const int tagOf(const std::string& name) {
         return it->second;
     }
     _tagOfMap.insert(std::pair<std::string, int>(name, _tagOfMap.size()));
-    return _tagOfMap.size();
+    return _tagOfMap.size() - 1;
 }
 }
 
