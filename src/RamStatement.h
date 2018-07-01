@@ -206,18 +206,12 @@ public:
  */
 class RamDropBase : public RamRelationStatement {
 public:
-    RamDrop(std::unique_ptr<RamRelation> rel) : RamRelationStatement(RN_Drop, std::move(rel)) {}
+    RamDropBase(std::unique_ptr<RamRelation> rel) : RamRelationStatement(RN_Drop, std::move(rel)) {}
 
     /** Pretty print */
     void print(std::ostream& os, int tabpos) const override {
         os << std::string(tabpos, '\t');
         os << "DROP " << getRelation().getName();
-    }
-
-    /** Create clone */
-    RamDrop* clone() const override {
-        RamDrop* res = new RamDrop(std::unique_ptr<RamRelation>(relation->clone()));
-        return res;
     }
 };
 
@@ -229,7 +223,7 @@ public:
     RamDrop(std::unique_ptr<RamRelation> r, const std::unordered_set<int>& ds)
             : RamDropBase(std::move(r)), dependentStrata(ds) {}
 
-    RamDrop(std::unique_ptr<RamRelation> r) : RamDrop(std::move(r), std::unordered_set<int>(0));
+    RamDrop(std::unique_ptr<RamRelation> r) : RamDrop(std::move(r), std::unordered_set<int>(0)) {}
 
     /** Get strata that depend on the relation being cleared. */
     const std::unordered_set<int>& getDependentStrata() {
@@ -241,13 +235,18 @@ public:
         RamDrop* res = new RamDrop(std::unique_ptr<RamRelation>(relation->clone()), dependentStrata);
         return res;
     }
-
-}
+};
 #else
 class RamDrop : public RamDropBase {
 public:
     RamDrop(std::unique_ptr<RamRelation> r) : RamDropBase(std::move(r)) {}
-}
+
+    /** Create clone */
+    RamDrop* clone() const override {
+        RamDrop* res = new RamDrop(std::unique_ptr<RamRelation>(relation->clone()));
+        return res;
+    }
+};
 #endif
 
 /**

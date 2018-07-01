@@ -1318,10 +1318,11 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
                                         getRelationName(relation->getName()), relation->getArity(), false,
                                         relation->isHashset())));
         } else {
-            appendStmt(current, std::make_unique<RamDrop>(getRamRelation(relation, &typeEnv,
-                                        getRelationName(relation->getName()), relation->getArity(), false,
-                                        relation->isHashset())),
-                    dependentStrata);
+            appendStmt(
+                    current, std::make_unique<RamDrop>(
+                                     getRamRelation(relation, &typeEnv, getRelationName(relation->getName()),
+                                             relation->getArity(), false, relation->isHashset()),
+                                     dependentStrata));
         }
     };
 
@@ -1460,15 +1461,15 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
         if (Global::config().get("engine") == "mpi") {
             // drop all internal relations
             for (const auto& relation : allInterns) {
-                makeRamDrop(current, relation, index, sccGraph.getSuccessorSCCs(relation));
+                makeRamDrop(current, relation, sccGraph.getSuccessorSCCs(relation));
             }
             // drop external output predecessor relations
             for (const auto& relation : externOutPreds) {
-                makeRamDrop(current, relation, index, sccGraph.getSuccessorSCCs(relation));
+                makeRamDrop(current, relation, sccGraph.getSuccessorSCCs(relation));
             }
             // drop external non-output predecessor relations
             for (const auto& relation : externNonOutPreds) {
-                makeRamDrop(current, relation, index, sccGraph.getSuccessorSCCs(relation));
+                makeRamDrop(current, relation, sccGraph.getSuccessorSCCs(relation));
             }
 
         } else
