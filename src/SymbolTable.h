@@ -59,8 +59,6 @@ private:
     mutable std::unordered_map<std::string, size_t> strToNumCache;
     mutable std::unordered_map<size_t, std::string> numToStrCache;
 
-    static std::thread mpiThread;
-
     RamDomain cacheLookup(const std::string& symbol, const int tag) const {
         auto it = strToNumCache.find(symbol);
         if (it != strToNumCache.end()) {
@@ -97,47 +95,69 @@ private:
         INSERT_VECTOR_STRING = mpi::tagOf("@SYMBOL_TABLE_INSERT_VECTOR_STRING");
     }
 
-public:
-    static void handleMpiMessages(SymbolTable symbolTable) {
+    void handleMpiMessage(mpi::Status& status) {
         assert(mpi::commRank() == 0);
+        if (status->MPI_TAG == EXIT) {
+            return;
+        } else if (status->MPI_TAG == LOOKUP) {
+            std::string symbol;
+            mpi::recv(symbol, status);
+            mpi::send(lookup(symbol), status);
+        } else if (status->MPI_TAG == LOOKUP_EXISTING) {
+            std::string symbol;
+            mpi::recv(symbol, status);
+            mpi::send(lookupExisting(symbol), status);
+        } else if (status->MPI_TAG == UNSAFE_LOOKUP) {
+            std::string symbol;
+            mpi::recv(symbol, status);
+            mpi::send(unsafeLookup(symbol), status);
+        } else if (status->MPI_TAG == RESOLVE) {
+            RamDomain index;
+            mpi::recv(index, status);
+            mpi::send(resolve(index), status);
+        } else if (status->MPI_TAG == UNSAFE_RESOLVE) {
+            RamDomain index;
+            mpi::recv(index, status);
+            mpi::send(unsafeResolve(index), status);
+        } else if (status->MPI_TAG == SIZE) {
+            mpi::send(size(), status);
+        } else if (status->MPI_TAG == PRINT) {
+            print(std::cout);
+        } else if (status->MPI_TAG == INSERT_STRING) {
+            std::string symbol;
+            mpi::recv(symbol, status);
+            insert(symbol);
+        } else if (status->MPI_TAG == INSERT_VECTOR_STRING) {
+            std::vector<std::string> symbols;
+            mpi::recv(symbols, status);
+            insert(symbols);
+        }
+    }
 
-        while (true) {
-            auto status = mpi::probe();
-            if (status->MPI_TAG == symbolTable.EXIT) {
-                return;
-            } else if (status->MPI_TAG == symbolTable.LOOKUP) {
-                std::string symbol;
-                mpi::recv(symbol, status);
-                mpi::send(symbolTable.lookup(symbol), status);
-            } else if (status->MPI_TAG == symbolTable.LOOKUP_EXISTING) {
-                std::string symbol;
-                mpi::recv(symbol, status);
-                mpi::send(symbolTable.lookupExisting(symbol), status);
-            } else if (status->MPI_TAG == symbolTable.UNSAFE_LOOKUP) {
-                std::string symbol;
-                mpi::recv(symbol, status);
-                mpi::send(symbolTable.unsafeLookup(symbol), status);
-            } else if (status->MPI_TAG == symbolTable.RESOLVE) {
-                RamDomain index;
-                mpi::recv(index, status);
-                mpi::send(symbolTable.resolve(index), status);
-            } else if (status->MPI_TAG == symbolTable.UNSAFE_RESOLVE) {
-                RamDomain index;
-                mpi::recv(index, status);
-                mpi::send(symbolTable.unsafeResolve(index), status);
-            } else if (status->MPI_TAG == symbolTable.SIZE) {
-                mpi::send(symbolTable.size(), status);
-            } else if (status->MPI_TAG == symbolTable.PRINT) {
-                symbolTable.print(std::cout);
-            } else if (status->MPI_TAG == symbolTable.INSERT_STRING) {
-                std::string symbol;
-                mpi::recv(symbol, status);
-                symbolTable.insert(symbol);
-            } else if (status->MPI_TAG == symbolTable.INSERT_VECTOR_STRING) {
-                std::vector<std::string> symbols;
-                mpi::recv(symbols, status);
-                symbolTable.insert(symbols);
+    bool running;
+    std::thread thread;
+    std::vector<std::thread> threads;
+
+public:
+    void forkThread() {
+        threads.push_back(std::thread([&]() {
+            running = true;
+            while (running) {
+                auto status = mpi::iprobe();
+                if (!status) continue;
+                handleMpiMessage(status);
             }
+        }));
+    }
+
+    void joinThreads() {
+        {
+            auto lease = access.acquire();
+            (void)lease;  // avoid warning;
+            running = false;
+        }
+        for (auto& thread : threads) {
+            thread.join();
         }
     }
 

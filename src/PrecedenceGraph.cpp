@@ -262,7 +262,8 @@ void SCCGraph::print(std::ostream& os) const {
     const std::string& name = Global::config().get("name");
     /* Print SCC graph */
     os << "digraph {" << std::endl;
-    // TODO (lyndonhenry): should avoid the two casts to int on getNumberOfSCCs here
+    // assert that the number of sccs fits into an int for the casts below
+    assert(getNumberOfSCCs() < (size_t)std::numeric_limits<int>::get());
     /* Print nodes of SCC graph */
     for (int scc = 0; scc < (int)getNumberOfSCCs(); scc++) {
         os << "\t" << name << "_" << scc << "[label = \"";
@@ -379,7 +380,8 @@ void TopologicallySortedSCCGraph::run(const AstTranslationUnit& translationUnit)
     std::vector<bool> visited;
     visited.resize(sccGraph->getNumberOfSCCs());
     std::fill(visited.begin(), visited.end(), false);
-    // TODO (lyndonhenry): should avoid the cast to int for getNumberOfSCCs here
+    // assert number of sccs fits into an int, for the cast later on
+    assert(getNumberOfSCCs() < (size_t)std::numeric_limits<int>::get());
     // generate topological ordering using forwards algorithm (like Khan's algorithm)
     // for each of the sccs in the graph
     for (int scc = 0; scc < (int)sccGraph->getNumberOfSCCs(); ++scc) {

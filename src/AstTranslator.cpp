@@ -1311,11 +1311,18 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
     };
 
     // a function to drop relations
-    const auto& makeRamDrop = [&](std::unique_ptr<RamStatement>& current, const AstRelation* relation) {
-
-        appendStmt(current, std::make_unique<RamDrop>(
-                                    getRamRelation(relation, &typeEnv, getRelationName(relation->getName()),
-                                            relation->getArity(), false, relation->isHashset())));
+    const auto& makeRamDrop = [&](std::unique_ptr<RamStatement>& current, const AstRelation* relation,
+            const std::unordered_set<int>& dependentStrata = std::unordered_set<int>(0)) {
+        if (dependentStrata.empty()) {
+            appendStmt(current, std::make_unique<RamDrop>(getRamRelation(relation, &typeEnv,
+                                        getRelationName(relation->getName()), relation->getArity(), false,
+                                        relation->isHashset())));
+        } else {
+            appendStmt(current, std::make_unique<RamDrop>(getRamRelation(relation, &typeEnv,
+                                        getRelationName(relation->getName()), relation->getArity(), false,
+                                        relation->isHashset())),
+                    dependentStrata);
+        }
     };
 
 #ifdef USE_MPI
@@ -1449,44 +1456,47 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
             }
         }
 
-        // TODO (lyndonhenry): should find a way to drop relations as soon as they are written, or before any
-        // are written if they are not written
-
 #ifdef USE_MPI
         if (Global::config().get("engine") == "mpi") {
-           // @TODO: must ensure that this works, or is necessary
-           // TODO (lyndonhenry): should clear relations where possible, as follows
-           /*
-            - p, q, r are relations, P = {p}, Q = {q}, R = {r} are strata, 1 = [P, Q], 2 = R are processes
-            - if p is needed by Q, we do not clear it or send it, otherwise we just clear it
-            - if p is needed by R, we send it, wait for a receive, and clear it
-           */
+            // drop all internal relations
+            for (const auto& relation : allInterns) {
+                makeRamDrop(current, relation, index, sccGraph.getSuccessorSCCs(relation));
+            }
+            // drop external output predecessor relations
+            for (const auto& relation : externOutPreds) {
+                makeRamDrop(current, relation, index, sccGraph.getSuccessorSCCs(relation));
+            }
+            // drop external non-output predecessor relations
+            for (const auto& relation : externNonOutPreds) {
+                makeRamDrop(current, relation, index, sccGraph.getSuccessorSCCs(relation));
+            }
+
         } else
 #endif
         {
-        // if provenance is not enabled...
-        if (!Global::config().has("provenance")) {
-            // if a communication engine is enabled...
-            if (Global::config().has("engine")) {
-                // drop all internal relations
-                for (const auto& relation : allInterns) {
-                    makeRamDrop(current, relation);
-                }
-                // drop external output predecessor relations
-                for (const auto& relation : externOutPreds) {
-                    makeRamDrop(current, relation);
-                }
-                // drop external non-output predecessor relations
-                for (const auto& relation : externNonOutPreds) {
-                    makeRamDrop(current, relation);
-                }
-            } else {
-                // otherwise, drop all  relations expired as per the topological order
-                for (const auto& relation : internExps) {
-                    makeRamDrop(current, relation);
+            // if provenance is not enabled...
+            if (!Global::config().has("provenance")) {
+                // if a communication engine is enabled...
+                if (Global::config().has("engine")) {
+                    // drop all internal relations
+                    for (const auto& relation : allInterns) {
+                        makeRamDrop(current, relation);
+                    }
+                    // drop external output predecessor relations
+                    for (const auto& relation : externOutPreds) {
+                        makeRamDrop(current, relation);
+                    }
+                    // drop external non-output predecessor relations
+                    for (const auto& relation : externNonOutPreds) {
+                        makeRamDrop(current, relation);
+                    }
+                } else {
+                    // otherwise, drop all  relations expired as per the topological order
+                    for (const auto& relation : internExps) {
+                        makeRamDrop(current, relation);
+                    }
                 }
             }
-        }
         }
 
         if (current) {
