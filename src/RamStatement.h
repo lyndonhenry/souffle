@@ -204,50 +204,21 @@ public:
 /**
  * Drop relation, i.e., delete it from memory
  */
-class RamDropBase : public RamRelationStatement {
+class RamDrop : public RamRelationStatement {
 public:
-    RamDropBase(std::unique_ptr<RamRelation> rel) : RamRelationStatement(RN_Drop, std::move(rel)) {}
+    RamDrop(std::unique_ptr<RamRelation> rel) : RamRelationStatement(RN_Drop, std::move(rel)) {}
 
     /** Pretty print */
     void print(std::ostream& os, int tabpos) const override {
         os << std::string(tabpos, '\t');
         os << "DROP " << getRelation().getName();
     }
-};
-
-#ifdef USE_MPI
-class RamDrop : public RamDropBase {
-    const std::unordered_set<int> dependentStrata;
-
-public:
-    RamDrop(std::unique_ptr<RamRelation> r, const std::unordered_set<int>& ds)
-            : RamDropBase(std::move(r)), dependentStrata(ds) {}
-
-    RamDrop(std::unique_ptr<RamRelation> r) : RamDrop(std::move(r), std::unordered_set<int>(0)) {}
-
-    /** Get strata that depend on the relation being cleared. */
-    const std::unordered_set<int>& getDependentStrata() {
-        return dependentStrata;
-    }
-
-    /** Create clone */
-    RamDrop* clone() const override {
-        RamDrop* res = new RamDrop(std::unique_ptr<RamRelation>(relation->clone()), dependentStrata);
-        return res;
-    }
-};
-#else
-class RamDrop : public RamDropBase {
-public:
-    RamDrop(std::unique_ptr<RamRelation> r) : RamDropBase(std::move(r)) {}
-
     /** Create clone */
     RamDrop* clone() const override {
         RamDrop* res = new RamDrop(std::unique_ptr<RamRelation>(relation->clone()));
         return res;
     }
 };
-#endif
 
 /**
  * Merge tuples from a source into target relation.

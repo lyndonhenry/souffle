@@ -14,54 +14,10 @@
  *
  ***********************************************************************/
 
-// @TODO:
-// - ensure return of null works for iprobe for symbol table thread
-// - ensure joinThreads method workds for SymbolTable, must release lock before join
-// - put most of Mpi.h in an Mpi.cpp, too much in header
-// - do not use anonymous namespaces in Mpi.h, maybe ok in cpp file
-// - do documentation for whole of Mpi.h class
-// - improve the garbage collection, maybe more can be dropped earlier
-// - make the debugging better, only do it where required, make an mpi.dl for analysis
-
-/*
-
-#!/bin/bash
-
-SOUFFLE_PATH=~/index/souffle
-SOUFFLE=${SOUFFLE_PATH}/src/souffle
-
-#cd ${SOUFFLE_PATH}
-#make -j8
-#cd -
-#${SOUFFLE} -Ffacts -empi -oduplicates -rduplicates.html duplicates.dl
-#clang-format -i duplicates.cpp
-#echo "RUNNING!"
-#mpiexec duplicates 2&> duplicates.err
-#ls
-
-cat duplicates.err | \
- grep "\(Isend\|Recv\)" | \
- sed 's/= [0-9x]*\|Isend\|Recv/|&|/g' | \
- cut -d'|' -f4,10,18,20 | \
- sed 's/= //g' | \
- sed 's/|/\t/g' > message.facts
-
-cat > shouldRecvButDidNot.dl << EOF
-.decl message(rank: number, function: symbol, sourceOrDestination: number, tag: number)
-.input message
-
-.decl isendNotRecv(source: number, destination: number, tag: number)
-.output isendNotRecv
-
-isendNotRecv(s, d, t) :- message(s, "Isend", d, t), !message(d, "Recv", s, t).
-EOF
-
-${SOUFFLE} shouldRecvButDidNot.dl
-*/
-
 #pragma once
 
 #include <cassert>
+#include <stdexcept>
 #include <functional>
 #include <memory>
 #include <unordered_map>
@@ -75,112 +31,109 @@ ${SOUFFLE} shouldRecvButDidNot.dl
 #include <iostream>
 #include <sstream>
 
-#define MPI_Send(data, count, type, destination, tag, comm)                                          \
-    ([&]() {                                                                                                 \
-        int rank, size;                                                                                      \
-        MPI_Comm_rank(comm, &rank);                                                                  \
-        MPI_Comm_size(comm, &size);                                                                  \
-        std::stringstream ss;                                                                                \
+#define MPI_Send(data, count, type, destination, tag, comm)                                  \
+    ([&]() {                                                                                 \
+        int rank, size;                                                                      \
+        MPI_Comm_rank(comm, &rank);                                                          \
+        MPI_Comm_size(comm, &size);                                                          \
+        std::stringstream ss;                                                                \
         ss << "MPI_Comm_rank(MPI_Communicator comm = " << comm << ", int rank = " << rank    \
            << "); MPI_Comm_size(MPI_Communicator comm = " << comm << ", int size = " << size \
-           << "); MPI_Send(void* data = " << data << ", int count = " << count                               \
-           << ",  MPI_Datatype type = " << type << ", int destination = " << destination                     \
+           << "); MPI_Send(void* data = " << data << ", int count = " << count               \
+           << ",  MPI_Datatype type = " << type << ", int destination = " << destination     \
            << ", int tag = " << tag << ", MPI_Comm comm = " << comm << ");" << std::endl;    \
-        std::cerr << ss.str();                                                                               \
-        MPI_Send(data, count, type, destination, tag, comm);                                         \
+        std::cerr << ss.str();                                                               \
+        MPI_Send(data, count, type, destination, tag, comm);                                 \
     })()
 
-#define MPI_Isend(data, count, type, destination, tag, comm, request)                                \
-    ([&]() {                                                                                                 \
-        int rank, size;                                                                                      \
-        MPI_Comm_rank(comm, &rank);                                                                  \
-        MPI_Comm_size(comm, &size);                                                                  \
-        std::stringstream ss;                                                                                \
+#define MPI_Isend(data, count, type, destination, tag, comm, request)                        \
+    ([&]() {                                                                                 \
+        int rank, size;                                                                      \
+        MPI_Comm_rank(comm, &rank);                                                          \
+        MPI_Comm_size(comm, &size);                                                          \
+        std::stringstream ss;                                                                \
         ss << "MPI_Comm_rank(MPI_Communicator comm = " << comm << ", int rank = " << rank    \
            << "); MPI_Comm_size(MPI_Communicator comm = " << comm << ", int size = " << size \
-           << "); MPI_Isend(void* data = " << data << ", int count = " << count                              \
-           << ",  MPI_Datatype type = " << type << ", int destination = " << destination                     \
+           << "); MPI_Isend(void* data = " << data << ", int count = " << count              \
+           << ",  MPI_Datatype type = " << type << ", int destination = " << destination     \
            << ", int tag = " << tag << ", MPI_Comm comm = " << comm                          \
-           << ", MPI_Request* request = " << request << ");" << std::endl;                                   \
-        std::cerr << ss.str();                                                                               \
-        MPI_Isend(data, count, type, destination, tag, comm, request);                               \
+           << ", MPI_Request* request = " << request << ");" << std::endl;                   \
+        std::cerr << ss.str();                                                               \
+        MPI_Isend(data, count, type, destination, tag, comm, request);                       \
     })()
 
-#define MPI_Ssend(data, count, type, destination, tag, comm)                                         \
-    ([&]() {                                                                                                 \
-        int rank, size;                                                                                      \
-        MPI_Comm_rank(comm, &rank);                                                                  \
-        MPI_Comm_size(comm, &size);                                                                  \
-        std::stringstream ss;                                                                                \
+#define MPI_Ssend(data, count, type, destination, tag, comm)                                 \
+    ([&]() {                                                                                 \
+        int rank, size;                                                                      \
+        MPI_Comm_rank(comm, &rank);                                                          \
+        MPI_Comm_size(comm, &size);                                                          \
+        std::stringstream ss;                                                                \
         ss << "MPI_Comm_rank(MPI_Communicator comm = " << comm << ", int rank = " << rank    \
            << "); MPI_Comm_size(MPI_Communicator comm = " << comm << ", int size = " << size \
-           << "); MPI_Ssend(void* data = " << data << ", int count = " << count                              \
-           << ",  MPI_Datatype type = " << type << ", int destination = " << destination                     \
+           << "); MPI_Ssend(void* data = " << data << ", int count = " << count              \
+           << ",  MPI_Datatype type = " << type << ", int destination = " << destination     \
            << ", int tag = " << tag << ", MPI_Comm comm = " << comm << ");" << std::endl;    \
-        std::cerr << ss.str();                                                                               \
-        MPI_Ssend(data, count, type, destination, tag, comm);                                        \
+        std::cerr << ss.str();                                                               \
+        MPI_Ssend(data, count, type, destination, tag, comm);                                \
     })()
 
-#define MPI_Irecv(data, count, type, source, tag, comm, request)                                     \
-    ([&]() {                                                                                                 \
-        int rank, size;                                                                                      \
-        MPI_Comm_rank(comm, &rank);                                                                  \
-        MPI_Comm_size(comm, &size);                                                                  \
-        std::stringstream ss;                                                                                \
-        ss << "MPI_Comm_rank(MPI_Communicator comm = " << comm << ", int rank = " << rank    \
-           << "); MPI_Comm_size(MPI_Communicator comm = " << comm << ", int size = " << size \
-           << "); MPI_Irecv(void* data = " << data << ", int count = " << count                              \
-           << ",  MPI_Datatype type = " << type << ", int source = " << source << ", int tag = " << tag      \
-           << ", MPI_Comm comm = " << comm << ", MPI_Request* request = " << request << ");" \
-           << std::endl;                                                                                     \
-        std::cerr << ss.str();                                                                               \
-        MPI_Irecv(data, count, type, source, tag, comm, request);                                    \
+#define MPI_Irecv(data, count, type, source, tag, comm, request)                                           \
+    ([&]() {                                                                                               \
+        int rank, size;                                                                                    \
+        MPI_Comm_rank(comm, &rank);                                                                        \
+        MPI_Comm_size(comm, &size);                                                                        \
+        std::stringstream ss;                                                                              \
+        ss << "MPI_Comm_rank(MPI_Communicator comm = " << comm << ", int rank = " << rank                  \
+           << "); MPI_Comm_size(MPI_Communicator comm = " << comm << ", int size = " << size               \
+           << "); MPI_Irecv(void* data = " << data << ", int count = " << count                            \
+           << ",  MPI_Datatype type = " << type << ", int source = " << source << ", int tag = " << tag    \
+           << ", MPI_Comm comm = " << comm << ", MPI_Request* request = " << request << ");" << std::endl; \
+        std::cerr << ss.str();                                                                             \
+        MPI_Irecv(data, count, type, source, tag, comm, request);                                          \
     })()
 
-#define MPI_Recv(data, count, type, source, tag, comm, status)                                       \
-    ([&]() {                                                                                                 \
-        int rank, size;                                                                                      \
-        MPI_Comm_rank(comm, &rank);                                                                  \
-        MPI_Comm_size(comm, &size);                                                                  \
-        std::stringstream ss;                                                                                \
-        ss << "MPI_Comm_rank(MPI_Communicator comm = " << comm << ", int rank = " << rank    \
-           << "); MPI_Comm_size(MPI_Communicator comm = " << comm << ", int size = " << size \
-           << "); MPI_Recv(void* data = " << data << ", int count = " << count                               \
-           << ",  MPI_Datatype type = " << type << ", int source = " << source << ", int tag = " << tag      \
-           << ", MPI_Comm comm = " << comm << ", MPI_Request* status = " << status << ");"   \
-           << std::endl;                                                                                     \
-        std::cerr << ss.str();                                                                               \
-        MPI_Recv(data, count, type, source, tag, comm, status);                                      \
+#define MPI_Recv(data, count, type, source, tag, comm, status)                                           \
+    ([&]() {                                                                                             \
+        int rank, size;                                                                                  \
+        MPI_Comm_rank(comm, &rank);                                                                      \
+        MPI_Comm_size(comm, &size);                                                                      \
+        std::stringstream ss;                                                                            \
+        ss << "MPI_Comm_rank(MPI_Communicator comm = " << comm << ", int rank = " << rank                \
+           << "); MPI_Comm_size(MPI_Communicator comm = " << comm << ", int size = " << size             \
+           << "); MPI_Recv(void* data = " << data << ", int count = " << count                           \
+           << ",  MPI_Datatype type = " << type << ", int source = " << source << ", int tag = " << tag  \
+           << ", MPI_Comm comm = " << comm << ", MPI_Request* status = " << status << ");" << std::endl; \
+        std::cerr << ss.str();                                                                           \
+        MPI_Recv(data, count, type, source, tag, comm, status);                                          \
     })()
 
-#define MPI_Probe(source, tag, comm, status)                                                         \
-    ([&]() {                                                                                                 \
-        int rank, size;                                                                                      \
-        MPI_Comm_rank(comm, &rank);                                                                  \
-        MPI_Comm_size(comm, &size);                                                                  \
-        std::stringstream ss;                                                                                \
-        ss << "MPI_Comm_rank(MPI_Communicator comm = " << comm << ", int rank = " << rank    \
-           << "); MPI_Comm_size(MPI_Communicator comm = " << comm << ", int size = " << size \
-           << "); MPI_Probe(int source = " << source << ", int tag = " << tag                                \
-           << ", MPI_Comm comm = " << comm << ", MPI_Request* status = " << status << ");"   \
-           << std::endl;                                                                                     \
-        std::cerr << ss.str();                                                                               \
-        MPI_Probe(source, tag, comm, status);                                                        \
+#define MPI_Probe(source, tag, comm, status)                                                             \
+    ([&]() {                                                                                             \
+        int rank, size;                                                                                  \
+        MPI_Comm_rank(comm, &rank);                                                                      \
+        MPI_Comm_size(comm, &size);                                                                      \
+        std::stringstream ss;                                                                            \
+        ss << "MPI_Comm_rank(MPI_Communicator comm = " << comm << ", int rank = " << rank                \
+           << "); MPI_Comm_size(MPI_Communicator comm = " << comm << ", int size = " << size             \
+           << "); MPI_Probe(int source = " << source << ", int tag = " << tag                            \
+           << ", MPI_Comm comm = " << comm << ", MPI_Request* status = " << status << ");" << std::endl; \
+        std::cerr << ss.str();                                                                           \
+        MPI_Probe(source, tag, comm, status);                                                            \
     })()
 
-#define MPI_Iprobe(source, tag, comm, flag, status)                                                  \
-    ([&]() {                                                                                                 \
-        int rank, size;                                                                                      \
-        MPI_Comm_rank(comm, &rank);                                                                  \
-        MPI_Comm_size(comm, &size);                                                                  \
-        std::stringstream ss;                                                                                \
+#define MPI_Iprobe(source, tag, comm, flag, status)                                          \
+    ([&]() {                                                                                 \
+        int rank, size;                                                                      \
+        MPI_Comm_rank(comm, &rank);                                                          \
+        MPI_Comm_size(comm, &size);                                                          \
+        std::stringstream ss;                                                                \
         ss << "MPI_Comm_rank(MPI_Communicator comm = " << comm << ", int rank = " << rank    \
            << "); MPI_Comm_size(MPI_Communicator comm = " << comm << ", int size = " << size \
-           << "); MPI_Iprobe(int source = " << source << ", int tag = " << tag                               \
+           << "); MPI_Iprobe(int source = " << source << ", int tag = " << tag               \
            << ", MPI_Comm comm = " << comm << ", int* flag = " << flag                       \
-           << ", MPI_Request* status = " << status << ");" << std::endl;                                     \
-        std::cerr << ss.str();                                                                               \
-        MPI_Iprobe(source, tag, comm, flag, status);                                                 \
+           << ", MPI_Request* status = " << status << ");" << std::endl;                     \
+        std::cerr << ss.str();                                                               \
+        MPI_Iprobe(source, tag, comm, flag, status);                                         \
     })()
 
 #endif
@@ -445,7 +398,6 @@ inline Status iprobe(const Status& status) {
 namespace {
 inline void send(const void* data, const int count, const MPI_Datatype type, const int destination,
         const int tag, const MPI_Comm comm) {
-    assert(destination != commRank());
     MPI_Ssend(data, count, type, destination, tag, comm);
 }
 
@@ -522,6 +474,7 @@ inline void send(
 namespace {
 inline void recv(void* data, const int count, const MPI_Datatype type, const int source, const int tag,
         const MPI_Comm comm, MPI_Status* status) {
+    assert(source != commRank());
     MPI_Recv(data, count, type, source, tag, comm, status);
 }
 
@@ -604,38 +557,6 @@ inline const int tagOf(const std::string& name) {
     }
     _tagOfMap.insert(std::pair<std::string, int>(name, _tagOfMap.size()));
     return _tagOfMap.size() - 1;
-}
-}
-
-namespace {
-int _virtualProcessCount;
-
-inline void virtualProcessCount(const int count) {
-    _virtualProcessCount = count;
-}
-inline const std::unordered_set<int> ofRank(const int rank) {
-    std::unordered_set<int> virtualRanks;
-    if (commSize() > 1) {
-        if (commRank() == 0) {
-            virtualRanks.insert(-1);
-        } else {
-            for (int i = rank - 1; i < _virtualProcessCount; i += mpi::commSize()) {
-                virtualRanks.insert(i);
-            }
-        }
-    } else {
-        for (int i = -1; i < _virtualProcessCount; ++i) {
-            virtualRanks.insert(i);
-        }
-    }
-    return virtualRanks;
-}
-
-inline const int rankOf(const int virtualRank) {
-    if (commSize() == 1 || virtualRank == -1) {
-        return 0;
-    }
-    return (virtualRank % (commSize() - 1)) + 1;
 }
 }
 }

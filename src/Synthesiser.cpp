@@ -360,28 +360,11 @@ void Synthesiser::emitCode(std::ostream& out, const RamStatement& stmt) {
 
         void visitDrop(const RamDrop& drop, std::ostream& out) override {
             PRINT_BEGIN_COMMENT(out);
-#ifdef USE_MPI
-            if (Global::config().get("engine") == "mpi") {
-                out << "if (([&]() {";
-                out << "const auto currentProcess = souffle::mpi::commRank();";
-                out << "for (const auto dependentStratum : drop.getDependentStrata()) {";
-                out << "const auto dependentProcess = souffle::mpi::rankOf(dependentStratum);";
-                out << "if (currentProcess == dependentProcess) {";
-                out << "return false;";
-                out << "}";
-                out << "}";
-                out << "return true;";
-                out << "})())";
-            } else
-#endif
-            {
-                out << "{";
-                out << "if (!isHintsProfilingEnabled() && (performIO || " << drop.getRelation().isTemp()
-                    << ")) ";
-                out << synthesiser.getRelationName(drop.getRelation()) << "->"
-                    << "purge();\n";
-                out << "}";
-            }
+
+            out << "if (!isHintsProfilingEnabled() && (performIO || " << drop.getRelation().isTemp() << ")) ";
+            out << synthesiser.getRelationName(drop.getRelation()) << "->"
+                << "purge();\n";
+
             PRINT_END_COMMENT(out);
         }
 
@@ -1207,31 +1190,24 @@ void Synthesiser::emitCode(std::ostream& out, const RamStatement& stmt) {
         void visitRecv(const RamRecv& recv, std::ostream& os) override {
             os << "\n#ifdef USE_MPI\n";
             os << "{";
-            os << "const auto currentProcess = souffle::mpi::commRank();";
-            os << "const auto sourceProcess = souffle::mpi::rankOf(" << recv.getSourceStratum() << ");";
-            os << "if (currentProcess != sourceProcess) {";
+            os << "auto status = souffle::mpi::probe(";
             {
-                os << "auto status = souffle::mpi::probe(";
-                {
-                    // source
-                    os << "sourceProcess, ";
-                    // tag
-                    os << "souffle::mpi::tagOf(\"" << synthesiser.getRelationName(recv.getRelation())
-                       << "\")";
-                }
-                os << ");";
-                os << "souffle::mpi::recv<RamDomain>(";
-                {
-                    // data
-                    os << "*" << synthesiser.getRelationName(recv.getRelation()) << ", ";
-                    // length
-                    os << recv.getRelation().getArity() << ", ";
-                    // status
-                    os << "status";
-                }
-                os << ");";
+                // source
+                os << recv.getSourceStratum() + 1 << ", ";
+                // tag
+                os << "souffle::mpi::tagOf(\"" << synthesiser.getRelationName(recv.getRelation()) << "\")";
             }
-            os << "}";
+            os << ");";
+            os << "souffle::mpi::recv<RamDomain>(";
+            {
+                // data
+                os << "*" << synthesiser.getRelationName(recv.getRelation()) << ", ";
+                // length
+                os << recv.getRelation().getArity() << ", ";
+                // status
+                os << "status";
+            }
+            os << ");";
             os << "}";
             os << "\n#endif\n";
         }
@@ -1239,21 +1215,29 @@ void Synthesiser::emitCode(std::ostream& out, const RamStatement& stmt) {
         void visitSend(const RamSend& send, std::ostream& os) override {
             os << "\n#ifdef USE_MPI\n";
             os << "{";
-            os << "const auto currentProcess = souffle::mpi::commRank();";
-            os << "std::unordered_set<int> destinationStrata;";
-            for (const auto stratum : send.getDestinationStrata()) {
-                os << "const auto otherProcess = souffle::mpi::rankOf(" << stratum << ");";
-                os << "if (currentProcess != otherProcess) {";
-                { os << "destinationStrata.insert(otherProcess);"; }
-                os << "}";
-            }
             os << "souffle::mpi::send<RamDomain>(";
             // data
             { os << "*" << synthesiser.getRelationName(send.getRelation()) << ", "; }
             // arity
             { os << send.getRelation().getArity() << ", "; }
             // destinations
-            { os << "destinationStrata, "; }
+            {
+                const auto& destinationStrata = send.getDestinationStrata();
+                auto it = destinationStrata.begin();
+                os << "std::unordered_set<int>(";
+                if (it != destinationStrata.end()) {
+                    os << "{" << *it + 1;
+                    ++it;
+                    while (it != destinationStrata.end()) {
+                        os << ", " << *it + 1;
+                        ++it;
+                    }
+                    os << "}";
+                } else {
+                    os << "0";
+                }
+                os << "), ";
+            }
             // tag
             { os << "souffle::mpi::tagOf(\"" << synthesiser.getRelationName(send.getRelation()) << "\")"; }
             os << ");";
@@ -1518,7 +1502,7 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
             os << "switch (stratumIndex) {\n";
 #ifdef USE_MPI
             if (Global::config().get("engine") == "mpi") {
-                // do nothing here, the stratum of index -1 is added in the ast transform
+                // do nothing, case for stratum -1 is handled above
             } else
 #endif
             {
@@ -1705,7 +1689,8 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
 #ifdef USE_MPI
     if (Global::config().get("engine") == "mpi") {
         os << "\n#ifdef USE_MPI\n";
-        os << "public:\n void initSymbolTable() {";
+
+        os << "public:\n void forkSymbolTable() {";
         os << "symTable = SymbolTable(";
         if (symTable.size() > 0) {
             os << "{\n";
@@ -1715,7 +1700,13 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
             os << "}";
         }
         os << ");";
+        os << "symTable.forkThread();";
         os << "}";
+
+        os << "public:\n void joinSymbolTable() {";
+        os << "symTable.joinThreads();";
+        os << "}";
+
         os << "\n#endif\n";
     }
 #endif
@@ -1820,46 +1811,24 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
 #ifdef USE_MPI
     if (Global::config().get("engine") == "mpi") {
         os << "\n#ifdef USE_MPI\n";
-        // make lambda wrapping code common to both master and slave processes
-        os << "const auto runStrataForProcess = [&]() {";
-        {
-            // set number of jobs
-            os << "souffle::mpi::virtualProcessCount(" << stratumCount - 1 << ");";
-
-            // set tags for each relation
-            visitDepthFirst(*(prog.getMain()), [&](const RamCreate& create) {
-                os << "souffle::mpi::tagOf(\"" << getRelationName(create.getRelation()) << "\");";
-            });
-
-            // get strata for current process
-            os << "const auto strata =  souffle::mpi::ofRank(souffle::mpi::commRank());";
-
-            // run strata in sequence
-            os << "for (const auto stratum : strata) {";
-            { os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), stratum);"; }
-            os << "}";
-        }
-        os << "};";
+        os << "const auto rank = souffle::mpi::commRank();";
         // if the current process is the master...
-        os << "if (souffle::mpi::commRank() == 0) {";
+        os << "if (rank == 0) {";
         {
-            // initialize symbol literals
-            os << "obj.initSymbolTable();";
-
             // fork new thread for symbol table
-            os << "obj.getSymbolTable().forkThread();";
+            os << "obj.forkSymbolTable();";
 
             // execute all strata for current process
-            os << "runStrataForProcess();";
+            os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), rank - 1);";
 
             // join symbol table thread
-            os << "obj.getSymbolTable().joinThreads();";
+            os << "obj.joinSymbolTable();";
         }
         // otherwise...
         os << "} else {";
         {
             // execute all strata for current process
-            os << "runStrataForProcess();";
+            os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), rank - 1);";
         }
         os << "}";
         os << "\n#endif\n";

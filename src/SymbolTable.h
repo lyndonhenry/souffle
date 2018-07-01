@@ -95,70 +95,60 @@ private:
         INSERT_VECTOR_STRING = mpi::tagOf("@SYMBOL_TABLE_INSERT_VECTOR_STRING");
     }
 
-    void handleMpiMessage(mpi::Status& status) {
+    void handleMpiMessages() {
         assert(mpi::commRank() == 0);
-        if (status->MPI_TAG == EXIT) {
-            return;
-        } else if (status->MPI_TAG == LOOKUP) {
-            std::string symbol;
-            mpi::recv(symbol, status);
-            mpi::send(lookup(symbol), status);
-        } else if (status->MPI_TAG == LOOKUP_EXISTING) {
-            std::string symbol;
-            mpi::recv(symbol, status);
-            mpi::send(lookupExisting(symbol), status);
-        } else if (status->MPI_TAG == UNSAFE_LOOKUP) {
-            std::string symbol;
-            mpi::recv(symbol, status);
-            mpi::send(unsafeLookup(symbol), status);
-        } else if (status->MPI_TAG == RESOLVE) {
-            RamDomain index;
-            mpi::recv(index, status);
-            mpi::send(resolve(index), status);
-        } else if (status->MPI_TAG == UNSAFE_RESOLVE) {
-            RamDomain index;
-            mpi::recv(index, status);
-            mpi::send(unsafeResolve(index), status);
-        } else if (status->MPI_TAG == SIZE) {
-            mpi::send(size(), status);
-        } else if (status->MPI_TAG == PRINT) {
-            print(std::cout);
-        } else if (status->MPI_TAG == INSERT_STRING) {
-            std::string symbol;
-            mpi::recv(symbol, status);
-            insert(symbol);
-        } else if (status->MPI_TAG == INSERT_VECTOR_STRING) {
-            std::vector<std::string> symbols;
-            mpi::recv(symbols, status);
-            insert(symbols);
+
+        while (true) {
+            auto status = mpi::probe();
+            if (!status) continue;
+            if (status->MPI_TAG == EXIT) {
+                return;
+            } else if (status->MPI_TAG == LOOKUP) {
+                std::string symbol;
+                mpi::recv(symbol, status);
+                mpi::send(lookup(symbol), status);
+            } else if (status->MPI_TAG == LOOKUP_EXISTING) {
+                std::string symbol;
+                mpi::recv(symbol, status);
+                mpi::send(lookupExisting(symbol), status);
+            } else if (status->MPI_TAG == UNSAFE_LOOKUP) {
+                std::string symbol;
+                mpi::recv(symbol, status);
+                mpi::send(unsafeLookup(symbol), status);
+            } else if (status->MPI_TAG == RESOLVE) {
+                RamDomain index;
+                mpi::recv(index, status);
+                mpi::send(resolve(index), status);
+            } else if (status->MPI_TAG == UNSAFE_RESOLVE) {
+                RamDomain index;
+                mpi::recv(index, status);
+                mpi::send(unsafeResolve(index), status);
+            } else if (status->MPI_TAG == SIZE) {
+                mpi::send(size(), status);
+            } else if (status->MPI_TAG == PRINT) {
+                print(std::cout);
+            } else if (status->MPI_TAG == INSERT_STRING) {
+                std::string symbol;
+                mpi::recv(symbol, status);
+                insert(symbol);
+            } else if (status->MPI_TAG == INSERT_VECTOR_STRING) {
+                std::vector<std::string> symbols;
+                mpi::recv(symbols, status);
+                insert(symbols);
+            }
         }
     }
 
-    bool running;
-    std::thread thread;
-    std::vector<std::thread> threads;
+    std::array<std::thread, 1> threads;
 
 public:
     void forkThread() {
-        threads.push_back(std::thread([&]() {
-            running = true;
-            while (running) {
-                auto status = mpi::iprobe();
-                if (!status) continue;
-                handleMpiMessage(status);
-            }
-        }));
+        threads[0] = std::thread([&]() { handleMpiMessages(); });
     }
 
     void joinThreads() {
-        {
-            auto lease = access.acquire();
-            (void)lease;  // avoid warning;
-            running = false;
-        }
-        for (auto& thread : threads) {
-            thread.join();
-        }
+        mpi::send(0, EXIT);
+        threads[0].join();
     }
 
 #endif

@@ -1311,19 +1311,10 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
     };
 
     // a function to drop relations
-    const auto& makeRamDrop = [&](std::unique_ptr<RamStatement>& current, const AstRelation* relation,
-            const std::unordered_set<int>& dependentStrata = std::unordered_set<int>(0)) {
-        if (dependentStrata.empty()) {
-            appendStmt(current, std::make_unique<RamDrop>(getRamRelation(relation, &typeEnv,
-                                        getRelationName(relation->getName()), relation->getArity(), false,
-                                        relation->isHashset())));
-        } else {
-            appendStmt(
-                    current, std::make_unique<RamDrop>(
-                                     getRamRelation(relation, &typeEnv, getRelationName(relation->getName()),
-                                             relation->getArity(), false, relation->isHashset()),
-                                     dependentStrata));
-        }
+    const auto& makeRamDrop = [&](std::unique_ptr<RamStatement>& current, const AstRelation* relation) {
+        appendStmt(current, std::make_unique<RamDrop>(
+                                    getRamRelation(relation, &typeEnv, getRelationName(relation->getName()),
+                                            relation->getArity(), false, relation->isHashset())));
     };
 
 #ifdef USE_MPI
@@ -1457,45 +1448,26 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
             }
         }
 
-#ifdef USE_MPI
-        if (Global::config().get("engine") == "mpi") {
-            // drop all internal relations
-            for (const auto& relation : allInterns) {
-                makeRamDrop(current, relation, sccGraph.getSuccessorSCCs(relation));
-            }
-            // drop external output predecessor relations
-            for (const auto& relation : externOutPreds) {
-                makeRamDrop(current, relation, sccGraph.getSuccessorSCCs(relation));
-            }
-            // drop external non-output predecessor relations
-            for (const auto& relation : externNonOutPreds) {
-                makeRamDrop(current, relation, sccGraph.getSuccessorSCCs(relation));
-            }
-
-        } else
-#endif
-        {
-            // if provenance is not enabled...
-            if (!Global::config().has("provenance")) {
-                // if a communication engine is enabled...
-                if (Global::config().has("engine")) {
-                    // drop all internal relations
-                    for (const auto& relation : allInterns) {
-                        makeRamDrop(current, relation);
-                    }
-                    // drop external output predecessor relations
-                    for (const auto& relation : externOutPreds) {
-                        makeRamDrop(current, relation);
-                    }
-                    // drop external non-output predecessor relations
-                    for (const auto& relation : externNonOutPreds) {
-                        makeRamDrop(current, relation);
-                    }
-                } else {
-                    // otherwise, drop all  relations expired as per the topological order
-                    for (const auto& relation : internExps) {
-                        makeRamDrop(current, relation);
-                    }
+        // if provenance is not enabled...
+        if (!Global::config().has("provenance")) {
+            // if a communication engine is enabled...
+            if (Global::config().has("engine")) {
+                // drop all internal relations
+                for (const auto& relation : allInterns) {
+                    makeRamDrop(current, relation);
+                }
+                // drop external output predecessor relations
+                for (const auto& relation : externOutPreds) {
+                    makeRamDrop(current, relation);
+                }
+                // drop external non-output predecessor relations
+                for (const auto& relation : externNonOutPreds) {
+                    makeRamDrop(current, relation);
+                }
+            } else {
+                // otherwise, drop all  relations expired as per the topological order
+                for (const auto& relation : internExps) {
+                    makeRamDrop(current, relation);
                 }
             }
         }

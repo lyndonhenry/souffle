@@ -28,6 +28,7 @@
 #include "InterpreterInterface.h"
 #include "Macro.h"
 #include "ParserDriver.h"
+#include "PrecedenceGraph.h"
 #include "RamProgram.h"
 #include "RamSemanticChecker.h"
 #include "RamTransformer.h"
@@ -65,7 +66,12 @@ namespace souffle {
 /**
  * Executes a binary file.
  */
-void executeBinary(const std::string& binaryFilename) {
+void executeBinary(const std::string& binaryFilename
+#ifdef USE_MPI
+        ,
+        const int numberOfProcesses
+#endif
+        ) {
     assert(!binaryFilename.empty() && "binary filename cannot be blank");
 
     // check whether the executable exists
@@ -77,7 +83,7 @@ void executeBinary(const std::string& binaryFilename) {
     int exitCode;
 #ifdef USE_MPI
     if (Global::config().get("engine") == "mpi") {
-        exitCode = system(("mpiexec " + binaryFilename).c_str());
+        exitCode = system(("mpiexec -n " + std::to_string(numberOfProcesses) + " " + binaryFilename).c_str());
     } else
 #endif
     {
@@ -512,7 +518,12 @@ int main(int argc, char** argv) {
                 }
                 // run compiled C++ program if requested.
                 if (!Global::config().has("dl-program")) {
-                    executeBinary(baseFilename);
+                    executeBinary(baseFilename
+#ifdef USE_MPI
+                            ,
+                            ((int)astTranslationUnit->getAnalysis<SCCGraph>()->getNumberOfSCCs()) + 1
+#endif
+                            );
                 }
             }
         } catch (std::exception& e) {
