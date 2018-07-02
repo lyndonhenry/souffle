@@ -45,16 +45,18 @@ class SymbolTable {
 #ifdef USE_MPI
 
 private:
-    int EXIT;
-    int LOOKUP;
-    int LOOKUP_EXISTING;
-    int UNSAFE_LOOKUP;
-    int RESOLVE;
-    int UNSAFE_RESOLVE;
-    int SIZE;
-    int PRINT;
-    int INSERT_STRING;
-    int INSERT_VECTOR_STRING;
+    enum {
+        EXIT = 0,
+        LOOKUP = 1,
+        LOOKUP_EXISTING = 2,
+        UNSAFE_LOOKUP = 3,
+        RESOLVE = 4,
+        UNSAFE_RESOLVE = 5,
+        SIZE = 6,
+        PRINT = 7,
+        INSERT_STRING = 8,
+        INSERT_VECTOR_STRING = 9
+    };
 
     mutable std::unordered_map<std::string, size_t> strToNumCache;
     mutable std::unordered_map<size_t, std::string> numToStrCache;
@@ -82,59 +84,97 @@ private:
         return strToNumCache.insert(std::pair<std::string, size_t>(symbol, index)).first->first;
     }
 
-    void registerMpiTags() {
-        EXIT = mpi::tagOf("@SYMBOL_TABLE_EXIT");
-        LOOKUP = mpi::tagOf("@SYMBOL_TABLE_LOOKUP");
-        LOOKUP_EXISTING = mpi::tagOf("@SYMBOL_TABLE_LOOKUP_EXISTING");
-        UNSAFE_LOOKUP = mpi::tagOf("@SYMBOL_TABLE_UNSAFE_LOOKUP");
-        RESOLVE = mpi::tagOf("@SYMBOL_TABLE_RESOLVE");
-        UNSAFE_RESOLVE = mpi::tagOf("@SYMBOL_TABLE_UNSAFE_RESOLVE");
-        SIZE = mpi::tagOf("@SYMBOL_TABLE_SIZE");
-        PRINT = mpi::tagOf("@SYMBOL_TABLE_PRINT");
-        INSERT_STRING = mpi::tagOf("@SYMBOL_TABLE_INSERT_STRING");
-        INSERT_VECTOR_STRING = mpi::tagOf("@SYMBOL_TABLE_INSERT_VECTOR_STRING");
-    }
-
     void handleMpiMessages() {
         assert(mpi::commRank() == 0);
-
+        // keep track of most recent tag and source not handled in switch statement
+        int mostRecentUnhandledTag = -1, mostRecentUnhandledSource = -1;
+        // keep track of whether the thread slept during the current iteration of the while loop
+        bool threadSleptThisLoop;
+        // the thread should sleep at first for one tick of the MPI clock
+        double secondsToSleepThreadFor = MPI_Wtick();
         while (true) {
+            threadSleptThisLoop = false;
             auto status = mpi::probe();
-            if (!status) continue;
-            if (status->MPI_TAG == EXIT) {
-                return;
-            } else if (status->MPI_TAG == LOOKUP) {
-                std::string symbol;
-                mpi::recv(symbol, status);
-                mpi::send(lookup(symbol), status);
-            } else if (status->MPI_TAG == LOOKUP_EXISTING) {
-                std::string symbol;
-                mpi::recv(symbol, status);
-                mpi::send(lookupExisting(symbol), status);
-            } else if (status->MPI_TAG == UNSAFE_LOOKUP) {
-                std::string symbol;
-                mpi::recv(symbol, status);
-                mpi::send(unsafeLookup(symbol), status);
-            } else if (status->MPI_TAG == RESOLVE) {
-                RamDomain index;
-                mpi::recv(index, status);
-                mpi::send(resolve(index), status);
-            } else if (status->MPI_TAG == UNSAFE_RESOLVE) {
-                RamDomain index;
-                mpi::recv(index, status);
-                mpi::send(unsafeResolve(index), status);
-            } else if (status->MPI_TAG == SIZE) {
-                mpi::send(size(), status);
-            } else if (status->MPI_TAG == PRINT) {
-                print(std::cout);
-            } else if (status->MPI_TAG == INSERT_STRING) {
-                std::string symbol;
-                mpi::recv(symbol, status);
-                insert(symbol);
-            } else if (status->MPI_TAG == INSERT_VECTOR_STRING) {
-                std::vector<std::string> symbols;
-                mpi::recv(symbols, status);
-                insert(symbols);
+            switch (status->MPI_TAG) {
+                case EXIT: {
+                    return;
+                    break;
+                }
+                case LOOKUP: {
+                    std::string symbol;
+                    mpi::recv(symbol, status);
+                    mpi::send(lookup(symbol), status);
+                    break;
+                }
+                case LOOKUP_EXISTING: {
+                    std::string symbol;
+                    mpi::recv(symbol, status);
+                    mpi::send(lookupExisting(symbol), status);
+                    break;
+                }
+                case UNSAFE_LOOKUP: {
+                    std::string symbol;
+                    mpi::recv(symbol, status);
+                    mpi::send(unsafeLookup(symbol), status);
+                    break;
+                }
+                case RESOLVE: {
+                    RamDomain index;
+                    mpi::recv(index, status);
+                    mpi::send(resolve(index), status);
+                    break;
+                }
+                case UNSAFE_RESOLVE: {
+                    RamDomain index;
+                    mpi::recv(index, status);
+                    mpi::send(unsafeResolve(index), status);
+                    break;
+                }
+                case SIZE: {
+                    mpi::send(size(), status);
+                    break;
+                }
+                case PRINT: {
+                    print(std::cout);
+                    break;
+                }
+                case INSERT_STRING: {
+                    std::string symbol;
+                    mpi::recv(symbol, status);
+                    insert(symbol);
+                    break;
+                }
+                case INSERT_VECTOR_STRING: {
+                    std::vector<std::string> symbols;
+                    mpi::recv(symbols, status);
+                    insert(symbols);
+                }
+                default: {
+                    // if we have encountered the same unhandled source and tag more than once in a row...
+                    if (mostRecentUnhandledTag == status->MPI_TAG &&
+                            mostRecentUnhandledSource == status->MPI_SOURCE) {
+                        // sleep for however long we are sleeping for in this iteration
+                        std::this_thread::sleep_for(std::chrono::duration<double>(secondsToSleepThreadFor));
+                        // keep track of the fact that we have slept in this iteration
+                        threadSleptThisLoop = true;
+                    } else {
+                        // otherwise, just note that this source and tag were unhandled
+                        mostRecentUnhandledTag = status->MPI_TAG;
+                        mostRecentUnhandledSource = status->MPI_SOURCE;
+                    }
+                }
+            }
+            // if the thread has slept in this iteration...
+            if (threadSleptThisLoop) {
+                // use exponential backoff to adjust the amount of time to sleep for if we have to again
+                secondsToSleepThreadFor = 2.0 * secondsToSleepThreadFor;
+                // set an upper limit of one second on how long the thread sleeps
+                if (secondsToSleepThreadFor > 1.0) {
+                    secondsToSleepThreadFor = 1.0;
+                }
+            } else {
+                // othersise, reset the amount of time the thread sleeps for next time it does
+                secondsToSleepThreadFor = MPI_Wtick();
             }
         }
     }
@@ -142,6 +182,11 @@ private:
     std::array<std::thread, 1> threads;
 
 public:
+    static int numberOfTags() {
+        // ok, so this looks stupid, but it just gives the size of the enum at the top
+        return 10;
+    }
+
     void forkThread() {
         threads[0] = std::thread([&]() { handleMpiMessages(); });
     }
@@ -188,26 +233,15 @@ private:
 
 public:
     /** Empty constructor. */
-    SymbolTable() {
-#ifdef USE_MPI
-        registerMpiTags();
-#endif
-    }
+    SymbolTable() = default;
 
     /** Copy constructor, performs a deep copy. */
-    SymbolTable(const SymbolTable& other) : numToStr(other.numToStr), strToNum(other.strToNum) {
-#ifdef USE_MPI
-        registerMpiTags();
-#endif
-    }
+    SymbolTable(const SymbolTable& other) : numToStr(other.numToStr), strToNum(other.strToNum) {}
 
     /** Copy constructor for r-value reference. */
     SymbolTable(SymbolTable&& other) noexcept {
         numToStr.swap(other.numToStr);
         strToNum.swap(other.strToNum);
-#ifdef USE_MPI
-        registerMpiTags();
-#endif
     }
 
     SymbolTable(std::initializer_list<std::string> symbols) {
@@ -215,9 +249,6 @@ public:
         for (const auto& symbol : symbols) {
             newSymbol(symbol);
         }
-#ifdef USE_MPI
-        registerMpiTags();
-#endif
     }
 
     /** Destructor, frees memory allocated for all strings. */
@@ -230,9 +261,6 @@ public:
         }
         numToStr = other.numToStr;
         strToNum = other.strToNum;
-#ifdef USE_MPI
-        registerMpiTags();
-#endif
         return *this;
     }
 
@@ -240,9 +268,6 @@ public:
     SymbolTable& operator=(SymbolTable&& other) noexcept {
         numToStr.swap(other.numToStr);
         strToNum.swap(other.strToNum);
-#ifdef USE_MPI
-        registerMpiTags();
-#endif
         return *this;
     }
 

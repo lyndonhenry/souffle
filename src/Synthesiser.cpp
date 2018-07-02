@@ -1195,7 +1195,7 @@ void Synthesiser::emitCode(std::ostream& out, const RamStatement& stmt) {
                 // source
                 os << recv.getSourceStratum() + 1 << ", ";
                 // tag
-                os << "souffle::mpi::tagOf(\"" << synthesiser.getRelationName(recv.getRelation()) << "\")";
+                os << "tag_" << synthesiser.getRelationName(recv.getRelation());
             }
             os << ");";
             os << "souffle::mpi::recv<RamDomain>(";
@@ -1239,7 +1239,7 @@ void Synthesiser::emitCode(std::ostream& out, const RamStatement& stmt) {
                 os << "), ";
             }
             // tag
-            { os << "souffle::mpi::tagOf(\"" << synthesiser.getRelationName(send.getRelation()) << "\")"; }
+            { os << "tag_" << synthesiser.getRelationName(send.getRelation()); }
             os << ");";
             os << "}";
             os << "\n#endif\n";
@@ -1578,7 +1578,7 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
     if (Global::config().has("live-profile")) {
         os << "std::thread profiler([]() { profile::Tui().runProf(); });\n";
     }
-    os << "runFunction<true>(inputDirectory, outputDirectory);\n";
+    os << "runFunction<true>(inputDirectory, outputDirectory, stratumIndex);\n";
     if (Global::config().has("live-profile")) {
         os << "if (profiler.joinable()) { profiler.join(); }\n";
     }
@@ -1690,22 +1690,49 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
     if (Global::config().get("engine") == "mpi") {
         os << "\n#ifdef USE_MPI\n";
 
-        os << "public:\n void forkSymbolTable() {";
-        os << "symTable = SymbolTable(";
-        if (symTable.size() > 0) {
-            os << "{\n";
-            for (size_t i = 0; i < symTable.size(); i++) {
-                os << "\tR\"_(" << symTable.resolve(i) << ")_\",\n";
+        /* void forkSymbolTable() */
+        {
+            os << "public:\n";
+            os << "void forkSymbolTable() {";
+            {
+                os << "symTable = SymbolTable(";
+                if (symTable.size() > 0) {
+                    os << "{\n";
+                    for (size_t i = 0; i < symTable.size(); i++) {
+                        os << "\tR\"_(" << symTable.resolve(i) << ")_\",\n";
+                    }
+                    os << "}";
+                }
+                os << ");";
+                os << "symTable.forkThread();";
             }
             os << "}";
         }
-        os << ");";
-        os << "symTable.forkThread();";
-        os << "}";
 
-        os << "public:\n void joinSymbolTable() {";
-        os << "symTable.joinThreads();";
-        os << "}";
+        /* void joinSymbolTable() */
+        {
+            os << "public:";
+            os << "void joinSymbolTable() {";
+            { os << "symTable.joinThreads();"; }
+            os << "}";
+        }
+
+        /* enum { tag_rel1, tag_rel2, ... } */
+        {
+            os << "private:\n";
+            os << "enum {";
+            {
+                int tag = SymbolTable::numberOfTags();
+                visitDepthFirst(*(prog.getMain()), [&](const RamCreate& create) {
+                    if (tag != SymbolTable::numberOfTags()) {
+                        os << ", ";
+                    }
+                    os << "tag_" << getRelationName(create.getRelation()) << " = " << tag;
+                    ++tag;
+                });
+            }
+            os << "};";
+        }
 
         os << "\n#endif\n";
     }
