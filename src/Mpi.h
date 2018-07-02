@@ -464,6 +464,7 @@ inline void send(
     for (const auto& element : data) {
         for (size_t j = 0; j < length; ++j) {
             buffer[i] = element[j];
+            ++i;
         }
     }
     send(buffer, destinations, tag);

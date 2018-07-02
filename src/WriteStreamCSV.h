@@ -54,6 +54,7 @@ public:
 
 protected:
     void writeNextTuple(const RamDomain* tuple) override {
+        // @TODO: must figure out why this is failing, ensure that 1) the tuples have the right data and 2) the symbol table gives back symbols directly
         size_t arity = symbolMask.getArity();
         if (isProvenance) {
             arity -= 2;
