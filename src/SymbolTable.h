@@ -92,11 +92,13 @@ private:
         bool threadSleptThisLoop;
         // the thread should sleep at first for one tick of the MPI clock
         double secondsToSleepThreadFor = MPI_Wtick();
-        while (running) {
+        while (true) {
             threadSleptThisLoop = false;
             auto status = mpi::probe();
+            if (status) {
             switch (status->MPI_TAG) {
                 case EXIT: {
+                    mpi::recv(0, EXIT);
                     return;
                 }
                 case LOOKUP: {
@@ -130,10 +132,12 @@ private:
                     break;
                 }
                 case SIZE: {
+                    mpi::recv(status);
                     mpi::send(size(), status);
                     break;
                 }
                 case PRINT: {
+                    mpi::recv(status);
                     print(std::cout);
                     break;
                 }
@@ -163,6 +167,10 @@ private:
                     }
                 }
             }
+            } else {
+                        std::this_thread::sleep_for(std::chrono::duration<double>(secondsToSleepThreadFor));
+                        threadSleptThisLoop = true;
+            }
             // if the thread has slept in this iteration...
             if (threadSleptThisLoop) {
                 // use exponential backoff to adjust the amount of time to sleep for if we have to again
@@ -179,7 +187,6 @@ private:
     }
 
     std::array<std::thread, 1> threads;
-    std::atomic<bool> running;
 
 public:
     static int numberOfTags() {
@@ -189,14 +196,12 @@ public:
 
     void forkThread() {
         threads[0] = std::thread([&]() {
-            running = true;
             handleMpiMessages();
         });
     }
 
     void joinThread() {
-        running = false;
-        // mpi::send(0, EXIT);
+        mpi::send(0, EXIT);
         threads[0].join();
     }
 

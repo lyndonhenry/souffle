@@ -426,13 +426,23 @@ inline void send(const S& data, const Status& status) {
     send(data, status->MPI_SOURCE, status->MPI_TAG);
 }
 
+template <typename T>
 inline void send(const int destination, const int tag) {
-    auto data = std::vector<char>(0);
+    auto data = std::vector<T>(0);
     send(data, destination, tag);
 }
 
+template <typename T>
 inline void send(const Status& status) {
-    send(status->MPI_SOURCE, status->MPI_TAG);
+    send<T>(status->MPI_SOURCE, status->MPI_TAG);
+}
+
+inline void send(const int destination, const int tag) {
+    send<char>(destination, tag);
+}
+
+inline void send(const Status& status) {
+    send<char>(status);
 }
 
 template <typename S>
@@ -477,7 +487,6 @@ inline void send(
 namespace {
 inline void recv(void* data, const int count, const MPI_Datatype type, const int source, const int tag,
         const MPI_Comm comm, MPI_Status* status) {
-    assert(source != commRank());
     MPI_Recv(data, count, type, source, tag, comm, status);
 }
 
@@ -535,15 +544,24 @@ inline void recv(T& data, const size_t length, const int source, const int tag) 
 }
 
 template <typename T>
-inline void recv(Status& status) {
+inline void recv(const int source, const int tag) {
     auto data = std::vector<T>(0);
-    recv(data, status);
+    recv(data, source, tag);
+}
+
+template <typename T>
+inline void recv(Status& status) {
+    recv<T>(status->MPI_SOURCE, status->MPI_TAG);
 }
 
 inline void recv(const int source, const int tag) {
-    auto data = std::vector<char>(0);
-    recv(data, source, tag);
+    recv<char>(source, tag);
+}
+
+inline void recv(Status& status) {
+    recv<char>(status);
 }
 }
+
 }
 }
