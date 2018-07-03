@@ -87,7 +87,6 @@ m4_define([TEST_EVAL],[
   # is equal to the number of expected CSV files.
   ls *.csv|wc -l >"num.generated"
   ls EXPECTEDDIR/*.csv|wc -l >"num.expected"
-  # @TODO
   cat TESTNAME.out | tr '\n' '\r' | sed 's/---.*---\r//g' | tr '\r' '\n' > TESTNAME.out
   # validate stdout and stderr
   SAME_FILE([TESTNAME.out],[EXPECTEDDIR/TESTNAME.out])
@@ -117,7 +116,6 @@ m4_define([TEST_EVAL_IN],[
   ls EXPECTEDDIR/*.csv|wc -l >"num.expected"
   # remove non-deterministic record numbering
   sed 's/subproof \(@<:@a-zA-Z0-9?_@:>@*\)(@<:@0-9@:>@*)/subproof \1()/g' TESTNAME.out | sed -e '$a\' >TESTNAME.sed.out
-    # @TODO
   cat TESTNAME.out | tr '\n' '\r' | sed 's/---.*---\r//g' | tr '\r' '\n' > TESTNAME.out
   # validate stdout and stderr
   SAME_FILE([TESTNAME.sed.out],[EXPECTEDDIR/TESTNAME.out])
