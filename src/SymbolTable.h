@@ -47,15 +47,15 @@ class SymbolTable {
 private:
     enum {
         EXIT = 0,
-        LOOKUP = 1,
-        LOOKUP_EXISTING = 2,
-        UNSAFE_LOOKUP = 3,
-        RESOLVE = 4,
-        UNSAFE_RESOLVE = 5,
-        SIZE = 6,
-        PRINT = 7,
-        INSERT_STRING = 8,
-        INSERT_VECTOR_STRING = 9
+        INSERT_STRING = 1,
+        INSERT_VECTOR_STRING = 2,
+        LOOKUP = 3,
+        LOOKUP_EXISTING = 4,
+        PRINT = 5,
+        RESOLVE = 6,
+        SIZE = 7,
+        UNSAFE_LOOKUP = 8,
+        UNSAFE_RESOLVE = 9
     };
 
     mutable std::unordered_map<std::string, size_t> strToNumCache;
@@ -92,13 +92,12 @@ private:
         bool threadSleptThisLoop;
         // the thread should sleep at first for one tick of the MPI clock
         double secondsToSleepThreadFor = MPI_Wtick();
-        while (true) {
+        while (running) {
             threadSleptThisLoop = false;
             auto status = mpi::probe();
             switch (status->MPI_TAG) {
                 case EXIT: {
                     return;
-                    break;
                 }
                 case LOOKUP: {
                     std::string symbol;
@@ -180,6 +179,7 @@ private:
     }
 
     std::array<std::thread, 1> threads;
+    std::atomic<bool> running;
 
 public:
     static int numberOfTags() {
@@ -188,11 +188,15 @@ public:
     }
 
     void forkThread() {
-        threads[0] = std::thread([&]() { handleMpiMessages(); });
+        threads[0] = std::thread([&]() {
+            running = true;
+            handleMpiMessages();
+        });
     }
 
-    void joinThreads() {
-        mpi::send(0, EXIT);
+    void joinThread() {
+        running = false;
+        // mpi::send(0, EXIT);
         threads[0].join();
     }
 

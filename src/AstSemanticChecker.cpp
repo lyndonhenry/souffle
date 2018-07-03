@@ -34,7 +34,6 @@
 #include "ErrorReport.h"
 #include "Global.h"
 #include "GraphUtils.h"
-#include "Macro.h"
 #include "PrecedenceGraph.h"
 #include "SrcLocation.h"
 #include "TypeSystem.h"
@@ -361,7 +360,7 @@ static bool hasUnnamedVariable(const AstArgument* arg) {
         return false;
     }
     std::cout << "Unsupported Argument type: " << typeid(*arg).name() << "\n";
-    ASSERT(false && "Unsupported Argument Type!");
+    assert(false && "Unsupported Argument Type!");
     return false;
 }
 
@@ -381,7 +380,7 @@ static bool hasUnnamedVariable(const AstLiteral* lit) {
         }
     }
     std::cout << "Unsupported Literal type: " << typeid(lit).name() << "\n";
-    ASSERT(false && "Unsupported Argument Type!");
+    assert(false && "Unsupported Argument Type!");
     return false;
 }
 
@@ -407,7 +406,7 @@ void AstSemanticChecker::checkLiteral(
             report.addError("Underscore in binary relation", literal.getSrcLoc());
         } else {
             std::cout << "Unsupported Literal type: " << typeid(literal).name() << "\n";
-            ASSERT(false && "Unsupported Argument Type!");
+            assert(false && "Unsupported Argument Type!");
         }
     }
 }
@@ -480,7 +479,7 @@ void AstSemanticChecker::checkConstant(ErrorReport& report, const AstArgument& a
         }
     } else {
         std::cout << "Unsupported Argument: " << typeid(argument).name() << "\n";
-        ASSERT(false && "Unknown case");
+        assert(false && "Unknown case");
     }
 }
 

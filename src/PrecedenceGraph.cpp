@@ -26,7 +26,6 @@
 #include "AstUtils.h"
 #include "AstVisitor.h"
 #include "Global.h"
-#include "Macro.h"
 #include "Util.h"
 #include <algorithm>
 #include <iterator>
@@ -210,8 +209,8 @@ void SCCGraph::run(const AstTranslationUnit& translationUnit) {
         for (const AstRelation* v : precedenceGraph->graph().predecessors(u)) {
             int scc_u = relationToScc[u];
             int scc_v = relationToScc[v];
-            ASSERT(scc_u >= 0 && scc_u < int(numSCCs) && "Wrong range");
-            ASSERT(scc_v >= 0 && scc_v < int(numSCCs) && "Wrong range");
+            assert(scc_u >= 0 && scc_u < int(numSCCs) && "Wrong range");
+            assert(scc_v >= 0 && scc_v < int(numSCCs) && "Wrong range");
             if (scc_u != scc_v) {
                 predecessors[scc_u].insert(scc_v);
                 successors[scc_v].insert(scc_u);

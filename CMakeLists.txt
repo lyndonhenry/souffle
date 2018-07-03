@@ -102,7 +102,6 @@ ADD_EXECUTABLE(souffle
         ./src/LogStatement.h
         ./src/RamTypes.h
         ./src/Synthesiser.h
-        ./src/Macro.h
         ./src/ExplainProvenance.h
         ./src/SouffleInterface.h
         ./src/MagicSet.h

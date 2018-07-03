@@ -83,6 +83,8 @@ enum RamNodeType {
     ,
     RN_Send,
     RN_Recv,
+    RN_ForkSymbolTable,
+    RN_JoinSymbolTable,
 #endif
 
 };

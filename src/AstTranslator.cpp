@@ -32,7 +32,6 @@
 #include "Global.h"
 #include "IODirectives.h"
 #include "LogStatement.h"
-#include "Macro.h"
 #include "PrecedenceGraph.h"
 #include "RamCondition.h"
 #include "RamNode.h"
@@ -422,7 +421,7 @@ std::unique_ptr<RamValue> translateValue(const AstArgument* arg, const ValueInde
     }
 
     if (const auto* var = dynamic_cast<const AstVariable*>(arg)) {
-        ASSERT(index.isDefined(*var) && "variable not grounded");
+        assert(index.isDefined(*var) && "variable not grounded");
         const Location& loc = index.getDefinitionPoint(*var);
         val = std::make_unique<RamElementAccess>(loc.level, loc.component, loc.name);
     } else if (dynamic_cast<const AstUnnamedVariable*>(arg)) {
@@ -453,7 +452,7 @@ std::unique_ptr<RamValue> translateValue(const AstArgument* arg, const ValueInde
         val = std::make_unique<RamArgument>(subArg->getNumber());
     } else {
         std::cout << "Unsupported node type of " << arg << ": " << typeid(*arg).name() << "\n";
-        ASSERT(false && "unknown AST node type not permissible");
+        assert(false && "unknown AST node type not permissible");
     }
 
     return val;
@@ -1336,6 +1335,14 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
 
     };
 
+    const auto& makeRamForkSymbolTable = [&](std::unique_ptr<RamStatement>& current) {
+        appendStmt(current, std::make_unique<RamForkSymbolTable>());
+    };
+
+    const auto& makeRamJoinSymbolTable = [&](std::unique_ptr<RamStatement>& current) {
+        appendStmt(current, std::make_unique<RamJoinSymbolTable>());
+    };
+
 #endif
 
     // maintain the index of the SCC within the topological order
@@ -1486,13 +1493,19 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
         // make a new ram statement for the master process
         std::unique_ptr<RamStatement> current;
 
-        // load all internal input relations from the facts dir with a .facts extension, and send them to
-        // their slave processes
-        // for each node in scc graph
+        // load all internal input relations from fact-dir with a .facts extension
         index = 0;
         for (const auto scc : sccOrder) {
             for (const auto& relation : sccGraph.getInternalInputRelations(scc)) {
                 makeRamLoad(current, relation, "fact-dir", ".facts");
+            }
+            ++index;
+        }
+
+        // send all internal input relations to their slave processes
+        index = 0;
+        for (const auto scc : sccOrder) {
+            for (const auto& relation : sccGraph.getInternalInputRelations(scc)) {
                 const auto destinations = std::unordered_set<int>({index});
                 makeRamSend(current, relation, destinations);
                 makeRamDrop(current, relation);
@@ -1500,12 +1513,25 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
             ++index;
         }
 
-        // recv all internal output relations from their slave processes, and store them to the output dir
-        // with a .csv extension
+        // fork the symbol table thread
+        makeRamForkSymbolTable(current);
+
+        // recv all internal output relations from their slave processes
         index = 0;
         for (const auto scc : sccOrder) {
             for (const auto& relation : sccGraph.getInternalOutputRelations(scc)) {
                 makeRamRecv(current, relation, index);
+            }
+            ++index;
+        }
+
+        // join the symbol table thread
+        makeRamJoinSymbolTable(current);
+
+        // write to output-dir with .csv extension
+        index = 0;
+        for (const auto scc : sccOrder) {
+            for (const auto& relation : sccGraph.getInternalOutputRelations(scc)) {
                 makeRamStore(current, relation, "output-dir", ".csv");
                 makeRamDrop(current, relation);
             }

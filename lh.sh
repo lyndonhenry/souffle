@@ -7,6 +7,8 @@
 # - do not use anonymous namespaces in Mpi.h, maybe ok in cpp file
 # - do documentation for whole of Mpi.h class
 # - make the debugging better, only do it where required, make an mpi.dl for analysis
+# - atomic running vs exit message in symbol table
+# - debug functionality with macros in Mpi.
 
 # @TODO: the bug is that in duplicates, all executed sends are to rank 3 (ie stratum 2) -- stratum 2 should have one sent to it only!
 

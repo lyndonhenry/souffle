@@ -1245,6 +1245,18 @@ void Synthesiser::emitCode(std::ostream& out, const RamStatement& stmt) {
             os << "\n#endif\n";
         }
 
+        void visitForkSymbolTable(const RamForkSymbolTable&, std::ostream& os) override {
+            os << "\n#ifdef USE_MPI\n";
+            os << "symTable.forkThread();";
+            os << "\n#endif\n";
+        }
+
+        void visitJoinSymbolTable(const RamJoinSymbolTable&, std::ostream& os) override {
+            os << "\n#ifdef USE_MPI\n";
+            os << "symTable.joinThread();";
+            os << "\n#endif\n";
+        }
+
 #endif
         // -- safety net --
 
@@ -1286,11 +1298,6 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
     // turn off mpi support if not enabled as the execution engine
     if (Global::config().get("engine") != "mpi") {
         os << "#undef USE_MPI\n";
-    } else
-            // otherwise, if mpi is enabled and verbose is enabled...
-            if (Global::config().has("verbose")) {
-        // turn on mpi debugging
-        os << "#define MPI_DEBUG\n";
     }
 #endif
 
@@ -1309,8 +1316,9 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
     os << "namespace souffle {\n";
     os << "using namespace ram;\n";
 
-    // print wrapper for regex
     os << "class " << classname << " : public SouffleProgram {\n";
+
+    // regex wrapper
     os << "private:\n";
     os << "static inline bool regex_wrapper(const std::string& pattern, const std::string& text) {\n";
     os << "   bool result = false; \n";
@@ -1319,6 +1327,9 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
           "<< text << \"\\\").\\n\";\n}\n";
     os << "   return result;\n";
     os << "}\n";
+
+    // substring wrapper
+    os << "private:\n";
     os << "static inline std::string substr_wrapper(const std::string& str, size_t idx, size_t len) {\n";
     os << "   std::string result; \n";
     os << "   try { result = str.substr(idx,len); } catch(...) { \n";
@@ -1327,6 +1338,9 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
           "functor.\\n\";\n";
     os << "   } return result;\n";
     os << "}\n";
+
+    // to number wrapper
+    os << "private:\n";
     os << "static inline RamDomain wrapper_tonumber(const std::string& str) {\n";
     os << "   RamDomain result=0; \n";
     os << "   try { result = stord(str); } catch(...) { \n";
@@ -1337,6 +1351,31 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
     os << "   } return result;\n";
     os << "}\n";
 
+// if using mpi...
+#ifdef USE_MPI
+    if (Global::config().get("engine") == "mpi") {
+        os << "\n#ifdef USE_MPI\n";
+
+        // create an enum of message tags, one for each relation
+        {
+            os << "private:\n";
+            os << "enum {";
+            {
+                int tag = SymbolTable::numberOfTags();
+                visitDepthFirst(*(prog.getMain()), [&](const RamCreate& create) {
+                    if (tag != SymbolTable::numberOfTags()) {
+                        os << ", ";
+                    }
+                    os << "tag_" << getRelationName(create.getRelation()) << " = " << tag;
+                    ++tag;
+                });
+            }
+            os << "};";
+        }
+        os << "\n#endif\n";
+    }
+#endif
+
     if (Global::config().has("profile")) {
         os << "std::string profiling_fname;\n";
     }
@@ -1345,11 +1384,6 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
 
     // declare symbol table
     os << "// -- initialize symbol table --\n";
-#ifdef USE_MPI
-    if (Global::config().get("engine") == "mpi") {
-        os << "SymbolTable symTable;";
-    } else
-#endif
     {
         os << "SymbolTable symTable\n";
         if (symTable.size() > 0) {
@@ -1486,8 +1520,6 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
            << R"_(Logger logger("@runtime;", 0);)_" << '\n';
     }
 
-    // TODO (lyndonhenry): an array of addresses of the gotos may be more efficient than a switch statement
-    // here
     if (Global::config().has("engine")) {
         std::stringstream ss;
         bool hasAtLeastOneStrata = false;
@@ -1686,58 +1718,6 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
     });
     os << "}\n";  // end of dumpOutputs() method
 
-#ifdef USE_MPI
-    if (Global::config().get("engine") == "mpi") {
-        os << "\n#ifdef USE_MPI\n";
-
-        /* void forkSymbolTable() */
-        {
-            os << "public:\n";
-            os << "void forkSymbolTable() {";
-            {
-                os << "symTable = SymbolTable(";
-                if (symTable.size() > 0) {
-                    os << "{\n";
-                    for (size_t i = 0; i < symTable.size(); i++) {
-                        os << "\tR\"_(" << symTable.resolve(i) << ")_\",\n";
-                    }
-                    os << "}";
-                }
-                os << ");";
-                os << "symTable.forkThread();";
-            }
-            os << "}";
-        }
-
-        /* void joinSymbolTable() */
-        {
-            os << "public:";
-            os << "void joinSymbolTable() {";
-            { os << "symTable.joinThreads();"; }
-            os << "}";
-        }
-
-        /* enum { tag_rel1, tag_rel2, ... } */
-        {
-            os << "private:\n";
-            os << "enum {";
-            {
-                int tag = SymbolTable::numberOfTags();
-                visitDepthFirst(*(prog.getMain()), [&](const RamCreate& create) {
-                    if (tag != SymbolTable::numberOfTags()) {
-                        os << ", ";
-                    }
-                    os << "tag_" << getRelationName(create.getRelation()) << " = " << tag;
-                    ++tag;
-                });
-            }
-            os << "};";
-        }
-
-        os << "\n#endif\n";
-    }
-#endif
-
     os << "public:\n";
     os << "const SymbolTable &getSymbolTable() const override {\n";
     os << "return symTable;\n";
@@ -1797,13 +1777,6 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
     os << "#else\n";
     os << "}\n";
     os << "int main(int argc, char** argv)\n{\n";
-#ifdef USE_MPI
-    if (Global::config().get("engine") == "mpi") {
-        os << "\n#ifdef USE_MPI\n";
-        os << "souffle::mpi::init(argc, argv);";
-        os << "\n#endif\n";
-    }
-#endif
     os << "try{\n";
 
     // parse arguments
@@ -1838,45 +1811,21 @@ void Synthesiser::generateCode(const RamTranslationUnit& unit, std::ostream& os,
 #ifdef USE_MPI
     if (Global::config().get("engine") == "mpi") {
         os << "\n#ifdef USE_MPI\n";
-        os << "const auto rank = souffle::mpi::commRank();";
-        // if the current process is the master...
-        os << "if (rank == 0) {";
-        {
-            // fork new thread for symbol table
-            os << "obj.forkSymbolTable();";
-
-            // execute all strata for current process
-            os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), rank - 1);";
-
-            // join symbol table thread
-            os << "obj.joinSymbolTable();";
-        }
-        // otherwise...
-        os << "} else {";
-        {
-            // execute all strata for current process
-            os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), rank - 1);";
-        }
-        os << "}";
+        os << "souffle::mpi::init(argc, argv);";
+        os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), souffle::mpi::commRank() - 1);\n";
+        os << "souffle::mpi::finalize();";
         os << "\n#endif\n";
     } else
 #endif
     {
         os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), opt.getStratumIndex());\n";
     }
+
     if (Global::config().get("provenance") == "1") {
         os << "explain(obj, true, false);\n";
     } else if (Global::config().get("provenance") == "2") {
         os << "explain(obj, true, true);\n";
     }
-
-#ifdef USE_MPI
-    if (Global::config().get("engine") == "mpi") {
-        os << "\n#ifdef USE_MPI\n";
-        os << "souffle::mpi::finalize();";
-        os << "\n#endif\n";
-    }
-#endif
     os << "return 0;\n";
     os << "} catch(std::exception &e) { souffle::SignalHandler::instance()->error(e.what());}\n";
     os << "}\n";

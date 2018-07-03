@@ -26,6 +26,7 @@
 
 #include <mpi.h>
 
+/*
 #ifndef NDEBUG
 
 #include <iostream>
@@ -137,6 +138,7 @@
     }
 
 #endif
+*/
 
 namespace souffle {
 

@@ -129,6 +129,8 @@ struct RamVisitor : public ram_visitor_tag {
             // mpi
             FORWARD(Send);
             FORWARD(Recv);
+            FORWARD(ForkSymbolTable);
+            FORWARD(JoinSymbolTable);
 #endif
 
 #undef FORWARD
@@ -161,11 +163,6 @@ protected:
     LINK(Drop, RelationStatement);
     LINK(PrintSize, RelationStatement);
     LINK(LogSize, RelationStatement);
-
-#ifdef USE_MPI
-    LINK(Send, RelationStatement);
-    LINK(Recv, RelationStatement);
-#endif
 
     LINK(RelationStatement, Statement);
 
@@ -218,6 +215,13 @@ protected:
     // -- relation
     LINK(Relation, Node)
     LINK(RelationRef, Node)
+
+#ifdef USE_MPI
+    LINK(Send, RelationStatement);
+    LINK(Recv, RelationStatement);
+    LINK(ForkSymbolTable, Statement);
+    LINK(JoinSymbolTable, Statement);
+#endif
 
 #undef LINK
 

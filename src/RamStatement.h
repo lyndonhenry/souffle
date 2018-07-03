@@ -66,7 +66,7 @@ public:
 
     /** Get RAM relation */
     const RamRelation& getRelation() const {
-        ASSERT(relation);
+        assert(relation);
         return *relation;
     }
 
@@ -418,7 +418,7 @@ public:
 
     /** Get RAM operation */
     const RamOperation& getOperation() const {
-        ASSERT(operation);
+        assert(operation);
         return *operation;
     }
 
@@ -475,7 +475,8 @@ public:
             statements.emplace_back(std::move(cur));
         }
         for (const auto& cur : statements) {
-            ASSERT(cur);
+            (void)cur;
+            assert(cur);
         }
     }
 
@@ -684,7 +685,7 @@ public:
 
     /** Get exit condition */
     const RamCondition& getCondition() const {
-        ASSERT(condition);
+        assert(condition);
         return *condition;
     }
 
@@ -740,7 +741,7 @@ protected:
 public:
     RamLogTimer(std::unique_ptr<RamStatement> stmt, std::string msg)
             : RamStatement(RN_LogTimer), statement(std::move(stmt)), message(std::move(msg)) {
-        ASSERT(statement);
+        assert(statement);
     }
 
     /** get logging message */
@@ -750,7 +751,7 @@ public:
 
     /** get logging statement */
     const RamStatement& getStatement() const {
-        ASSERT(statement);
+        assert(statement);
         return *statement;
     }
 
@@ -803,7 +804,7 @@ protected:
 public:
     RamDebugInfo(std::unique_ptr<RamStatement> stmt, std::string msg)
             : RamStatement(RN_DebugInfo), statement(std::move(stmt)), message(std::move(msg)) {
-        ASSERT(statement);
+        assert(statement);
     }
 
     /** Get debugging message */
@@ -813,7 +814,7 @@ public:
 
     /** Get debugging statement */
     const RamStatement& getStatement() const {
-        ASSERT(statement);
+        assert(statement);
         return *statement;
     }
 
@@ -1069,6 +1070,72 @@ protected:
         assert(nullptr != dynamic_cast<const RamSend*>(&node));
         const auto& other = static_cast<const RamSend&>(node);
         return destinationStrata == other.destinationStrata;
+    }
+};
+
+class RamForkSymbolTable : public RamStatement {
+public:
+    RamForkSymbolTable() : RamStatement(RN_ForkSymbolTable) {}
+
+    /** Pretty print */
+    void print(std::ostream& os, int tabpos) const override {
+        os << "FORK_SYMBOL_TABLE_THREAD"
+           << "\n";
+    }
+
+    /** Obtain list of child nodes */
+    std::vector<const RamNode*> getChildNodes() const override {
+        return std::vector<const RamNode*>(0);
+    }
+
+    /** Create clone */
+    RamForkSymbolTable* clone() const override {
+        return new RamForkSymbolTable();
+    }
+
+    /** Apply mapper */
+    void apply(const RamNodeMapper& map) override {}
+
+protected:
+    /** Check equality */
+    bool equal(const RamNode& node) const override {
+        assert(nullptr != dynamic_cast<const RamForkSymbolTable*>(&node));
+        const auto& other = static_cast<const RamForkSymbolTable&>(node);
+        (void)other;
+        return true;
+    }
+};
+
+class RamJoinSymbolTable : public RamStatement {
+public:
+    RamJoinSymbolTable() : RamStatement(RN_JoinSymbolTable) {}
+
+    /** Pretty print */
+    void print(std::ostream& os, int tabpos) const override {
+        os << "FORK_SYMBOL_TABLE_THREAD"
+           << "\n";
+    }
+
+    /** Obtain list of child nodes */
+    std::vector<const RamNode*> getChildNodes() const override {
+        return std::vector<const RamNode*>(0);
+    }
+
+    /** Create clone */
+    RamJoinSymbolTable* clone() const override {
+        return new RamJoinSymbolTable();
+    }
+
+    /** Apply mapper */
+    void apply(const RamNodeMapper& map) override {}
+
+protected:
+    /** Check equality */
+    bool equal(const RamNode& node) const override {
+        assert(nullptr != dynamic_cast<const RamJoinSymbolTable*>(&node));
+        const auto& other = static_cast<const RamJoinSymbolTable&>(node);
+        (void)other;
+        return true;
     }
 };
 

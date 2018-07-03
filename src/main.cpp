@@ -26,7 +26,6 @@
 #include "Global.h"
 #include "Interpreter.h"
 #include "InterpreterInterface.h"
-#include "Macro.h"
 #include "ParserDriver.h"
 #include "PrecedenceGraph.h"
 #include "RamProgram.h"
@@ -216,23 +215,26 @@ int main(int argc, char** argv) {
 
         /* check that datalog program exists */
         if (!existFile(Global::config().get(""))) {
-            ERROR("cannot open file " + std::string(Global::config().get("")));
+            throw std::runtime_error("cannot open file " + std::string(Global::config().get("")));
         }
 
         /* for the jobs option, to determine the number of threads used */
         if (Global::config().has("jobs")) {
             if (isNumber(Global::config().get("jobs").c_str())) {
                 if (std::stoi(Global::config().get("jobs")) < 1) {
-                    ERROR("Number of jobs in the -j/--jobs options must be greater than zero!");
+                    throw std::runtime_error(
+                            "Number of jobs in the -j/--jobs options must be greater than zero!");
                 }
             } else {
                 if (!Global::config().has("jobs", "auto")) {
-                    ERROR("Wrong parameter " + Global::config().get("jobs") + " for option -j/--jobs!");
+                    throw std::runtime_error(
+                            "Wrong parameter " + Global::config().get("jobs") + " for option -j/--jobs!");
                 }
                 Global::config().set("jobs", "0");
             }
         } else {
-            ERROR("Wrong parameter " + Global::config().get("jobs") + " for option -j/--jobs!");
+            throw std::runtime_error(
+                    "Wrong parameter " + Global::config().get("jobs") + " for option -j/--jobs!");
         }
 
         /* if an output directory is given, check it exists */
@@ -240,7 +242,8 @@ int main(int argc, char** argv) {
                 !existDir(Global::config().get("output-dir")) &&
                 !(Global::config().has("generate") ||
                         (Global::config().has("dl-program") && !Global::config().has("compile")))) {
-            ERROR("output directory " + Global::config().get("output-dir") + " does not exists");
+            throw std::runtime_error(
+                    "output directory " + Global::config().get("output-dir") + " does not exists");
         }
 
         /* collect all input directories for the c pre-processor */
@@ -250,7 +253,7 @@ int main(int argc, char** argv) {
             for (const char& ch : Global::config().get("include-dir")) {
                 if (ch == ' ') {
                     if (!existDir(currentInclude)) {
-                        ERROR("include directory " + currentInclude + " does not exists");
+                        throw std::runtime_error("include directory " + currentInclude + " does not exists");
                     } else {
                         allIncludes += " -I";
                         allIncludes += currentInclude;
@@ -273,7 +276,7 @@ int main(int argc, char** argv) {
         if (Global::config().has("provenance")) {
             if (Global::config().has("jobs")) {
                 if (Global::config().get("jobs") != "1") {
-                    ERROR("provenance cannot be enabled with multiple jobs.");
+                    throw std::runtime_error("provenance cannot be enabled with multiple jobs.");
                 }
             }
         }
@@ -306,14 +309,14 @@ int main(int argc, char** argv) {
     std::string souffleExecutable = which(argv[0]);
 
     if (souffleExecutable.empty()) {
-        ERROR("failed to determine souffle executable path");
+        throw std::runtime_error("failed to determine souffle executable path");
     }
 
     /* Create the pipe to establish a communication between cpp and souffle */
     std::string cmd = ::which("mcpp");
 
     if (!isExecutable(cmd)) {
-        ERROR("failed to locate mcpp pre-processor");
+        throw std::runtime_error("failed to locate mcpp pre-processor");
     }
 
     cmd += " -W0 " + Global::config().get("include-dir") + " " + Global::config().get("");
@@ -335,7 +338,7 @@ int main(int argc, char** argv) {
     int preprocessor_status = pclose(in);
     if (preprocessor_status == -1) {
         perror(nullptr);
-        ERROR("failed to close pre-processor pipe");
+        throw std::runtime_error("failed to close pre-processor pipe");
     }
 
     /* Report run-time of the parser if verbose flag is set */
@@ -476,7 +479,7 @@ int main(int argc, char** argv) {
         std::string compileCmd = ::findTool("souffle-compile", souffleExecutable, ".");
         /* Fail if a souffle-compile executable is not found */
         if (!isExecutable(compileCmd)) {
-            ERROR("failed to locate souffle-compile");
+            throw std::runtime_error("failed to locate souffle-compile");
         }
         compileCmd += " ";
 

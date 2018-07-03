@@ -172,7 +172,6 @@ soufflepublic_HEADERS = \
                         IOSystem.h              \
                         IterUtils.h             \
                         Logger.h                \
-                        Macro.h                 \
                         ParallelUtils.h         \
                         ProfileDatabase.h       \
                         ProfileEvent.h          \

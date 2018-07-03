@@ -38,6 +38,7 @@
 #ifdef USE_MPI
 #include "souffle/Mpi.h"
 #endif
+
 #include <array>
 #include <atomic>
 #include <cassert>
