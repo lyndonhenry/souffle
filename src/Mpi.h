@@ -562,6 +562,5 @@ inline void recv(Status& status) {
     recv<char>(status);
 }
 }
-
 }
 }
