@@ -9,6 +9,7 @@
 # - must ensure that sends and receives are in the same order, they have to sync up
 # - get travis tests working
 # - ensure that removing mpi output works in testsuite.at for .out files
+# - merge with upstream
 
 set -x
 
