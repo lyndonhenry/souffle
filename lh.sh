@@ -1,15 +1,11 @@
 #!/bin/bash
 
 # @TODO
-# - ensure return of null works for iprobe for symbol table thread
-# - ensure joinThreads method workds for SymbolTable, must release lock before join
 # - put most of Mpi.h in an Mpi.cpp, too much in header
 # - do not use anonymous namespaces in Mpi.h, maybe ok in cpp file
 # - do documentation for whole of Mpi.h class
-# - make the debugging better, only do it where required, make an mpi.dl for analysis
-# - atomic running vs exit message in symbol table
-# - debug functionality with macros in Mpi.
 # - get it working with zero arity predicates
+# - do debugging macros
 # - must ensure that sends and receives are in the same order, they have to sync up
 
 set -x
