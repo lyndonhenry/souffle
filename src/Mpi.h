@@ -472,11 +472,13 @@ template <typename S, typename T>
 inline void send(
         const T& data, const size_t length, const std::unordered_set<int>& destinations, const int tag) {
     std::vector<S> buffer(data.size() * length);
-    size_t i = 0;
-    for (const auto& element : data) {
-        for (size_t j = 0; j < length; ++j) {
-            buffer[i] = element[j];
-            ++i;
+    if (length != 0) {
+        size_t i = 0;
+        for (const auto& element : data) {
+            for (size_t j = 0; j < length; ++j) {
+                buffer[i] = element[j];
+                ++i;
+            }
         }
     }
     send(buffer, destinations, tag);
@@ -525,15 +527,17 @@ template <typename R, typename T>
 inline void recv(T& data, const size_t length, Status& status) {
     std::vector<R> newData;
     recv(newData, status);
-    auto it = newData.begin();
-    while (it != newData.end()) {
-        auto element = std::unique_ptr<R[]>(new R[length]);
-        for (size_t i = 0; i < length; ++i) {
-            element[i] = *it;
-            ++it;
+    if (length != 0) {
+        auto it = newData.begin();
+        while (it != newData.end()) {
+            auto element = std::unique_ptr<R[]>(new R[length]);
+            for (size_t i = 0; i < length; ++i) {
+                element[i] = *it;
+                ++it;
+            }
+            const R* pointer = element.get();
+            data.insert(pointer);
         }
-        const R* pointer = element.get();
-        data.insert(pointer);
     }
 }
 

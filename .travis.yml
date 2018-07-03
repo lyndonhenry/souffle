@@ -52,14 +52,26 @@ aliases:
     services: docker
   - &linuxgccmpich
     <<: *linuxgcc
-    addons:
+     addons:
+      apt:
+        sources:
+        - ubuntu-toolchain-r-test
         packages:
+        - *linux_deps
+        - g++-7
         - mpich
     before_script: ".travis/init_test_mpi.sh"
   - &linuxclangmpich
     <<: *linuxclang
     addons:
+      apt:
+        sources:
+        - llvm-toolchain-trusty-4.0
+        - ubuntu-toolchain-r-test
         packages:
+        - *linux_deps
+        - clang-4.0
+        - libstdc++-7-dev
         - mpich
     before_script: ".travis/init_test_mpi.sh"
   - &osxgcc
