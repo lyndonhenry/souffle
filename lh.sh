@@ -1,14 +1,6 @@
 #!/bin/bash
 
 # @TODO
-# - get rel_nullary working, see Mpi.h
-# - get printsize statements working, may be to do with order, see testsuite.at
-# - get local tests passing
-# - remove debug statements in Mpi.h
-# - get travis tests working
-# - move any possible travis tests to docker
-# - remove lh.sh
-# - do pull request
 
 set -eoux pipefail
 

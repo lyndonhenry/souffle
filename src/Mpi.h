@@ -25,34 +25,6 @@
 
 #include <mpi.h>
 
-// @TODO
-
-/*
-#define MPI_Ssend(data, count, type, destination, tag, comm) \
-{ \
-std::stringstream ss; \
-    ss << "MPI_Ssend: " << commRank() << " -> " << destination << " [" << tag << "]" << std::endl; \
-    std::cout << ss.str(); \
-    MPI_Ssend(data, count, type, destination, tag, comm); \
-}
-
-#define MPI_Recv(data, count, type, source, tag, comm, status) \
-{ \
-   std::stringstream ss; \
-   ss << "MPI_Recv: " << commRank() << " <- " << source << " [" << tag << "]" << std::endl; \
-   std::cout << ss.str(); \
-   MPI_Recv(data, count, type, source, tag, comm, status); \
-}
-
-#define MPI_Probe(source, tag, comm, status) \
-{ \
-   std::stringstream ss; \
-   ss << "MPI_Probe: " << commRank() << " <- " << source << " [" << tag << "]" << std::endl; \
-   std::cout << ss.str(); \
-   MPI_Probe(source, tag, comm, status); \
-}
- */
-
 namespace souffle {
 
 // TODO (lyndonhenry): should do documentation for this whole namespace
@@ -501,5 +473,5 @@ inline void recv(Status& status) {
     recv<char>(status);
 }
 }
-}
-}
+} // end of namespace mpi
+} // end of namespace souffle
