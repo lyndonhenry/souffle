@@ -132,7 +132,7 @@ jobs:
 # Testing stage with mpi (-c -j8 -empi, FastEvaluation and select others)
   - <<: *linuxmpi
     env:
-    - "gcc-mpi"
+    - "gcc-empi"
     - *gcc_environment
     - SOUFFLE_CATEGORY="FastEvaluation,Interface,Profile,Provenance"
     - SOUFFLE_CONFIGURE_OPTIONS="--enable-mpi"
@@ -140,7 +140,7 @@ jobs:
     - SOUFFLE_MAKE_JOBS="2"
   - <<: *linuxmpi
     env:
-    - "clang-mpi"
+    - "clang-empi"
     - *clang_environment
     - SOUFFLE_CATEGORY="FastEvaluation,Interface,Profile,Provenance"
     - SOUFFLE_CONFIGURE_OPTIONS="--enable-mpi"
