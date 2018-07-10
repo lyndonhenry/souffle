@@ -117,6 +117,8 @@ m4_define([TEST_EVAL_IN],[
   ls EXPECTEDDIR/*.csv|wc -l >"num.expected"
   # remove non-deterministic record numbering
   sed 's/subproof \(@<:@a-zA-Z0-9?_@:>@*\)(@<:@0-9@:>@*)/subproof \1()/g' TESTNAME.out | sed -e '$a\' >TESTNAME.sed.out
+  # remove pre-sedified output file
+  rm TESTNAME.out
   # remove mpi messages
   cat TESTNAME.sed.out | tr '\n' '\r' | sed 's/---.*---\r//g' | tr '\r' '\n' > TESTNAME.sed.out
   # sort output files as printsize statements are non-deterministically ordered
