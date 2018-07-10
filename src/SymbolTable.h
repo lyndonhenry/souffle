@@ -8,7 +8,7 @@
 
 /************************************************************************
  *
- * @file SymbolTable.h
+ * @SYMBOL_TABLE_file SymbolTable.h
  *
  * Data container to store symbols of the Datalog program.
  *
@@ -20,6 +20,12 @@
 #include "RamTypes.h"
 #include "Util.h"
 
+#ifdef USE_MPI
+#include "Mpi.h"
+#include <thread>
+#endif
+
+#include <cassert>
 #include <deque>
 #include <initializer_list>
 #include <iostream>
@@ -29,13 +35,179 @@
 namespace souffle {
 
 /**
- * @class SymbolTable
+ * SymbolTable
  *
  * Global pool of re-usable strings
  *
  * SymbolTable stores Datalog symbols and converts them to numbers and vice versa.
  */
 class SymbolTable {
+#ifdef USE_MPI
+
+private:
+    enum {
+        EXIT = 0,
+        INSERT_STRING = 1,
+        INSERT_VECTOR_STRING = 2,
+        LOOKUP = 3,
+        LOOKUP_EXISTING = 4,
+        PRINT = 5,
+        RESOLVE = 6,
+        SIZE = 7,
+        UNSAFE_LOOKUP = 8,
+        UNSAFE_RESOLVE = 9
+    };
+
+    mutable std::unordered_map<std::string, size_t> strToNumCache;
+    mutable std::unordered_map<size_t, std::string> numToStrCache;
+
+    RamDomain cacheLookup(const std::string& symbol, const int tag) const {
+        auto it = strToNumCache.find(symbol);
+        if (it != strToNumCache.end()) {
+            return it->second;
+        }
+        mpi::send(symbol, 0, tag);
+        RamDomain index;
+        mpi::recv(index, 0, tag);
+        strToNumCache.insert(std::pair<std::string, size_t>(symbol, index));
+        return numToStrCache.insert(std::pair<size_t, std::string>(index, symbol)).first->first;
+    }
+    const std::string& cacheResolve(const RamDomain index, const int tag) const {
+        auto it = numToStrCache.find(index);
+        if (it != numToStrCache.end()) {
+            return it->second;
+        }
+        mpi::send(index, 0, tag);
+        std::string symbol;
+        mpi::recv(symbol, 0, tag);
+        numToStrCache.insert(std::pair<size_t, std::string>(index, symbol));
+        return strToNumCache.insert(std::pair<std::string, size_t>(symbol, index)).first->first;
+    }
+
+    void handleMpiMessages() {
+        assert(mpi::commRank() == 0);
+        // keep track of most recent tag and source not handled in switch statement
+        int mostRecentUnhandledTag = -1, mostRecentUnhandledSource = -1;
+        // keep track of whether the thread slept during the current iteration of the while loop
+        bool threadSleptThisLoop;
+        // the thread should sleep at first for one tick of the MPI clock
+        double secondsToSleepThreadFor = MPI_Wtick();
+        while (true) {
+            threadSleptThisLoop = false;
+            auto status = mpi::probe();
+            if (status) {
+                switch (status->MPI_TAG) {
+                    case EXIT: {
+                        mpi::recv(0, EXIT);
+                        return;
+                    }
+                    case LOOKUP: {
+                        std::string symbol;
+                        mpi::recv(symbol, status);
+                        mpi::send(lookup(symbol), status);
+                        break;
+                    }
+                    case LOOKUP_EXISTING: {
+                        std::string symbol;
+                        mpi::recv(symbol, status);
+                        mpi::send(lookupExisting(symbol), status);
+                        break;
+                    }
+                    case UNSAFE_LOOKUP: {
+                        std::string symbol;
+                        mpi::recv(symbol, status);
+                        mpi::send(unsafeLookup(symbol), status);
+                        break;
+                    }
+                    case RESOLVE: {
+                        RamDomain index;
+                        mpi::recv(index, status);
+                        mpi::send(resolve(index), status);
+                        break;
+                    }
+                    case UNSAFE_RESOLVE: {
+                        RamDomain index;
+                        mpi::recv(index, status);
+                        mpi::send(unsafeResolve(index), status);
+                        break;
+                    }
+                    case SIZE: {
+                        mpi::recv(status);
+                        mpi::send(size(), status);
+                        break;
+                    }
+                    case PRINT: {
+                        mpi::recv(status);
+                        print(std::cout);
+                        break;
+                    }
+                    case INSERT_STRING: {
+                        std::string symbol;
+                        mpi::recv(symbol, status);
+                        insert(symbol);
+                        break;
+                    }
+                    case INSERT_VECTOR_STRING: {
+                        std::vector<std::string> symbols;
+                        mpi::recv(symbols, status);
+                        insert(symbols);
+                        break;
+                    }
+                    default: {
+                        // if we have encountered the same unhandled source and tag more than once in a row...
+                        if (mostRecentUnhandledTag == status->MPI_TAG &&
+                                mostRecentUnhandledSource == status->MPI_SOURCE) {
+                            // sleep for however long we are sleeping for in this iteration
+                            std::this_thread::sleep_for(
+                                    std::chrono::duration<double>(secondsToSleepThreadFor));
+                            // keep track of the fact that we have slept in this iteration
+                            threadSleptThisLoop = true;
+                        } else {
+                            // otherwise, just note that this source and tag were unhandled
+                            mostRecentUnhandledTag = status->MPI_TAG;
+                            mostRecentUnhandledSource = status->MPI_SOURCE;
+                        }
+                        break;
+                    }
+                }
+            } else {
+                std::this_thread::sleep_for(std::chrono::duration<double>(secondsToSleepThreadFor));
+                threadSleptThisLoop = true;
+            }
+            // if the thread has slept in this iteration...
+            if (threadSleptThisLoop) {
+                // use exponential backoff to adjust the amount of time to sleep for if we have to again
+                secondsToSleepThreadFor = 2.0 * secondsToSleepThreadFor;
+                // set an upper limit of one second on how long the thread sleeps
+                if (secondsToSleepThreadFor > 1.0) {
+                    secondsToSleepThreadFor = 1.0;
+                }
+            } else {
+                // othersise, reset the amount of time the thread sleeps for next time it does
+                secondsToSleepThreadFor = MPI_Wtick();
+            }
+        }
+    }
+
+    std::array<std::thread, 1> threads;
+
+public:
+    static int numberOfTags() {
+        // ok, so this looks stupid, but it just gives the size of the enum at the top
+        return 10;
+    }
+
+    void forkThread() {
+        threads[0] = std::thread([&]() { handleMpiMessages(); });
+    }
+
+    void joinThread() {
+        mpi::send(0, EXIT);
+        threads[0].join();
+    }
+
+#endif
+
 private:
     /** A lock to synchronize parallel accesses */
     mutable Lock access;
@@ -109,80 +281,145 @@ public:
         return *this;
     }
 
-    /** Find the index of a symbol in the table, inserting a new symbol if it does not exist there already. */
+    /** Find the index of a symbol in the table, inserting a new symbol if it does not exist there
+     * already. */
     RamDomain lookup(const std::string& symbol) {
-        auto lease = access.acquire();
-        (void)lease;  // avoid warning;
-        return static_cast<RamDomain>(newSymbolOfIndex(symbol));
+#ifdef USE_MPI
+        if (mpi::commRank() != 0) {
+            return cacheLookup(symbol, LOOKUP);
+        } else
+#endif
+        {
+            auto lease = access.acquire();
+            (void)lease;  // avoid warning;
+            return static_cast<RamDomain>(newSymbolOfIndex(symbol));
+        }
     }
 
     /** Finds the index of a symbol in the table, giving an error if it's not found */
     RamDomain lookupExisting(const std::string& symbol) const {
-        auto lease = access.acquire();
-        (void)lease;  // avoid warning;
-        auto result = strToNum.find(symbol);
-        if (result == strToNum.end()) {
-            std::cerr << "Error string not found in call to SymbolTable::lookupExisting.\n";
-            exit(1);
+#ifdef USE_MPI
+        if (mpi::commRank() != 0) {
+            return cacheLookup(symbol, LOOKUP_EXISTING);
+        } else
+#endif
+        {
+            auto lease = access.acquire();
+            (void)lease;  // avoid warning;
+            auto result = strToNum.find(symbol);
+            if (result == strToNum.end()) {
+                std::cerr << "Error string not found in call to SymbolTable::lookupExisting.\n";
+                exit(1);
+            }
+            return static_cast<RamDomain>(result->second);
         }
-        return static_cast<RamDomain>(result->second);
     }
 
-    /** Find the index of a symbol in the table, inserting a new symbol if it does not exist there already. */
+    /** Find the index of a symbol in the table, inserting a new symbol if it does not exist there
+     * already. */
     RamDomain unsafeLookup(const std::string& symbol) {
-        return newSymbolOfIndex(symbol);
+#ifdef USE_MPI
+        if (mpi::commRank() != 0) {
+            return cacheLookup(symbol, UNSAFE_LOOKUP);
+        } else
+#endif
+            return newSymbolOfIndex(symbol);
     }
 
-    /** Find a symbol in the table by its index, note that this gives an error if the index is out of bounds.
+    /** Find a symbol in the table by its index, note that this gives an error if the index is out of
+     * bounds.
      */
     const std::string& resolve(const RamDomain index) const {
-        auto lease = access.acquire();
-        (void)lease;  // avoid warning;
-        auto pos = static_cast<size_t>(index);
-        if (pos >= size()) {
-            // TODO: use different error reporting here!!
-            std::cerr << "Error index out of bounds in call to SymbolTable::resolve.\n";
-            exit(1);
+#ifdef USE_MPI
+        if (mpi::commRank() != 0) {
+            return cacheResolve(index, RESOLVE);
+        } else
+#endif
+        {
+            auto lease = access.acquire();
+            (void)lease;  // avoid warning;
+            auto pos = static_cast<size_t>(index);
+            if (pos >= size()) {
+                // TODO: use different error reporting here!!
+                std::cerr << "Error index out of bounds in call to SymbolTable::resolve.\n";
+                exit(1);
+            }
+            return numToStr[pos];
         }
-        return numToStr[pos];
     }
 
     const std::string& unsafeResolve(const RamDomain index) const {
-        return numToStr[static_cast<size_t>(index)];
+#ifdef USE_MPI
+        if (mpi::commRank() != 0) {
+            return cacheResolve(index, UNSAFE_RESOLVE);
+        } else
+#endif
+            return numToStr[static_cast<size_t>(index)];
     }
 
     /* Return the size of the symbol table, being the number of symbols it currently holds. */
     size_t size() const {
-        return numToStr.size();
+#ifdef USE_MPI
+        if (mpi::commRank() != 0) {
+            mpi::send(0, SIZE);
+            size_t size;
+            mpi::recv(size, 0, SIZE);
+            return size;
+        } else
+#endif
+            return numToStr.size();
     }
 
-    /** Bulk insert symbols into the table, note that this operation is more efficient than repeated inserts
+    /** Bulk insert symbols into the table, note that this operation is more efficient than repeated
+     * inserts
      * of single symbols. */
     void insert(const std::vector<std::string>& symbols) {
-        auto lease = access.acquire();
-        (void)lease;  // avoid warning;
-        strToNum.reserve(size() + symbols.size());
-        for (auto& symbol : symbols) {
+#ifdef USE_MPI
+        if (mpi::commRank() != 0) {
+            mpi::send(symbols, 0, INSERT_VECTOR_STRING);
+        } else
+#endif
+        {
+            auto lease = access.acquire();
+            (void)lease;  // avoid warning;
+            strToNum.reserve(size() + symbols.size());
+            for (auto& symbol : symbols) {
+                newSymbol(symbol);
+            }
+        }
+    }
+
+    /** Insert a single symbol into the table, not that this operation should not be used if inserting
+     * symbols
+     * in bulk. */
+    void insert(const std::string& symbol) {
+#ifdef USE_MPI
+        if (mpi::commRank() != 0) {
+            mpi::send(symbol, 0, INSERT_STRING);
+        } else
+#endif
+        {
+            auto lease = access.acquire();
+            (void)lease;  // avoid warning;
             newSymbol(symbol);
         }
     }
 
-    /** Insert a single symbol into the table, not that this operation should not be used if inserting symbols
-     * in bulk. */
-    void insert(const std::string& symbol) {
-        auto lease = access.acquire();
-        (void)lease;  // avoid warning;
-        newSymbol(symbol);
-    }
-
     /** Print the symbol table to the given stream. */
     void print(std::ostream& out) const {
-        out << "SymbolTable: {\n\t";
-        out << join(strToNum, "\n\t", [](std::ostream& out,
-                                              const std::pair<std::string, std::size_t>& entry) {
-            out << entry.first << "\t => " << entry.second;
-        }) << "\n";
-        out << "}\n";
+#ifdef USE_MPI
+        if (mpi::commRank() != 0) {
+            mpi::send(0, PRINT);
+        } else
+#endif
+        {
+            out << "SymbolTable: {\n\t";
+            out << join(strToNum, "\n\t", [](std::ostream& out,
+                                                  const std::pair<std::string, std::size_t>& entry) {
+                out << entry.first << "\t => " << entry.second;
+            }) << "\n";
+            out << "}\n";
+        }
     }
 
     Lock::Lease acquireLock() const {
@@ -195,4 +432,5 @@ public:
         return out;
     }
 };
+
 }  // namespace souffle
