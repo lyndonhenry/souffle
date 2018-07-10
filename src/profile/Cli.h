@@ -51,7 +51,7 @@ public:
                         std::cout << "Souffle Profiler v4.0.0" << std::endl
                                   << "Usage: souffle-profile -v | -h | <log-file> [ -c <command> [options] |"
                                      "-j | -l ]"
-                                     << std::endl
+                                  << std::endl
                                   << "<log-file>            The log file to profile." << std::endl
                                   << "-c <command>          Run the given command on the log file, try with  "
                                      "'-c help' for a list"
