@@ -47,15 +47,16 @@ aliases:
     after_failure: ".travis/after_failure.sh"
   - &docker
     os: linux
-    sudo: false
     services: docker
   - &linuxmpi
     <<: *docker
     stage: Testing
+    sudo: required
     script: ".travis/run_docker.sh"
   - &linuxpackage
     <<: *docker
     stage: Packaging
+    sudo: false
   - &osxgcc
     stage: Testing
     os: osx
