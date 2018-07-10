@@ -89,7 +89,6 @@ m4_define([TEST_EVAL],[
   ls EXPECTEDDIR/*.csv|wc -l >"num.expected"
   # remove mpi messages
   cat TESTNAME.out | tr '\n' '\r' | sed 's/---.*---\r//g' | tr '\r' '\n' > TESTNAME.out
-  # TODO (lyndonhenry): could do this better, output is only non-deterministic when using mpi
   # sort output files as printsize statements are non-deterministically ordered
   SORTED_SAME_FILES([*.out],[EXPECTEDDIR])
   SAME_FILE([TESTNAME.err],[EXPECTEDDIR/TESTNAME.err])
@@ -120,7 +119,6 @@ m4_define([TEST_EVAL_IN],[
   sed 's/subproof \(@<:@a-zA-Z0-9?_@:>@*\)(@<:@0-9@:>@*)/subproof \1()/g' TESTNAME.out | sed -e '$a\' >TESTNAME.sed.out
   # remove mpi messages
   cat TESTNAME.sed.out | tr '\n' '\r' | sed 's/---.*---\r//g' | tr '\r' '\n' > TESTNAME.sed.out
-  # TODO (lyndonhenry): could do this better, output is only non-deterministic when using mpi
   # sort output files as printsize statements are non-deterministically ordered
   SORTED_SAME_FILES([*.out],[EXPECTEDDIR/TESTNAME.out])
   SAME_FILE([TESTNAME.err],[EXPECTEDDIR/TESTNAME.err])
