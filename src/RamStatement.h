@@ -27,7 +27,6 @@
 #include <memory>
 #include <ostream>
 #include <string>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -1079,8 +1078,7 @@ public:
 
     /** Pretty print */
     void print(std::ostream& os, int tabpos) const override {
-        os << "FORK_SYMBOL_TABLE_THREAD"
-           << "\n";
+        os << "FORK_SYMBOL_TABLE";
     }
 
     /** Obtain list of child nodes */
@@ -1112,8 +1110,7 @@ public:
 
     /** Pretty print */
     void print(std::ostream& os, int tabpos) const override {
-        os << "FORK_SYMBOL_TABLE_THREAD"
-           << "\n";
+        os << "JOIN_SYMBOL_TABLE";
     }
 
     /** Obtain list of child nodes */
