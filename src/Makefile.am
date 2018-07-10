@@ -4,7 +4,6 @@
 # - https://opensource.org/licenses/UPL
 # - <souffle root>/licenses/SOUFFLE-UPL.txt
 
-
 SUFFIXES = .cpp .h .yy .ll .cc .hh .h
 
 bin_PROGRAMS = souffle souffle-profile souffle2bdd souffle2lb
@@ -128,7 +127,6 @@ souffle_sources = \
               $(souffle_profile_sources)                \
               $(mpi_sources)
 
-
 # -- build souffle as a library so it can be reused in testing
 noinst_LTLIBRARIES = libsouffle.la
 libsouffle_la_SOURCES  = $(souffle_sources)
@@ -194,7 +192,6 @@ soufflepublic_HEADERS = \
                         $(libz_sources)         \
                         $(sqlite_sources)       \
                         $(mpi_sources)
-
 
 souffleprofiledir = $(soufflepublicdir)/profile
 
