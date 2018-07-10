@@ -473,5 +473,5 @@ inline void recv(Status& status) {
     recv<char>(status);
 }
 }
-} // end of namespace mpi
-} // end of namespace souffle
+}  // end of namespace mpi
+}  // end of namespace souffle
