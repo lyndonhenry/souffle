@@ -8,7 +8,7 @@
 
 /************************************************************************
  *
- * @SYMBOL_TABLE_file SymbolTable.h
+ * @file SymbolTable.h
  *
  * Data container to store symbols of the Datalog program.
  *
