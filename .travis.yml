@@ -134,7 +134,7 @@ jobs:
     env:
     - "gcc-empi"
     - *gcc_environment
-    - BASE_IMAGE="souffle/ubuntu:bionic-base"
+    - SOUFFLE_DOCKER_BASE_IMAGE="souffle/ubuntu:bionic-base"
     - SOUFFLE_CATEGORY="FastEvaluation,Interface,Profile,Provenance"
     - SOUFFLE_CONFIGURE_OPTIONS="--enable-mpi"
     - SOUFFLE_CONFS="-c -j8 -empi"
@@ -143,7 +143,7 @@ jobs:
     env:
     - "clang-empi"
     - *clang_environment
-    - BASE_IMAGE="souffle/ubuntu:bionic-base"
+    - SOUFFLE_DOCKER_BASE_IMAGE="souffle/ubuntu:bionic-base"
     - SOUFFLE_CATEGORY="FastEvaluation,Interface,Profile,Provenance"
     - SOUFFLE_CONFIGURE_OPTIONS="--enable-mpi"
     - SOUFFLE_CONFS="-c -j8 -empi"
