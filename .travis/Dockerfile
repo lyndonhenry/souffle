@@ -18,7 +18,7 @@ ENV SOUFFLE_CONFS="${SOUFFLE_CONFS}"
 ENV SOUFFLE_CONFIGURE_OPTIONS="${SOUFFLE_CONFIGURE_OPTIONS}"
 ENV SOUFFLE_MAKE_JOBS="${SOUFFLE_MAKE_JOBS}"
 
-COPY ~/Downloads/souffle /home/souffle/souffle
+COPY . /home/souffle/souffle
 
 WORKDIR /home/souffle/souffle
 
