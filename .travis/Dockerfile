@@ -24,7 +24,6 @@ WORKDIR /home/souffle/souffle
 
 USER root
 
-RUN ulimit -c unlimited -S
 RUN chown -R souffle .
 
 USER souffle

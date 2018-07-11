@@ -33,6 +33,7 @@ then
         --tty \
         ${SOUFFLE_DOCKER_TAG}
 else
+    ulimit -c unlimited -S
     if [[ "${SOUFFLE_CATEGORY}" != *"Unit"* ]]
     then
         cd tests
