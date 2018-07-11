@@ -2,6 +2,19 @@
 
 # @TODO
 
+# CC="gcc-7"
+# CXX="g++-7"
+#
+# CC=clang-4.0
+# CXX=clang++-4.0
+#
+# SOUFFLE_DOCKER_BASE_IMAGE="souffle/ubuntu:bionic-base"
+# SOUFFLE_CATEGORY="FastEvaluation,Interface,Profile,Provenance"
+# SOUFFLE_CONFIGURE_OPTIONS="--enable-mpi"
+# SOUFFLE_CONFS="-c -j8 -empi"
+# SOUFFLE_MAKE_JOBS="2"
+
+
 set -eoux pipefail
 
 function main() {
