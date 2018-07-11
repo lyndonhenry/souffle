@@ -1,0 +1,24 @@
+ARG BASE_IMAGE
+
+FROM ${BASE_IMAGE}
+
+ARG CC
+ARG CXX
+ARG SOUFFLE_CONFS
+ARG SOUFFLE_CATEGORY
+ARG SOUFFLE_CONFIGURE_OPTIONS
+ARG SOUFFLE_MAKE_JOBS
+
+COPY . /home/souffle/souffle
+
+WORKDIR /home/souffle/souffle
+
+RUN ulimit -c unlimited -S
+RUN ./bootstrap
+RUN ./configure ${SOUFFLE_CONFIGURE_OPTIONS}
+RUN make -j${SOUFFLE_MAKE_JOBS}
+RUN if [[ "$SOUFFLE_CATEGORY" != *"Unit"* ]]; then cd tests; fi
+
+ENV TESTSUITEFLAGS="-j${SOUFFLE_MAKE_JOBS}"
+
+ENTRYPOINT ["make", "check", "-j${SOUFFLE_MAKE_JOBS}"]
