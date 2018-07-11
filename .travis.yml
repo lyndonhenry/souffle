@@ -48,15 +48,14 @@ aliases:
   - &docker
     os: linux
     services: docker
+    sudo: false
   - &linuxmpi
     <<: *docker
     stage: Testing
-    sudo: required
     script: ".travis/run_docker.sh"
   - &linuxpackage
     <<: *docker
     stage: Packaging
-    sudo: false
   - &osxgcc
     stage: Testing
     os: osx
