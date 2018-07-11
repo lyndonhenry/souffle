@@ -88,9 +88,12 @@ m4_define([TEST_EVAL],[
   ls *.csv|wc -l >"num.generated"
   ls EXPECTEDDIR/*.csv|wc -l >"num.expected"
   # remove mpi messages
-  cat TESTNAME.out | tr '\n' '\r' | sed 's/--*\r.*\r--*\r//g' | tr '\r' '\n' > TESTNAME.out
+  cat TESTNAME.out | \
+  tr '\n' '\r' | \
+  sed 's/--*\r.*\r--*\r//g' | \
+  tr '\r' '\n' > TESTNAME.test.out
   # sort output files as printsize statements are non-deterministically ordered
-  SORTED_SAME_FILES([TESTNAME.out],[EXPECTEDDIR])
+  SORTED_SAME_FILES([TESTNAME.test.out],[EXPECTEDDIR/TESTNAME.out])
   SAME_FILE([TESTNAME.err],[EXPECTEDDIR/TESTNAME.err])
   SAME_FILE([num.generated],[num.expected])
 ])
@@ -115,13 +118,15 @@ m4_define([TEST_EVAL_IN],[
   # is equal to the number of expected CSV files.
   ls *.csv|wc -l >"num.generated"
   ls EXPECTEDDIR/*.csv|wc -l >"num.expected"
-  # remove non-deterministic record numbering
-  sed -i 's/subproof \(@<:@a-zA-Z0-9?_@:>@*\)(@<:@0-9@:>@*)/subproof \1()/g' TESTNAME.out
-  sed -ie '$a\' TESTNAME.out
-  # remove mpi messages
-  cat TESTNAME.out | tr '\n' '\r' | sed 's/--*\r.*\r--*\r//g' | tr '\r' '\n' > TESTNAME.out
+  # remove non-deterministic record numbering and mpi error messages
+  cat TESTNAME.out | \
+  sed 's/subproof \(@<:@a-zA-Z0-9?_@:>@*\)(@<:@0-9@:>@*)/subproof \1()/g' | \
+  sed -e '$a\' | \
+  tr '\n' '\r' | \
+  sed 's/--*\r.*\r--*\r//g' | \
+  tr '\r' '\n' > TESTNAME.test.out
   # sort output files as printsize statements are non-deterministically ordered
-  SORTED_SAME_FILES([TESTNAME.out],[EXPECTEDDIR/TESTNAME.out])
+  SORTED_SAME_FILES([TESTNAME.test.out],[EXPECTEDDIR/TESTNAME.out])
   SAME_FILE([TESTNAME.err],[EXPECTEDDIR/TESTNAME.err])
   SAME_FILE([num.generated],[num.expected])
 ])
