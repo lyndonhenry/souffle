@@ -32,7 +32,7 @@ then
         --interactive \
         --tty \
         ${SOUFFLE_DOCKER_TAG}
-    else
+else
     if [[ "${SOUFFLE_CATEGORY}" != *"Unit"* ]]
     then
         cd tests
