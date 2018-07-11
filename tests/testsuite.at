@@ -28,6 +28,16 @@ m4_define([SAME_FILE],[
   AT_CHECK([diff "$1" "$2"],[],[],[])
 ])
 
+dnl Check whether two files have identical sorted contents.
+dnl the contents of two files are identical
+dnl $1 -- generated file
+dnl $2 -- expected file
+m4_define([SORTED_SAME_FILE],[
+    sort "$1" > "$(basename $1).sorted.generated"
+    sort "$2" > "$(basename $2).sorted.expected"
+    SAME_FILE(["$i.sorted.generated"], ["$i.sorted.expected"])
+])
+
 dnl Check whether all files matching a regex have identical sorted contents
 dnl to those in the given directory.
 dnl the contents of two files are identical
@@ -91,9 +101,9 @@ m4_define([TEST_EVAL],[
   cat TESTNAME.out | \
   tr '\n' '\r' | \
   sed 's/--*\r.*\r--*\r//g' | \
-  tr '\r' '\n' > TESTNAME.test.out
+  tr '\r' '\n' > TESTNAME.out
   # sort output files as printsize statements are non-deterministically ordered
-  SORTED_SAME_FILES([TESTNAME.test.out],[EXPECTEDDIR/TESTNAME.out])
+  SORTED_SAME_FILE([TESTNAME.out],[EXPECTEDDIR/TESTNAME.out])
   SAME_FILE([TESTNAME.err],[EXPECTEDDIR/TESTNAME.err])
   SAME_FILE([num.generated],[num.expected])
 ])
@@ -124,9 +134,9 @@ m4_define([TEST_EVAL_IN],[
   sed -e '$a\' | \
   tr '\n' '\r' | \
   sed 's/--*\r.*\r--*\r//g' | \
-  tr '\r' '\n' > TESTNAME.test.out
+  tr '\r' '\n' > TESTNAME.out
   # sort output files as printsize statements are non-deterministically ordered
-  SORTED_SAME_FILES([TESTNAME.test.out],[EXPECTEDDIR/TESTNAME.out])
+  SORTED_SAME_FILE([TESTNAME.out],[EXPECTEDDIR/TESTNAME.out])
   SAME_FILE([TESTNAME.err],[EXPECTEDDIR/TESTNAME.err])
   SAME_FILE([num.generated],[num.expected])
 ])
