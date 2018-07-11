@@ -4,7 +4,7 @@ set -ouex pipefail
 
 # @TODO
 CC="gcc-7"
-CC="g++-7"
+CXX="g++-7"
 SOUFFLE_DOCKER_BASE_IMAGE="souffle/ubuntu:bionic-base"
 SOUFFLE_CATEGORY="Unit,Syntactic,Semantic,FastEvaluation"
 SOUFFLE_CONFIGURE_OPTIONS="--enable-mpi"
