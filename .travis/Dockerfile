@@ -22,17 +22,13 @@ COPY . /home/souffle/souffle
 
 WORKDIR /home/souffle/souffle
 
-# @TODO: this gives a too many arguments error...
 USER root
 
+RUN ulimit -c unlimited -S
 RUN chown -R souffle .
-# RUN ulimit -c unlimited -S
+
 USER souffle
 
 RUN ./bootstrap
 RUN ./configure ${SOUFFLE_CONFIGURE_OPTIONS}
 RUN make -j${SOUFFLE_MAKE_JOBS}
-
-#RUN if [[ "${SOUFFLE_CATEGORY}" != *"Unit"* ]]; then cd tests; fi
-#ENV TESTSUITEFLAGS="-j${SOUFFLE_MAKE_JOBS}"
-#ENTRYPOINT ["make", "check", "-j${SOUFFLE_MAKE_JOBS}"]
