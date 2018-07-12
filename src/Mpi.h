@@ -349,15 +349,15 @@ template <typename S, typename T>
 inline void send(const T& data, const size_t length, const Status& status) {
     send<S>(data, length, status->MPI_SOURCE, status->MPI_TAG);
 }
-
-template <typename S, typename T>
-inline void send(const T& data, const size_t length, const std::set<int>& destinations, const int tag) {
-    assert(length >= 0);
-    if (length > 0) {
-        std::vector<S> buffer(data.size() * length);
+// @TODO
+template <template <int N, typename S> typename E, typename T>
+inline void send(const T& data, const std::set<int>& destinations, const int tag) {
+    assert(N >= 0);
+    if (N > 0) {
+        std::vector<S> buffer(data.size() * N);
         size_t i = 0;
         for (const auto& element : data) {
-            for (size_t j = 0; j < length; ++j) {
+            for (size_t j = 0; j < N; ++j) {
                 buffer[i] = element[j];
                 ++i;
             }
@@ -367,6 +367,7 @@ inline void send(const T& data, const size_t length, const std::set<int>& destin
         send((!data.empty()), destinations, tag);
     }
 }
+
 }
 
 /* recv */
@@ -420,29 +421,29 @@ inline void recv(R& data, const int source, const int tag) {
     recv(data, status);
 }
 
-template <typename R, typename T>
-inline void recv(T& data, const size_t length, Status& status) {
-    assert(length >= 0);
-    if (length > 0) {
+// @TODO
+template <template <int N, typename R> typename E,  typename T>
+inline void recv(T& data, Status& status) {
+    assert(N >= 0);
+    if (N > 0) {
         std::vector<R> newData;
         recv(newData, status);
         auto it = newData.begin();
         while (it != newData.end()) {
-            auto element = std::unique_ptr<R[]>(new R[length]);
-            for (size_t i = 0; i < length; ++i) {
+            auto element = std::unique_ptr<E<N, R>>(new E<N, R>());
+            for (size_t i = 0; i < N; ++i) {
                 element[i] = *it;
                 ++it;
             }
-            const R* pointer = element.get();
+            const auto* pointer = element.get();
             data.insert(pointer);
         }
     } else {
         bool isNotEmpty;
         recv(isNotEmpty, status);
         if (isNotEmpty) {
-            // TODO (lyndonhenry): should do this better, as there may be a risk of an invalid call to free()
-            auto element = std::unique_ptr<R[]>(new R[length]);
-            const R* pointer = element.get();
+            auto element = std::unique_ptr<E<N, R>>(new E<N, R>());
+            const auto* pointer = element.get();
             data.insert(pointer);
         }
     }
