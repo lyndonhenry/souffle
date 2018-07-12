@@ -1199,10 +1199,10 @@ void Synthesiser::emitCode(std::ostream& out, const RamStatement& stmt) {
             }
             os << ");";
             os << "souffle::mpi::recv<";
-                  {
-                      os << "RamDomain, ";
-                      os << recv.getRelation().getArity();
-                  }
+            {
+                os << "RamDomain, ";
+                os << recv.getRelation().getArity();
+            }
             os << ">(";
             {
                 // data
@@ -1219,10 +1219,10 @@ void Synthesiser::emitCode(std::ostream& out, const RamStatement& stmt) {
             os << "\n#ifdef USE_MPI\n";
             os << "{";
             os << "souffle::mpi::send<";
-              {
-                  os << "RamDomain, ";
-                  os << send.getRelation().getArity();
-              }
+            {
+                os << "RamDomain, ";
+                os << send.getRelation().getArity();
+            }
             os << ">(";
             // data
             { os << "*" << synthesiser.getRelationName(send.getRelation()) << ", "; }
