@@ -16,6 +16,7 @@ function main() {
     then
         export CC=gcc
         export CXX=g++
+        export SOUFFLE_DOCKER_BASE_IMAGE=souffle/ubuntu:bionic
         export SOUFFLE_CATEGORY=Unit,Syntactic,Semantic,Profile,Evaluation
         export SOUFFLE_CONFIGURE_OPTIONS="--enable-mpi"
         export SOUFFLE_CONFS="-c -j8 -empi"
