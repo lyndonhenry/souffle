@@ -350,7 +350,7 @@ inline void send(const T& data, const size_t length, const Status& status) {
     send<S>(data, length, status->MPI_SOURCE, status->MPI_TAG);
 }
 // @TODO
-template <template <int N, typename S> typename E, typename T>
+template <typename S, size_t N, typename T>
 inline void send(const T& data, const std::set<int>& destinations, const int tag) {
     assert(N >= 0);
     if (N > 0) {
@@ -421,34 +421,6 @@ inline void recv(R& data, const int source, const int tag) {
     recv(data, status);
 }
 
-// @TODO
-template <template <int N, typename R> typename E,  typename T>
-inline void recv(T& data, Status& status) {
-    assert(N >= 0);
-    if (N > 0) {
-        std::vector<R> newData;
-        recv(newData, status);
-        auto it = newData.begin();
-        while (it != newData.end()) {
-            auto element = std::unique_ptr<E<N, R>>(new E<N, R>());
-            for (size_t i = 0; i < N; ++i) {
-                element[i] = *it;
-                ++it;
-            }
-            const auto* pointer = element.get();
-            data.insert(pointer);
-        }
-    } else {
-        bool isNotEmpty;
-        recv(isNotEmpty, status);
-        if (isNotEmpty) {
-            auto element = std::unique_ptr<E<N, R>>(new E<N, R>());
-            const auto* pointer = element.get();
-            data.insert(pointer);
-        }
-    }
-}
-
 template <typename R, typename T>
 inline void recv(T& data, const size_t length, const int source, const int tag) {
     auto status = probe(source, tag);
@@ -473,6 +445,35 @@ inline void recv(const int source, const int tag) {
 inline void recv(Status& status) {
     recv<char>(status);
 }
+
+// @TODO
+template <typename R, size_t N, typename T>
+inline void recv(T& data, Status& status) {
+    assert(N >= 0);
+    if (N > 0) {
+        std::vector<R> newData;
+        recv(newData, status);
+        auto it = newData.begin();
+        while (it != newData.end()) {
+            auto element = std::unique_ptr<R[]>(new R[N]());
+            for (size_t i = 0; i < N; ++i) {
+                element[i] = *it;
+                ++it;
+            }
+            const auto* ptr = element.get();
+            data.insert(ptr);
+        }
+    } else {
+        bool isNotEmpty;
+        recv(isNotEmpty, status);
+        if (isNotEmpty) {
+            auto element = std::unique_ptr<R[]>(new R[N]());
+            const auto* ptr = element.get();
+            data.insert(ptr);
+        }
+    }
+}
+
 }
 }  // end of namespace mpi
 }  // end of namespace souffle

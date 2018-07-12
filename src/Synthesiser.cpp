@@ -1198,7 +1198,12 @@ void Synthesiser::emitCode(std::ostream& out, const RamStatement& stmt) {
                 os << "tag_" << synthesiser.getRelationName(recv.getRelation());
             }
             os << ");";
-            os << "souffle::mpi::recv<Tuple<" << send.getRelation().getArity() << ", RamDomain>>(";
+            os << "souffle::mpi::recv<";
+                  {
+                      os << "RamDomain, ";
+                      os << recv.getRelation().getArity();
+                  }
+            os << ">(";
             {
                 // data
                 os << "*" << synthesiser.getRelationName(recv.getRelation()) << ", ";
@@ -1213,7 +1218,12 @@ void Synthesiser::emitCode(std::ostream& out, const RamStatement& stmt) {
         void visitSend(const RamSend& send, std::ostream& os) override {
             os << "\n#ifdef USE_MPI\n";
             os << "{";
-            os << "souffle::mpi::send<Tuple<" << send.getRelation().getArity() << ", RamDomain>>(";
+            os << "souffle::mpi::send<";
+              {
+                  os << "RamDomain, ";
+                  os << send.getRelation().getArity();
+              }
+            os << ">(";
             // data
             { os << "*" << synthesiser.getRelationName(send.getRelation()) << ", "; }
             // destinations

@@ -199,11 +199,13 @@ public:
 
     void forkThread() {
         threads[0] = std::thread([&]() { handleMpiMessages(); });
+        threads[0].detach();
     }
 
     void joinThread() {
         mpi::send(0, EXIT);
-        threads[0].join();
+        // @TODO
+        // threads[0].join();
     }
 
 #endif

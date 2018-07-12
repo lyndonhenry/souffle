@@ -2,15 +2,6 @@
 
 set -ouex pipefail
 
-# @TODO
-CC="gcc-7"
-CXX="g++-7"
-SOUFFLE_DOCKER_BASE_IMAGE="souffle/ubuntu:bionic-base"
-SOUFFLE_CATEGORY="Unit,Syntactic,Semantic,FastEvaluation"
-SOUFFLE_CONFIGURE_OPTIONS="--enable-mpi"
-SOUFFLE_CONFS="-c -j8 -empi"
-SOUFFLE_MAKE_JOBS="2"
-
 if [ $# == 0 ]
 then
     SOUFFLE_DOCKER_TAG="$(echo ${SOUFFLE_DOCKER_BASE_IMAGE} | sed 's/-base/-test/g')"

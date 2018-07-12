@@ -1,3 +1,0 @@
-#!/bin/bash
-
-./testsuite -k bin -k rel_list -k store3 -k comp-override1 -k neg6
