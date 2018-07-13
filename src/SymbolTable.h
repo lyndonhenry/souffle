@@ -62,6 +62,8 @@ private:
     mutable std::unordered_map<size_t, std::string> numToStrCache;
 
     RamDomain cacheLookup(const std::string& symbol, const int tag) const {
+        auto lease = access.acquire();
+        (void)lease;  // avoid warning;
         auto it = strToNumCache.find(symbol);
         if (it != strToNumCache.end()) {
             return it->second;
@@ -73,6 +75,8 @@ private:
         return numToStrCache.insert(std::pair<size_t, std::string>(index, symbol)).first->first;
     }
     const std::string& cacheResolve(const RamDomain index, const int tag) const {
+        auto lease = access.acquire();
+        (void)lease;  // avoid warning;
         auto it = numToStrCache.find(index);
         if (it != numToStrCache.end()) {
             return it->second;
