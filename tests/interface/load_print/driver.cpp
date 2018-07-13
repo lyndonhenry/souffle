@@ -33,10 +33,6 @@ void error(std::string txt) {
  * Main program
  */
 int main(int argc, char** argv) {
-#ifdef USE_MPI
-    mpi::init(argc, argv);
-    atexit(mpi::finalize);
-#endif
     // check number of arguments
     if (argc != 2) error("wrong number of arguments!");
 
