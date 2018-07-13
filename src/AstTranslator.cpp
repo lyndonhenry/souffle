@@ -1335,12 +1335,11 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
 
     };
 
-    const auto& makeRamForkSymbolTable = [&](std::unique_ptr<RamStatement>& current) {
-        appendStmt(current, std::make_unique<RamForkSymbolTable>());
-    };
+    const auto& makeRamNotify = [&](
+            std::unique_ptr<RamStatement>& current) { appendStmt(current, std::make_unique<RamNotify>()); };
 
-    const auto& makeRamJoinSymbolTable = [&](std::unique_ptr<RamStatement>& current) {
-        appendStmt(current, std::make_unique<RamJoinSymbolTable>());
+    const auto& makeRamWait = [&](std::unique_ptr<RamStatement>& current, const size_t count) {
+        appendStmt(current, std::make_unique<RamWait>(count));
     };
 #endif
 
@@ -1433,6 +1432,8 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
             for (const auto& relation : internsWithExternSuccs) {
                 makeRamSend(current, relation, sccOrder.indexOfScc(sccGraph.getSuccessorSCCs(relation)));
             }
+            // notify the master process
+            makeRamNotify(current);
             // second, send all internal output relations to the master process
             for (const auto& relation : internOuts) {
                 makeRamSend(current, relation, std::set<int>({-1}));
@@ -1514,8 +1515,8 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
             ++indexOfScc;
         }
 
-        // fork the symbol table thread
-        makeRamForkSymbolTable(current);
+        // wait for notifications from all slaves
+        makeRamWait(current, sccGraph.getNumberOfSCCs());
 
         // recv all internal output relations from their slave processes
         indexOfScc = 0;
@@ -1526,9 +1527,6 @@ std::unique_ptr<RamProgram> AstTranslator::translateProgram(const AstTranslation
             }
             ++indexOfScc;
         }
-
-        // join the symbol table thread
-        makeRamJoinSymbolTable(current);
 
         // write to output-dir with .csv extension
         indexOfScc = 0;

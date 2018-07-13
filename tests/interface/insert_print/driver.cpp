@@ -33,6 +33,10 @@ void error(std::string txt) {
  * Main program
  */
 int main(int argc, char** argv) {
+#ifdef USE_MPI
+    mpi::init(argc, argv);
+    atexit(mpi::finalize);
+#endif
     // create an instance of program "insert_print"
     if (SouffleProgram* prog = ProgramFactory::newInstance("insert_print")) {
         // get input relation "edge"

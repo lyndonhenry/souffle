@@ -1198,15 +1198,11 @@ void Synthesiser::emitCode(std::ostream& out, const RamStatement& stmt) {
                 os << "tag_" << synthesiser.getRelationName(recv.getRelation());
             }
             os << ");";
-            os << "souffle::mpi::recv<";
-            {
-                os << "RamDomain, ";
-                os << recv.getRelation().getArity();
-            }
-            os << ">(";
+            os << "souffle::mpi::recv<RamDomain>(";
             {
                 // data
                 os << "*" << synthesiser.getRelationName(recv.getRelation()) << ", ";
+                os << recv.getRelation().getArity() << ", ";
                 // status
                 os << "status";
             }
@@ -1218,14 +1214,10 @@ void Synthesiser::emitCode(std::ostream& out, const RamStatement& stmt) {
         void visitSend(const RamSend& send, std::ostream& os) override {
             os << "\n#ifdef USE_MPI\n";
             os << "{";
-            os << "souffle::mpi::send<";
-            {
-                os << "RamDomain, ";
-                os << send.getRelation().getArity();
-            }
-            os << ">(";
+            os << "souffle::mpi::send<RamDomain>(";
             // data
             { os << "*" << synthesiser.getRelationName(send.getRelation()) << ", "; }
+            { os << send.getRelation().getArity() << ", "; }
             // destinations
             {
                 const auto& destinationStrata = send.getDestinationStrata();
@@ -1251,15 +1243,16 @@ void Synthesiser::emitCode(std::ostream& out, const RamStatement& stmt) {
             os << "\n#endif\n";
         }
 
-        void visitForkSymbolTable(const RamForkSymbolTable&, std::ostream& os) override {
+        void visitNotify(const RamNotify&, std::ostream& os) override {
             os << "\n#ifdef USE_MPI\n";
-            os << "symTable.forkThread();";
+            os << "mpi::send(0, SymbolTable::exitTag());";
+            os << "mpi::recv(0, SymbolTable::exitTag());";
             os << "\n#endif\n";
         }
 
-        void visitJoinSymbolTable(const RamJoinSymbolTable&, std::ostream& os) override {
+        void visitWait(const RamWait& wait, std::ostream& os) override {
             os << "\n#ifdef USE_MPI\n";
-            os << "symTable.joinThread();";
+            os << "symTable.handleMpiMessages(" << wait.getCount() << ");";
             os << "\n#endif\n";
         }
 

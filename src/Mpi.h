@@ -27,7 +27,7 @@
 
 namespace souffle {
 
-// TODO (lyndonhenry): should do documentation for this whole namespace
+// TODO (lyndonhenry): should do documentation for this whole file
 namespace mpi {
 
 /* typedefs */
@@ -38,7 +38,6 @@ typedef std::unique_ptr<MPI_Status> Status;
 /* datatype */
 namespace {
 
-// TODO (lyndonhenry): should make everything in this namespace act like private member functions
 template <typename T>
 inline const MPI_Datatype datatype() {
     return datatype<T>();
@@ -113,7 +112,6 @@ inline const MPI_Datatype datatype<char>() {
 /* getCount */
 namespace {
 
-// TODO (lyndonhenry): should make everything in this namespace act like private member functions
 template <typename T>
 inline int getCount(std::unique_ptr<MPI_Status>& status) {
     assert(status);
@@ -126,7 +124,6 @@ inline int getCount(std::unique_ptr<MPI_Status>& status) {
 /* pack */
 namespace {
 
-// TODO (lyndonhenry): should make everything in this namespace act like private member functions
 template <typename T>
 inline void pack(const T& oldData, std::vector<char>& newData);
 
@@ -164,8 +161,6 @@ inline void pack<std::vector<std::string>>(
 
 /* unpack */
 namespace {
-
-// TODO (lyndonhenry): should make everything in this namespace act like private member functions
 
 template <typename T>
 inline void unpack(const std::vector<char>& oldData, T& newData);
@@ -287,7 +282,7 @@ inline void send<std::string>(const std::vector<std::string>& data, const int de
 
 template <>
 inline void send<bool>(const std::vector<bool>& data, const int destination, const int tag) {
-    // TODO (lyndonhenry): should pack vector of bools as bits, currently we just convert each to an int
+    // TODO (lyndonhenry): should pack vector of bools as a bitvector
     std::vector<int> newData(data.size());
     size_t i = 0;
     for (const auto element : data) {
@@ -349,15 +344,14 @@ template <typename S, typename T>
 inline void send(const T& data, const size_t length, const Status& status) {
     send<S>(data, length, status->MPI_SOURCE, status->MPI_TAG);
 }
-// @TODO
-template <typename S, size_t N, typename T>
-inline void send(const T& data, const std::set<int>& destinations, const int tag) {
-    assert(N >= 0);
-    if (N > 0) {
-        std::vector<S> buffer(data.size() * N);
+template <typename S, typename T>
+inline void send(const T& data, const size_t length, const std::set<int>& destinations, const int tag) {
+    assert(length >= 0);
+    if (length > 0) {
+        std::vector<S> buffer(data.size() * length);
         size_t i = 0;
         for (const auto& element : data) {
-            for (size_t j = 0; j < N; ++j) {
+            for (size_t j = 0; j < length; ++j) {
                 buffer[i] = element[j];
                 ++i;
             }
@@ -367,7 +361,6 @@ inline void send(const T& data, const std::set<int>& destinations, const int tag
         send((!data.empty()), destinations, tag);
     }
 }
-
 }
 
 /* recv */
@@ -396,7 +389,7 @@ inline void recv<std::string>(std::vector<std::string>& data, Status& status) {
 
 template <>
 inline void recv<bool>(std::vector<bool>& data, Status& status) {
-    // TODO (lyndonhenry): should pack vector of bools as bits, currently we just convert each to an int
+    // TODO (lyndonhenry): should pack vector of bools as a bitvector
     assert(status);
     std::vector<int> newData;
     recv(newData, status);
@@ -446,17 +439,16 @@ inline void recv(Status& status) {
     recv<char>(status);
 }
 
-// @TODO
-template <typename R, size_t N, typename T>
-inline void recv(T& data, Status& status) {
-    assert(N >= 0);
-    if (N > 0) {
+template <typename R, typename T>
+inline void recv(T& data, const size_t length, Status& status) {
+    assert(length >= 0);
+    if (length > 0) {
         std::vector<R> newData;
         recv(newData, status);
         auto it = newData.begin();
         while (it != newData.end()) {
-            auto element = std::unique_ptr<R[]>(new R[N]());
-            for (size_t i = 0; i < N; ++i) {
+            auto element = std::unique_ptr<R[]>(new R[length]());
+            for (size_t i = 0; i < length; ++i) {
                 element[i] = *it;
                 ++it;
             }
@@ -464,16 +456,15 @@ inline void recv(T& data, Status& status) {
             data.insert(ptr);
         }
     } else {
-        bool isNotEmpty;
-        recv(isNotEmpty, status);
-        if (isNotEmpty) {
-            auto element = std::unique_ptr<R[]>(new R[N]());
+        bool islengthotEmpty;
+        recv(islengthotEmpty, status);
+        if (islengthotEmpty) {
+            auto element = std::unique_ptr<R[]>(new R[length]());
             const auto* ptr = element.get();
             data.insert(ptr);
         }
     }
 }
-
 }
 }  // end of namespace mpi
 }  // end of namespace souffle

@@ -84,128 +84,85 @@ private:
         return strToNumCache.insert(std::pair<std::string, size_t>(symbol, index)).first->first;
     }
 
-    void handleMpiMessages() {
+public:
+    void handleMpiMessages(const size_t count) {
         assert(mpi::commRank() == 0);
-        // keep track of most recent tag and source not handled in switch statement
-        int mostRecentUnhandledTag = -1, mostRecentUnhandledSource = -1;
-        // keep track of whether the thread slept during the current iteration of the while loop
-        bool threadSleptThisLoop;
-        // the thread should sleep at first for one tick of the MPI clock
-        double secondsToSleepThreadFor = MPI_Wtick();
-        while (true) {
-            threadSleptThisLoop = false;
+        auto semaphor = count;
+        while (semaphor) {
             auto status = mpi::probe();
-            if (status) {
-                switch (status->MPI_TAG) {
-                    case EXIT: {
-                        mpi::recv(0, EXIT);
-                        return;
-                    }
-                    case LOOKUP: {
-                        std::string symbol;
-                        mpi::recv(symbol, status);
-                        mpi::send(lookup(symbol), status);
-                        break;
-                    }
-                    case LOOKUP_EXISTING: {
-                        std::string symbol;
-                        mpi::recv(symbol, status);
-                        mpi::send(lookupExisting(symbol), status);
-                        break;
-                    }
-                    case UNSAFE_LOOKUP: {
-                        std::string symbol;
-                        mpi::recv(symbol, status);
-                        mpi::send(unsafeLookup(symbol), status);
-                        break;
-                    }
-                    case RESOLVE: {
-                        RamDomain index;
-                        mpi::recv(index, status);
-                        mpi::send(resolve(index), status);
-                        break;
-                    }
-                    case UNSAFE_RESOLVE: {
-                        RamDomain index;
-                        mpi::recv(index, status);
-                        mpi::send(unsafeResolve(index), status);
-                        break;
-                    }
-                    case SIZE: {
-                        mpi::recv(status);
-                        mpi::send(size(), status);
-                        break;
-                    }
-                    case PRINT: {
-                        mpi::recv(status);
-                        print(std::cout);
-                        break;
-                    }
-                    case INSERT_STRING: {
-                        std::string symbol;
-                        mpi::recv(symbol, status);
-                        insert(symbol);
-                        break;
-                    }
-                    case INSERT_VECTOR_STRING: {
-                        std::vector<std::string> symbols;
-                        mpi::recv(symbols, status);
-                        insert(symbols);
-                        break;
-                    }
-                    default: {
-                        // if we have encountered the same unhandled source and tag more than once in a row...
-                        if (mostRecentUnhandledTag == status->MPI_TAG &&
-                                mostRecentUnhandledSource == status->MPI_SOURCE) {
-                            // sleep for however long we are sleeping for in this iteration
-                            std::this_thread::sleep_for(
-                                    std::chrono::duration<double>(secondsToSleepThreadFor));
-                            // keep track of the fact that we have slept in this iteration
-                            threadSleptThisLoop = true;
-                        } else {
-                            // otherwise, just note that this source and tag were unhandled
-                            mostRecentUnhandledTag = status->MPI_TAG;
-                            mostRecentUnhandledSource = status->MPI_SOURCE;
-                        }
-                        break;
-                    }
+            switch (status->MPI_TAG) {
+                case EXIT: {
+                    mpi::recv(status->MPI_SOURCE, EXIT);
+                    --semaphor;
+                    break;
                 }
-            } else {
-                std::this_thread::sleep_for(std::chrono::duration<double>(secondsToSleepThreadFor));
-                threadSleptThisLoop = true;
-            }
-            // if the thread has slept in this iteration...
-            if (threadSleptThisLoop) {
-                // use exponential backoff to adjust the amount of time to sleep for if we have to again
-                secondsToSleepThreadFor = 2.0 * secondsToSleepThreadFor;
-                // set an upper limit of one second on how long the thread sleeps
-                if (secondsToSleepThreadFor > 1.0) {
-                    secondsToSleepThreadFor = 1.0;
+                case LOOKUP: {
+                    std::string symbol;
+                    mpi::recv(symbol, status);
+                    mpi::send(lookup(symbol), status);
+                    break;
                 }
-            } else {
-                // othersise, reset the amount of time the thread sleeps for next time it does
-                secondsToSleepThreadFor = MPI_Wtick();
+                case LOOKUP_EXISTING: {
+                    std::string symbol;
+                    mpi::recv(symbol, status);
+                    mpi::send(lookupExisting(symbol), status);
+                    break;
+                }
+                case UNSAFE_LOOKUP: {
+                    std::string symbol;
+                    mpi::recv(symbol, status);
+                    mpi::send(unsafeLookup(symbol), status);
+                    break;
+                }
+                case RESOLVE: {
+                    RamDomain index;
+                    mpi::recv(index, status);
+                    mpi::send(resolve(index), status);
+                    break;
+                }
+                case UNSAFE_RESOLVE: {
+                    RamDomain index;
+                    mpi::recv(index, status);
+                    mpi::send(unsafeResolve(index), status);
+                    break;
+                }
+                case SIZE: {
+                    mpi::recv(status);
+                    mpi::send(size(), status);
+                    break;
+                }
+                case PRINT: {
+                    mpi::recv(status);
+                    print(std::cout);
+                    break;
+                }
+                case INSERT_STRING: {
+                    std::string symbol;
+                    mpi::recv(symbol, status);
+                    insert(symbol);
+                    break;
+                }
+                case INSERT_VECTOR_STRING: {
+                    std::vector<std::string> symbols;
+                    mpi::recv(symbols, status);
+                    insert(symbols);
+                    break;
+                }
+                default: { throw std::runtime_error("Invalid parameter in SymbolTable::handleMpiMessages."); }
             }
+        }
+        for (size_t i = 0; i < count; ++i) {
+            mpi::send(i + 1, EXIT);
         }
     }
 
-    std::array<std::thread, 1> threads;
-
-public:
     static int numberOfTags() {
         // ok, so this looks stupid, but it just gives the size of the enum at the top
         return 10;
     }
 
-    void forkThread() {
-        threads[0] = std::thread([&]() { handleMpiMessages(); });
-        threads[0].detach();
-    }
-
-    void joinThread() {
-        mpi::send(0, EXIT);
-        // @TODO
-        // threads[0].join();
+    static int exitTag() {
+        return (int)EXIT;
     }
 
 #endif

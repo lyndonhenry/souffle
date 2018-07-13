@@ -1072,13 +1072,14 @@ protected:
     }
 };
 
-class RamForkSymbolTable : public RamStatement {
+class RamNotify : public RamStatement {
 public:
-    RamForkSymbolTable() : RamStatement(RN_ForkSymbolTable) {}
+    RamNotify() : RamStatement(RN_Notify) {}
 
     /** Pretty print */
     void print(std::ostream& os, int tabpos) const override {
-        os << "FORK_SYMBOL_TABLE";
+        os << std::string(tabpos, '\t');
+        os << "NOTIFY";
     }
 
     /** Obtain list of child nodes */
@@ -1087,8 +1088,8 @@ public:
     }
 
     /** Create clone */
-    RamForkSymbolTable* clone() const override {
-        return new RamForkSymbolTable();
+    RamNotify* clone() const override {
+        return new RamNotify();
     }
 
     /** Apply mapper */
@@ -1097,20 +1098,29 @@ public:
 protected:
     /** Check equality */
     bool equal(const RamNode& node) const override {
-        assert(nullptr != dynamic_cast<const RamForkSymbolTable*>(&node));
-        const auto& other = static_cast<const RamForkSymbolTable&>(node);
+        assert(nullptr != dynamic_cast<const RamNotify*>(&node));
+        const auto& other = static_cast<const RamNotify&>(node);
         (void)other;
         return true;
     }
 };
 
-class RamJoinSymbolTable : public RamStatement {
+class RamWait : public RamStatement {
+private:
+    const size_t count;
+
 public:
-    RamJoinSymbolTable() : RamStatement(RN_JoinSymbolTable) {}
+    RamWait(const size_t c) : RamStatement(RN_Wait), count(c) {}
+
+    /** Get count of termination signals required. */
+    const int getCount() const {
+        return count;
+    }
 
     /** Pretty print */
     void print(std::ostream& os, int tabpos) const override {
-        os << "JOIN_SYMBOL_TABLE";
+        os << std::string(tabpos, '\t');
+        os << "WAIT";
     }
 
     /** Obtain list of child nodes */
@@ -1119,8 +1129,8 @@ public:
     }
 
     /** Create clone */
-    RamJoinSymbolTable* clone() const override {
-        return new RamJoinSymbolTable();
+    RamWait* clone() const override {
+        return new RamWait(count);
     }
 
     /** Apply mapper */
@@ -1129,10 +1139,9 @@ public:
 protected:
     /** Check equality */
     bool equal(const RamNode& node) const override {
-        assert(nullptr != dynamic_cast<const RamJoinSymbolTable*>(&node));
-        const auto& other = static_cast<const RamJoinSymbolTable&>(node);
-        (void)other;
-        return true;
+        assert(nullptr != dynamic_cast<const RamWait*>(&node));
+        const auto& other = static_cast<const RamWait&>(node);
+        return other.count == count;
     }
 };
 

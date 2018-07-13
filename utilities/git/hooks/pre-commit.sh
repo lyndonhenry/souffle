@@ -7,6 +7,9 @@ then
     clang-format-4.0 \
             -i \
             -style=file \
-            $(find . -name *.h) \
-            $(find . -name *.cpp)
+            src/*.h \
+            src/*.cpp \
+            src/test/*.h \
+            src/test/*.cpp \
+            tests/interface/*/*.cpp
 fi

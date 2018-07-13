@@ -35,6 +35,10 @@ void handler(int n) {
  * Main program
  */
 int main(int argc, char** argv) {
+#ifdef USE_MPI
+    mpi::init(argc, argv);
+    atexit(mpi::finalize);
+#endif
     // set default signal handler for SIGINT signal
     signal(SIGINT, handler);
 

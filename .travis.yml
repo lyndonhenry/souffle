@@ -135,8 +135,9 @@ jobs:
     - "gcc-empi"
     - *gcc_environment
     - SOUFFLE_DOCKER_BASE_IMAGE="souffle/ubuntu:bionic-base"
-    # TODO (lyndonhenry): should get this working with Interface and Profile
-    - SOUFFLE_CATEGORY="Unit,Syntactic,Semantic,Provenance,FastEvaluation"
+    # @TODO: change what tests are performed here, after you are sure all pass
+    # TODO (lyndonhenry): should get this working with Profile
+    - SOUFFLE_CATEGORY="Unit,Syntactic,Semantic,Interface,Provenance,FastEvaluation"
     - SOUFFLE_CONFIGURE_OPTIONS="--enable-mpi"
     - SOUFFLE_CONFS="-c -j8 -empi"
     - SOUFFLE_MAKE_JOBS="2"
