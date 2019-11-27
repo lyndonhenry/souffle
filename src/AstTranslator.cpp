@@ -1634,7 +1634,8 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
 
         if (current) {
             // append the current SCC as a stratum to the sequence
-            appendStmt(res, std::make_unique<RamStratum>(std::move(current), indexOfScc));
+            appendStmt(
+                    res, std::make_unique<RamStratum>(std::move(current), sccOrder.order().at(indexOfScc)));
 
             // increment the index of the current SCC
             indexOfScc++;
