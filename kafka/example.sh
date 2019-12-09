@@ -27,6 +27,10 @@
 
 set -oue pipefail
 
+KAFKA_HOST=localhost:9092
+
+# set -x
+
 function main() {
 
     # if we are not running in the root souffle directory, then exit with error
@@ -91,7 +95,6 @@ function main() {
         # - but are not output relations
         # - note that all input relations become such intermediate relations
         # - intermediate relations are loaded and stored from and to the output directory with a .facts extension
-        ${CWD}/${TEST_NAME}/${PROGRAM_NAME} -i${STRATUM_INDEX}
 
         # get information for each stratum from the json data
         local INPUT_RELATIONS=$(echo ${JSON_DATA} | jq -r ".input_relations_per_strata | .[\"${STRATUM_INDEX}\"]")
@@ -100,13 +103,56 @@ function main() {
         local PRODUCED_RELATIONS=$(echo ${JSON_DATA} | jq -r ".produced_relations_per_strata | .[\"${STRATUM_INDEX}\"]")
 
         # print information for each stratum
-        echo "["
-        echo "STRATUM_INDEX"=${STRATUM_INDEX}
-        echo "INPUT_RELATIONS"=${INPUT_RELATIONS}
-        echo "OUTPUT_RELATIONS"=${OUTPUT_RELATIONS}
-        echo "PRODUCED_RELATIONS"=${PRODUCED_RELATIONS}
-        echo "CONSUMED_RELATIONS"=${CONSUMED_RELATIONS}
-        echo "]"
+        # echo "["
+        # echo "STRATUM_INDEX"=${STRATUM_INDEX}
+        # echo "INPUT_RELATIONS"=${INPUT_RELATIONS}
+        # echo "OUTPUT_RELATIONS"=${OUTPUT_RELATIONS}
+        # echo "PRODUCED_RELATIONS"=${PRODUCED_RELATIONS}
+        # echo "CONSUMED_RELATIONS"=${CONSUMED_RELATIONS}
+        # echo "]"
+
+        # TODO - run in a thread here
+
+        # Wait until all output .csv and .facts are ready
+        for CONSUMED_RELATION in $(echo ${CONSUMED_RELATIONS} | jq -r ".[]"); do
+            # TODO invoke in a thread here
+            echo "Consumed relation ${CONSUMED_RELATION}"
+        done
+        for INPUT_RELATION in $(echo ${INPUT_RELATIONS} | jq -r ".[]"); do
+            # TODO invoke a thread here 
+            echo "Input relation ${INPUT_RELATION}"
+        done        
+
+        # Invoke strata 
+        ${CWD}/${TEST_NAME}/${PROGRAM_NAME} -i${STRATUM_INDEX}
+
+        # Send all produced (.facts) and output (.csv) relations into Kafka
+        local PRODUCED_RELATIONS_EFFECTIVE=$(echo ${PRODUCED_RELATIONS} | jq -r ".[]");
+        for OUTPUT_RELATION in $(echo ${OUTPUT_RELATIONS} | jq -r ".[]"); do  
+            echo "Output rel: ${OUTPUT_RELATION}"  
+            # kafka-topics.sh --create --bootstrap-server ${KAFKA_HOST} --replication-factor 1 --partitions 1 --topic "${OUTPUT_RELATION}"
+            # PRODUCED_RELATIONS_EFFECTIVE=( "${PRODUCED_RELATIONS_EFFECTIVE[@]/$OUTPUT_RELATION}" ) 
+            # # cat "${CWD}/${TEST_NAME}/${OUTPUT_RELATION}.csv" | while read line; do
+            # #     kafka-console-producer.sh --broker-list ${KAFKA_HOST} --topic "${OUTPUT_RELATION}"
+            # # done            
+            # echo "Sending ${CWD}/${TEST_NAME}/${OUTPUT_RELATION}.csv"
+            # cat "${CWD}/${TEST_NAME}/${OUTPUT_RELATION}.csv" | kafka-console-producer.sh --broker-list ${KAFKA_HOST} --topic "${OUTPUT_RELATION}"
+
+        done          
+        echo "Eff rel: ${PRODUCED_RELATIONS_EFFECTIVE}"
+        for PRODUCED_RELATION in $(echo ${PRODUCED_RELATIONS_EFFECTIVE[@]} | jq -r ".[]"); do    
+            echo "Produced rel: ${PRODUCED_RELATION}"
+            # kafka-topics.sh --create --bootstrap-server ${KAFKA_HOST} --replication-factor 1 --partitions 1 --topic "${PRODUCED_RELATION}"
+            # if [ -f "${CWD}/${TEST_NAME}/${PRODUCED_RELATION}.facts" ]; then
+            #     # cat "${CWD}/${TEST_NAME}/${PRODUCED_RELATION}.facts" | while read line; do
+            #     #     kafka-console-producer.sh --broker-list ${KAFKA_HOST} --topic "${PRODUCED_RELATION}"
+            #     # done            
+            #     echo "${CWD}/${TEST_NAME}/${PRODUCED_RELATION}.facts"
+            #     cat "${CWD}/${TEST_NAME}/${PRODUCED_RELATION}.facts" | kafka-console-producer.sh --broker-list ${KAFKA_HOST} --topic "${PRODUCED_RELATION}"
+            # fi    
+        done          
+
+        # TODO - thread end here
 
     done
 }
