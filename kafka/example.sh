@@ -31,6 +31,126 @@ KAFKA_HOST=localhost:9092
 
 # set -x
 
+#
+#   Iterate all output relations for a strata
+#
+function iterate_output_relations_strata {
+    local command="$1"
+    local STRATUM_INDEX="$2"
+
+    local PRODUCED_RELATIONS=$(echo ${JSON_DATA} | jq -r ".produced_relations_per_strata | .[\"${STRATUM_INDEX}\"]")
+    local OUTPUT_RELATIONS=$(echo ${JSON_DATA} | jq -r ".output_relations_per_strata | .[\"${STRATUM_INDEX}\"]")
+
+    # Create topics for relations
+    local PRODUCED_RELATIONS_EFFECTIVE=$(echo ${PRODUCED_RELATIONS} | jq -r ".[]");
+    for OUTPUT_RELATION in $(echo ${OUTPUT_RELATIONS} | jq -r ".[]"); do  
+        PRODUCED_RELATIONS_EFFECTIVE=( "${PRODUCED_RELATIONS_EFFECTIVE[@]/$OUTPUT_RELATION}" ) 
+        $command "${CWD}/${TEST_NAME}/${OUTPUT_RELATION}.csv" "${OUTPUT_RELATION}"
+    done          
+
+    for PRODUCED_RELATION in ${PRODUCED_RELATIONS_EFFECTIVE[@]}; do    
+        $command "${CWD}/${TEST_NAME}/${PRODUCED_RELATION}.facts" "${PRODUCED_RELATION}"
+    done 
+}
+
+#
+#   Iterate all output and produced relations. 
+#   Action to do on a relation is given by a callback
+#
+function iterate_output_relations {
+    local command="$1"
+    local JSON_DATA=$(echo $(cat ${CWD}/${TEST_NAME}/${PROGRAM_NAME}.json))
+
+    for STRATUM_INDEX in $(echo ${JSON_DATA} | jq -r '.strata_topological_order | .[]'); do        
+        iterate_output_relations_strata $command $STRATUM_INDEX
+    done
+}
+
+
+#
+#   Iterate all input relations for a strate
+#
+function iterate_input_relations_strata {
+    local command="$1"
+    local STRATUM_INDEX="$2"
+
+    # local INPUT_RELATIONS=$(echo ${JSON_DATA} | jq -r ".input_relations_per_strata | .[\"${STRATUM_INDEX}\"]")
+    local CONSUMED_RELATIONS=$(echo ${JSON_DATA} | jq -r ".consumed_relations_per_strata | .[\"${STRATUM_INDEX}\"]")
+
+    # for INPUT_RELATION in $(echo ${INPUT_RELATIONS} | jq -r ".[]"); do
+    #     echo "Input relation ${INPUT_RELATION}"
+    # done       
+
+    # Read facts from Kafka and store to the .facts file in the output dir 
+    for CONSUMED_RELATION in $(echo ${CONSUMED_RELATIONS} | jq -r ".[]"); do
+        $command "${CWD}/${TEST_NAME}/${CONSUMED_RELATION}.facts" "${CONSUMED_RELATION}" "$STRATUM_INDEX"
+    done
+}
+
+
+#
+#   Send message to kafka 
+#
+function send_message {
+    local FILE=$1
+    local TOPIC=$2
+
+    local ff=$(basename ${FILE})
+    echo "Sending msg from file: ${ff} to topic: ${TOPIC}"
+
+    #   Send number of messages first
+    cat "$FILE" | wc -l | kafka-console-producer.sh --broker-list ${KAFKA_HOST} --topic "${TOPIC}"
+    #   continue with messages
+    cat "$FILE" | kafka-console-producer.sh --broker-list ${KAFKA_HOST} --topic "${TOPIC}"
+}
+
+#
+# Read message from Kafka
+#
+function read_message {
+    local FILE=$1
+    local TOPIC=$2
+    local STRATUM_INDEX=$3
+
+    echo "Reading msg from topic: ${TOPIC}, storing to file ${FILE}"
+
+    # Note that we create a message group for the consumer named as (topic, strata_index)
+    # This is for other stratas to be able to consume the same messages as well (they will belong groups named by their topics and index)
+    group="${TOPIC}_${STRATUM_INDEX}"
+
+    # get number of messages first
+    size=$(kafka-console-consumer.sh --bootstrap-server ${KAFKA_HOST} --consumer-property auto.offset.reset=earliest --group ${group} --max-messages 1 --topic ${TOPIC})
+    echo "Message length ${size}"
+    # then get the messages
+    kafka-console-consumer.sh --bootstrap-server ${KAFKA_HOST} --consumer-property auto.offset.reset=earliest --group ${group}  --max-messages ${size} --topic ${TOPIC} > $FILE
+}
+
+#
+#   Create a topic
+#
+function create_topic() {
+    local FILE=$1
+    local TOPIC=$2
+
+    echo "Creating topic: ${TOPIC}"
+
+    kafka-topics.sh --create --bootstrap-server ${KAFKA_HOST} --replication-factor 1 --partitions 1 --topic "${TOPIC}"
+}
+
+#   
+#   Delete a topic
+#
+function delete_topic() {
+    local FILE=$1
+    local TOPIC=$2
+
+    echo "Deleting topic: ${TOPIC}"
+
+    kafka-topics.sh --delete --bootstrap-server ${KAFKA_HOST} --topic "${TOPIC}"
+}
+
+
+
 function main() {
 
     # if we are not running in the root souffle directory, then exit with error
@@ -80,6 +200,8 @@ function main() {
 
     fi
 
+    iterate_output_relations create_topic
+
     # get the program information from the generated json file
     JSON_DATA=$(echo $(cat ${CWD}/${TEST_NAME}/${PROGRAM_NAME}.json))
 
@@ -96,65 +218,21 @@ function main() {
         # - note that all input relations become such intermediate relations
         # - intermediate relations are loaded and stored from and to the output directory with a .facts extension
 
-        # get information for each stratum from the json data
-        local INPUT_RELATIONS=$(echo ${JSON_DATA} | jq -r ".input_relations_per_strata | .[\"${STRATUM_INDEX}\"]")
-        local OUTPUT_RELATIONS=$(echo ${JSON_DATA} | jq -r ".output_relations_per_strata | .[\"${STRATUM_INDEX}\"]")
-        local CONSUMED_RELATIONS=$(echo ${JSON_DATA} | jq -r ".consumed_relations_per_strata | .[\"${STRATUM_INDEX}\"]")
-        local PRODUCED_RELATIONS=$(echo ${JSON_DATA} | jq -r ".produced_relations_per_strata | .[\"${STRATUM_INDEX}\"]")
-
-        # print information for each stratum
-        # echo "["
-        # echo "STRATUM_INDEX"=${STRATUM_INDEX}
-        # echo "INPUT_RELATIONS"=${INPUT_RELATIONS}
-        # echo "OUTPUT_RELATIONS"=${OUTPUT_RELATIONS}
-        # echo "PRODUCED_RELATIONS"=${PRODUCED_RELATIONS}
-        # echo "CONSUMED_RELATIONS"=${CONSUMED_RELATIONS}
-        # echo "]"
-
         # TODO - run in a thread here
+        echo "Invoking strata index ${STRATUM_INDEX}"
 
-        # Wait until all output .csv and .facts are ready
-        for CONSUMED_RELATION in $(echo ${CONSUMED_RELATIONS} | jq -r ".[]"); do
-            # TODO invoke in a thread here
-            echo "Consumed relation ${CONSUMED_RELATION}"
-        done
-        for INPUT_RELATION in $(echo ${INPUT_RELATIONS} | jq -r ".[]"); do
-            # TODO invoke a thread here 
-            echo "Input relation ${INPUT_RELATION}"
-        done        
+       iterate_input_relations_strata read_message $STRATUM_INDEX
 
         # Invoke strata 
         ${CWD}/${TEST_NAME}/${PROGRAM_NAME} -i${STRATUM_INDEX}
 
-        # Send all produced (.facts) and output (.csv) relations into Kafka
-        local PRODUCED_RELATIONS_EFFECTIVE=$(echo ${PRODUCED_RELATIONS} | jq -r ".[]");
-        for OUTPUT_RELATION in $(echo ${OUTPUT_RELATIONS} | jq -r ".[]"); do  
-            echo "Output rel: ${OUTPUT_RELATION}"  
-            # kafka-topics.sh --create --bootstrap-server ${KAFKA_HOST} --replication-factor 1 --partitions 1 --topic "${OUTPUT_RELATION}"
-            # PRODUCED_RELATIONS_EFFECTIVE=( "${PRODUCED_RELATIONS_EFFECTIVE[@]/$OUTPUT_RELATION}" ) 
-            # # cat "${CWD}/${TEST_NAME}/${OUTPUT_RELATION}.csv" | while read line; do
-            # #     kafka-console-producer.sh --broker-list ${KAFKA_HOST} --topic "${OUTPUT_RELATION}"
-            # # done            
-            # echo "Sending ${CWD}/${TEST_NAME}/${OUTPUT_RELATION}.csv"
-            # cat "${CWD}/${TEST_NAME}/${OUTPUT_RELATION}.csv" | kafka-console-producer.sh --broker-list ${KAFKA_HOST} --topic "${OUTPUT_RELATION}"
-
-        done          
-        echo "Eff rel: ${PRODUCED_RELATIONS_EFFECTIVE}"
-        for PRODUCED_RELATION in $(echo ${PRODUCED_RELATIONS_EFFECTIVE[@]} | jq -r ".[]"); do    
-            echo "Produced rel: ${PRODUCED_RELATION}"
-            # kafka-topics.sh --create --bootstrap-server ${KAFKA_HOST} --replication-factor 1 --partitions 1 --topic "${PRODUCED_RELATION}"
-            # if [ -f "${CWD}/${TEST_NAME}/${PRODUCED_RELATION}.facts" ]; then
-            #     # cat "${CWD}/${TEST_NAME}/${PRODUCED_RELATION}.facts" | while read line; do
-            #     #     kafka-console-producer.sh --broker-list ${KAFKA_HOST} --topic "${PRODUCED_RELATION}"
-            #     # done            
-            #     echo "${CWD}/${TEST_NAME}/${PRODUCED_RELATION}.facts"
-            #     cat "${CWD}/${TEST_NAME}/${PRODUCED_RELATION}.facts" | kafka-console-producer.sh --broker-list ${KAFKA_HOST} --topic "${PRODUCED_RELATION}"
-            # fi    
-        done          
+        iterate_output_relations_strata send_message $STRATUM_INDEX
 
         # TODO - thread end here
 
     done
+
+    iterate_output_relations delete_topic
 }
 
 main ${@:-}
