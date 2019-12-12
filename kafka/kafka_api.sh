@@ -28,16 +28,15 @@ function iterate_output_relations_strata {
 #
 function iterate_output_relations {
     local command="$1"
-    local JSON_DATA=$(echo $(cat ${CWD}/${TEST_NAME}/${PROGRAM_NAME}.json))
 
     for STRATUM_INDEX in $(echo ${JSON_DATA} | jq -r '.strata_topological_order | .[]'); do        
-        iterate_output_relations_strata $command $STRATUM_INDEX
+        iterate_output_relations_strata $command "$STRATUM_INDEX" 
     done
 }
 
 
 #
-#   Iterate all input relations for a strate
+#   Iterate all input relations for a strata
 #
 function iterate_input_relations_strata {
     local command="$1"
@@ -116,5 +115,22 @@ function delete_topic() {
     echo "Deleting topic: ${TOPIC}"
 
     kafka-topics.sh --delete --bootstrap-server ${KAFKA_HOST} --topic "${TOPIC}"
+}
+
+#
+#   Wait until a topic exists in Kafka
+#
+function wait_topic_exists {
+    local FILE=$1
+    local TOPIC=$2
+
+    echo "Waiting for topic:  $TOPIC"
+    
+    while :; do
+        local search=$(kafka-topics.sh --list --bootstrap-server ${KAFKA_HOST} | grep $TOPIC)
+        if [[ "$search" == "$TOPIC" ]]; then
+            break;
+        fi
+    done
 }
 

@@ -80,10 +80,10 @@ function main() {
 
     fi
 
-    iterate_output_relations create_topic
-
     # get the program information from the generated json file
-    JSON_DATA=$(echo $(cat ${CWD}/${TEST_NAME}/${PROGRAM_NAME}.json))
+    local JSON_DATA=$(echo $(cat ${CWD}/${TEST_NAME}/${PROGRAM_NAME}.json))
+
+    iterate_output_relations create_topic 
 
     # iterate over each stratum in topological order
     for STRATUM_INDEX in $(echo ${JSON_DATA} | jq -r '.strata_topological_order | .[]')
@@ -101,12 +101,12 @@ function main() {
         # TODO - run in a thread here
         echo "Invoking strata index ${STRATUM_INDEX}"
 
-       iterate_input_relations_strata read_message $STRATUM_INDEX
+       iterate_input_relations_strata read_message "$STRATUM_INDEX" 
 
         # Invoke strata 
         ${CWD}/${TEST_NAME}/${PROGRAM_NAME} -i${STRATUM_INDEX}
 
-        iterate_output_relations_strata send_message $STRATUM_INDEX
+        iterate_output_relations_strata send_message "$STRATUM_INDEX" 
 
         # TODO - thread end here
 

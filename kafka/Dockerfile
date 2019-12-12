@@ -73,20 +73,33 @@ RUN apt-get update && apt-get install -y \
         python \
         sqlite \
         zlib1g-dev \
+        wget \
+        tar \
+        default-jre \
         jq
 
 ARG PROGRAM
 ADD ${PROGRAM} .
 
+# Install Kafka for CLI usage
+RUN wget https://www.apache.org/dist/kafka/2.3.1/kafka_2.11-2.3.1.tgz && tar xf kafka_2.11-2.3.1.tgz && ln --symbolic kafka_2.11-2.3.1 kafka && chmod +x /kafka/bin/
+ENV PATH="/kafka/bin/:${PATH}"
+
 RUN mkdir output && mkdir facts
 
 # Compile a program by Souffle
 # The program is passed in as a build argument (--build-argument) 
-# RUN ./souffle/src/souffle \
-#             -efile \
-#             -Doutput \
-#             -Ffacts \
-#             -oprogram \
-#             ${PROGRAM}
+RUN ./souffle/src/souffle \
+            -efile \
+            -Doutput \
+            -Ffacts \
+            -oprogram \
+            -rprogram.html \
+            ${PROGRAM}
 
-CMD /bin/bash
+ADD kafka_api.sh .
+ADD execute_strata.sh .
+RUN chmod +x *.sh
+RUN cp *.json program.json
+
+CMD ./execute_strata.sh program 
