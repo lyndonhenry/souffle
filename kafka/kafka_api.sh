@@ -1,5 +1,27 @@
 #!/bin/bash
 
+
+#
+#   Iterate all stratas by topological order.
+#   Action to do on a relation is given by a callback
+#
+function iterate_stratas {
+    local command="$1"
+    local subcommand="${2:-""}"
+
+    if [[ "$subcommand" == "" ]]; then
+        for STRATUM_INDEX in $(echo ${JSON_DATA} | jq -r '.strata_topological_order | .[]'); do        
+            $command "$STRATUM_INDEX" 
+        done
+    else 
+        for STRATUM_INDEX in $(echo ${JSON_DATA} | jq -r '.strata_topological_order | .[]'); do        
+            $command $subcommand "$STRATUM_INDEX" 
+        done
+    fi
+
+}
+
+
 #
 #   Iterate all output relations for a strata
 #
@@ -20,31 +42,6 @@ function iterate_outgoing_relations_strata {
     for PRODUCED_RELATION in ${PRODUCED_RELATIONS_EFFECTIVE[@]}; do    
         $command "${PRODUCED_RELATION}" "${OUTPUT_DIR}/${PRODUCED_RELATION}.facts" 
     done 
-}
-
-function pass_through {
-    echo "$1"
-    return $1
-}
-
-#
-#   Iterate all stratas by topological order.
-#   Action to do on a relation is given by a callback
-#
-function iterate_stratas {
-    local command="$1"
-    local subcommand="${2:-""}"
-
-    if [[ "$subcommands" == "" ]]; then
-        for STRATUM_INDEX in $(echo ${JSON_DATA} | jq -r '.strata_topological_order | .[]'); do        
-            $command "$STRATUM_INDEX" 
-        done
-    else 
-        for STRATUM_INDEX in $(echo ${JSON_DATA} | jq -r '.strata_topological_order | .[]'); do        
-            $command $subcommand "$STRATUM_INDEX" 
-        done
-    fi
-
 }
 
 
@@ -74,7 +71,7 @@ function iterate_input_relations_strata {
     local INPUT_RELATIONS=$(echo ${JSON_DATA} | jq -r ".input_relations_per_strata | .[\"${STRATUM_INDEX}\"]")
 
     for INPUT_RELATION in $(echo ${INPUT_RELATIONS} | jq -r ".[]"); do
-        $command "${INPUT_RELATION}" "$STRATUM_INDEX"
+        $command "${INPUT_RELATION}-input" "$STRATUM_INDEX"
     done       
 }
 
@@ -89,7 +86,7 @@ function iterate_incoming_relations_strata {
     local CONSUMED_RELATIONS=$(echo ${JSON_DATA} | jq -r ".consumed_relations_per_strata | .[\"${STRATUM_INDEX}\"]")
 
     for INPUT_RELATION in $(echo ${INPUT_RELATIONS} | jq -r ".[]"); do
-        $command "${INPUT_RELATION}" "$STRATUM_INDEX" "${INPUT_DIR}/${INPUT_RELATION}.facts"
+        $command "${INPUT_RELATION}-input" "${STRATUM_INDEX}" "${INPUT_DIR}/${INPUT_RELATION}.facts"
     done       
 
     # Read facts from Kafka and store to the .facts file in the output dir 
@@ -120,14 +117,14 @@ function send_message {
 #
 function read_message {
     local TOPIC=$1
-    local STRATUM_INDEX=$2
+    local GROUP_NAME=$2
     local FILE=${3}
 
     echo "Reading msg from topic: ${TOPIC}, storing to file ${FILE}"
 
     # Note that we create a message group for the consumer named as (topic, strata_index)
     # This is for other stratas to be able to consume the same messages as well (they will belong groups named by their topics and index)
-    group="${TOPIC}_${STRATUM_INDEX}"
+    group="${TOPIC}_${GROUP_NAME}"
 
     # get number of messages first
     size=$(kafka-console-consumer.sh --bootstrap-server ${KAFKA_HOST} --consumer-property auto.offset.reset=earliest --group ${group} --max-messages 1 --topic ${TOPIC})
@@ -180,10 +177,11 @@ function wait_topic_exists {
     echo "Waiting for topic:  $TOPIC"
     
     while :; do
-        local search=$(kafka-topics.sh --list --bootstrap-server ${KAFKA_HOST} | grep $TOPIC)
+        local search=$(kafka-topics.sh --list --bootstrap-server ${KAFKA_HOST} | grep -w $TOPIC)
         if [[ "$search" == "$TOPIC" ]]; then
             break;
         fi
+        echo "XXX Debug: Topic $TOPIC not ready yet, waiting. (Discovered topics ${search})"
         sleep 5
     done
 }
@@ -196,7 +194,7 @@ function wait_kafka_ready {
     while :; do
         echo "Waiting for Kafka to become ready ${search}"
         search=$(kafka-topics.sh --list --bootstrap-server ${KAFKA_HOST})
-        if [[ "$search" != "XXX" ]]; then
+        if [[ "$search" != "EMPTY TOPICS" ]]; then
             break;
         fi
         sleep 5

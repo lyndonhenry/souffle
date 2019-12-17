@@ -84,6 +84,8 @@ function main() {
     JSON_DATA=$(echo $(cat ${CWD}/${TEST_NAME}/${PROGRAM_NAME}.json))
     OUTPUT_DIR=${CWD}/${TEST_NAME}
     INPUT_DIR=${CWD}/${TEST_NAME}/facts
+
+    iterate_stratas iterate_input_relations_strata create_topic    
     
     iterate_stratas iterate_outgoing_relations_strata create_topic 
 
