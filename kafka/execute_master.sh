@@ -99,13 +99,13 @@ docker-compose up -d
 #
 #   Make sure Kafka is ready
 #
-wait_kafka_ready
+# wait_kafka_ready
 
 echo "Creating topics for iput facts"
 #
 #   Create topics for all input relations
 #
-iterate_input_files create_topic
+# iterate_input_files create_topic
 
 echo "Distributing input facts to stratas"
 #

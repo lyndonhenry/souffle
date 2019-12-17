@@ -107,11 +107,11 @@ function send_message {
     echo "Sending msg from file: ${ff} to topic: ${TOPIC}"
 
     #   Send number of messages first
-    cat "$FILE" | wc -l | kafka-console-producer.sh --broker-list ${KAFKA_HOST} --topic "${TOPIC}"
+    cat "$FILE" | wc -l | kafkacat -b ${KAFKA_HOST} -P -t "${TOPIC}"
     #   Send file name as part of message so we know where to store the message for unmarshalling
-    echo "$ff" | kafka-console-producer.sh --broker-list ${KAFKA_HOST} --topic "${TOPIC}"
+    echo "$ff" | kafkacat -b ${KAFKA_HOST} -P -t "${TOPIC}"
     #   continue with messages
-    cat "$FILE" | kafka-console-producer.sh --broker-list ${KAFKA_HOST} --topic "${TOPIC}"
+    cat "$FILE" | kafkacat -b ${KAFKA_HOST} -P -t "${TOPIC}"
 }
 
 #
@@ -129,11 +129,11 @@ function read_message {
     echo "Reading msg from topic: ${TOPIC}, group ${group}, storing to dir ${DIR}"
 
     # get number of messages first
-    size=$(kafka-console-consumer.sh --bootstrap-server ${KAFKA_HOST} --consumer-property auto.offset.reset=earliest --group ${group} --max-messages 1 --topic ${TOPIC})
-    file=$(kafka-console-consumer.sh --bootstrap-server ${KAFKA_HOST} --consumer-property auto.offset.reset=earliest --group ${group} --max-messages 1 --topic ${TOPIC})
+    size=$(kafkacat -C -b ${KAFKA_HOST} -c 1 -X topic.auto.offset.reset=earliest -G ${group} ${TOPIC})
+    file=$(kafkacat -C -b ${KAFKA_HOST} -c 1 -X topic.auto.offset.reset=earliest -G ${group} ${TOPIC})
     echo "Incoming message length ${size}, file ${file}"
     # then get the messages
-    kafka-console-consumer.sh --bootstrap-server ${KAFKA_HOST} --consumer-property auto.offset.reset=earliest --group ${group}  --max-messages ${size} --topic ${TOPIC} > "${DIR}/${file}"
+    kafkacat -C -b ${KAFKA_HOST} -c ${size} -X topic.auto.offset.reset=earliest -t ${group} ${TOPIC} > "${DIR}/${file}"
 }
 
 #
@@ -147,18 +147,6 @@ function create_topic() {
     kafka-topics.sh --create --bootstrap-server ${KAFKA_HOST} --replication-factor 1 --partitions 1 --topic "${TOPIC}"
 }
 
-#
-#   Create topic if it does not exist. It may be slow because it calls Kafka, so be careful 
-#
-function create_topic_if_missing {
-    local TOPIC=$1
-
-    local search=$(kafka-topics.sh --list --bootstrap-server ${KAFKA_HOST} | grep $TOPIC)
-    if [[ "$search" != "$TOPIC" ]]; then
-        create_topic $TOPIC
-    fi
-
-}
 
 #   
 #   Delete a topic

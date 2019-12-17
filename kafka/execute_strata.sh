@@ -20,19 +20,19 @@ source "$(dirname "$0")/kafka_api.sh"
 #
 #   Make sure Kafka is ready
 #
-wait_kafka_ready
+# wait_kafka_ready
 
 #
 #   Every strata should create topics which this strata provides
 #
-echo "Creating topics for outcomming messages."
-iterate_outgoing_relations_strata create_topic $STRATUM_INDEX
+# echo "Creating topics for outcomming messages."
+# iterate_outgoing_relations_strata create_topic $STRATUM_INDEX
 
 #
 #   Wait for topics for incommings messages to be created
 #
-echo "Waiting untill all incomming topics are created. "
-iterate_incoming_relations_strata wait_topic_exists $STRATUM_INDEX
+# echo "Waiting untill all incomming topics are created. "
+# iterate_incoming_relations_strata wait_topic_exists $STRATUM_INDEX
 
 
 echo "Invoking computation for strata index ${STRATUM_INDEX}"
