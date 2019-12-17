@@ -48,7 +48,7 @@ function send_input_file {
 
     echo "Sending file ${FILE} to topic ${TOPIC}"
 
-    send_message "${TOPIC}" ${FILE}
+    send_message_async "${TOPIC}" ${FILE}
 }
 
 #
@@ -57,7 +57,7 @@ function send_input_file {
 function read_output_data {
     local TOPIC="$1"
 
-    read_message "${TOPIC}" "output" "${OUTPUT_DIR}" 
+    read_message_async "${TOPIC}" "output" "${OUTPUT_DIR}" 
 }
 
 #
@@ -105,7 +105,10 @@ echo "Creating topics for iput facts"
 #
 #   Create topics for all input relations
 #
-iterate_input_files create_topic
+iterate_input_files create_topic_async
+wait
+
+START=$(date +%s.%N)
 
 echo "Distributing input facts to stratas"
 #
@@ -118,9 +121,15 @@ echo "Collecting results from stratas"
 #   Waiting for all results to be ready
 #
 iterate_stratas iterate_output_relations_strata read_output_data
+wait    #   Wait until all results are ready
+
+END=$(date +%s.%N)
 
 echo "All results collected in ${OUTPUT_DIR}"
 
 docker-compose down
+
+DIFF=$(echo "$END - $START" | bc)
+echo $DIFF
 
 /bin/bash

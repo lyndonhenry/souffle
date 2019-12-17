@@ -114,6 +114,13 @@ function send_message {
     cat "$FILE" | kafka-console-producer.sh --broker-list ${KAFKA_HOST} --topic "${TOPIC}"
 }
 
+function send_message_async {
+    local TOPIC=$1
+    local FILE=${2}
+
+    send_message $TOPIC $FILE &    
+}
+
 #
 # Read message from Kafka
 #
@@ -136,6 +143,14 @@ function read_message {
     kafka-console-consumer.sh --bootstrap-server ${KAFKA_HOST} --consumer-property auto.offset.reset=earliest --group ${group}  --max-messages ${size} --topic ${TOPIC} > "${DIR}/${file}"
 }
 
+function read_message_async {
+    local TOPIC=$1
+    local GROUP_NAME=$2
+    local DIR=${3}
+
+    read_message $TOPIC $GROUP_NAME $DIR &    
+}
+
 #
 #   Create a topic
 #
@@ -145,6 +160,12 @@ function create_topic() {
     echo "Creating topic: ${TOPIC}"
 
     kafka-topics.sh --create --bootstrap-server ${KAFKA_HOST} --replication-factor 1 --partitions 1 --topic "${TOPIC}"
+}
+
+function create_topic_async {
+    local TOPIC=$1
+
+    create_topic $TOPIC &
 }
 
 #
