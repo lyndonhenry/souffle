@@ -86,12 +86,12 @@ function iterate_incoming_relations_strata {
     local CONSUMED_RELATIONS=$(echo ${JSON_DATA} | jq -r ".consumed_relations_per_strata | .[\"${STRATUM_INDEX}\"]")
 
     for INPUT_RELATION in $(echo ${INPUT_RELATIONS} | jq -r ".[]"); do
-        $command "${INPUT_RELATION}-input" "${STRATUM_INDEX}" "${INPUT_DIR}/${INPUT_RELATION}.facts"
+        $command "${INPUT_RELATION}-input" "${STRATUM_INDEX}" "${INPUT_DIR}"
     done       
 
     # Read facts from Kafka and store to the .facts file in the output dir 
     for CONSUMED_RELATION in $(echo ${CONSUMED_RELATIONS} | jq -r ".[]"); do
-        $command "${CONSUMED_RELATION}" "$STRATUM_INDEX" "${OUTPUT_DIR}/${CONSUMED_RELATION}.facts"
+        $command "${CONSUMED_RELATION}" "$STRATUM_INDEX" "${OUTPUT_DIR}"
     done
 }
 
@@ -108,6 +108,8 @@ function send_message {
 
     #   Send number of messages first
     cat "$FILE" | wc -l | kafka-console-producer.sh --broker-list ${KAFKA_HOST} --topic "${TOPIC}"
+    #   Send file name as part of message so we know where to store the message for unmarshalling
+    echo "$ff" | kafka-console-producer.sh --broker-list ${KAFKA_HOST} --topic "${TOPIC}"
     #   continue with messages
     cat "$FILE" | kafka-console-producer.sh --broker-list ${KAFKA_HOST} --topic "${TOPIC}"
 }
@@ -118,19 +120,20 @@ function send_message {
 function read_message {
     local TOPIC=$1
     local GROUP_NAME=$2
-    local FILE=${3}
-
-    echo "Reading msg from topic: ${TOPIC}, storing to file ${FILE}"
+    local DIR=${3}
 
     # Note that we create a message group for the consumer named as (topic, strata_index)
     # This is for other stratas to be able to consume the same messages as well (they will belong groups named by their topics and index)
     group="${TOPIC}_${GROUP_NAME}"
 
+    echo "Reading msg from topic: ${TOPIC}, group ${group}, storing to dir ${DIR}"
+
     # get number of messages first
     size=$(kafka-console-consumer.sh --bootstrap-server ${KAFKA_HOST} --consumer-property auto.offset.reset=earliest --group ${group} --max-messages 1 --topic ${TOPIC})
-    echo "Message length ${size}"
+    file=$(kafka-console-consumer.sh --bootstrap-server ${KAFKA_HOST} --consumer-property auto.offset.reset=earliest --group ${group} --max-messages 1 --topic ${TOPIC})
+    echo "Incoming message length ${size}, file ${file}"
     # then get the messages
-    kafka-console-consumer.sh --bootstrap-server ${KAFKA_HOST} --consumer-property auto.offset.reset=earliest --group ${group}  --max-messages ${size} --topic ${TOPIC} > $FILE
+    kafka-console-consumer.sh --bootstrap-server ${KAFKA_HOST} --consumer-property auto.offset.reset=earliest --group ${group}  --max-messages ${size} --topic ${TOPIC} > "${DIR}/${file}"
 }
 
 #

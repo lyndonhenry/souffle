@@ -56,9 +56,8 @@ function send_input_file {
 #
 function read_output_data {
     local TOPIC="$1"
-    local GROUP="${TOPIC}_output"
 
-    read_message "${TOPIC}" "${GROU}" "${OUTPUT_DIR}/${TOPIC}.csv" 
+    read_message "${TOPIC}" "output" "${OUTPUT_DIR}" 
 }
 
 #
@@ -102,24 +101,25 @@ docker-compose up -d
 #
 wait_kafka_ready
 
+echo "Creating topics for iput facts"
 #
 #   Create topics for all input relations
 #
 iterate_input_files create_topic
 
+echo "Distributing input facts to stratas"
 #
 #   Iterate over input facts and send them into Kafka 
 #   
 iterate_input_files send_input_file
 
-
+echo "Collecting results from stratas"
 #
 #   Waiting for all results to be ready
 #
 iterate_stratas iterate_output_relations_strata read_output_data
 
 echo "All results collected in ${OUTPUT_DIR}"
-
 
 docker-compose down
 

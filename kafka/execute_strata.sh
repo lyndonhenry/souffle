@@ -10,8 +10,7 @@
 
 PROGRAM_NAME=$1
 JSON_DATA=$(echo $(cat ${PROGRAM_NAME}.json))
-# OUTPUT_DIR="output"
-OUTPUT_DIR=""   # TODO - why output is not correct?
+OUTPUT_DIR="output"
 INPUT_DIR="facts"
 
 echo "Beginning of strata ${STRATUM_INDEX}"
@@ -40,7 +39,11 @@ echo "Invoking computation for strata index ${STRATUM_INDEX}"
 
 # Execute program - (1) wait for incomming messages, (2) run the program, (3) send outcomming messages
 iterate_incoming_relations_strata read_message $STRATUM_INDEX
+
+echo "Executing Souffle ${PROGRAM_NAME}"
 ./${PROGRAM_NAME} -i${STRATUM_INDEX}
+
+echo "Colleting results and sending to Kafka"
 iterate_outgoing_relations_strata send_message $STRATUM_INDEX
 
 echo "End of ${STRATUM_INDEX}"
