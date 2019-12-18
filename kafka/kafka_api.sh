@@ -112,6 +112,8 @@ function send_message {
     echo "$ff" | kafka-console-producer.sh --broker-list ${KAFKA_HOST} --topic "${TOPIC}"
     #   continue with messages
     cat "$FILE" | kafka-console-producer.sh --broker-list ${KAFKA_HOST} --topic "${TOPIC}"
+
+    echo "Msg for fo topic: ${TOPIC} sent"
 }
 
 function send_message_async {
@@ -141,6 +143,8 @@ function read_message {
     echo "Incoming message length ${size}, file ${file}"
     # then get the messages
     kafka-console-consumer.sh --bootstrap-server ${KAFKA_HOST} --consumer-property auto.offset.reset=earliest --group ${group}  --max-messages ${size} --topic ${TOPIC} > "${DIR}/${file}"
+
+    echo "Msg from topic: ${TOPIC}, group ${group} read"
 }
 
 function read_message_async {
