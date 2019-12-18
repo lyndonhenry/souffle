@@ -35,7 +35,7 @@ function iterate_input_files {
     for f in $INPUT_DIR/*.facts; do
         local TOPIC=$(basename $f | cut -f 1 -d '.')
 
-        $command "${TOPIC}-input" "$f" 
+        $command "IIII${TOPIC}" "$f" 
     done
 }
 
