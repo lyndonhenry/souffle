@@ -79,7 +79,6 @@ RUN apt-get update && apt-get install -y \
         curl \
         jq \
         docker.io \
-        docker-compose \
         kafkacat
 
 ARG PROGRAM
@@ -88,6 +87,9 @@ ADD ${PROGRAM} .
 # Install Kafka for CLI usage
 RUN wget https://www.apache.org/dist/kafka/2.3.1/kafka_2.11-2.3.1.tgz && tar xf kafka_2.11-2.3.1.tgz && ln --symbolic kafka_2.11-2.3.1 kafka && chmod +x /kafka/bin/
 ENV PATH="/kafka/bin/:${PATH}"
+
+RUN curl -L "https://github.com/docker/compose/releases/download/1.24.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+RUN chmod +x /usr/local/bin/docker-compose
 
 RUN mkdir output && mkdir facts
 
