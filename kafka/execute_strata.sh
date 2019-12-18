@@ -39,6 +39,7 @@ echo "Invoking computation for strata index ${STRATUM_INDEX}"
 
 # Execute program - (1) wait for incomming messages, (2) run the program, (3) send outcomming messages
 iterate_incoming_relations_strata read_message_async $STRATUM_INDEX
+echo "XXX: Debug waiting on barrier"
 wait    # wait until all incoming data are here and all outgoing topics are created - in this case we can continue
 
 echo "Executing Souffle ${PROGRAM_NAME}"
