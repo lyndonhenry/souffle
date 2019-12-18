@@ -120,8 +120,6 @@ function send_message_async {
     local TOPIC="$1"
     local FILE="$2"
 
-    echo "XXX Debug: send message async called ... TOPIC $TOPIC and FILE $FILE"
-
     send_message "$TOPIC" "$FILE" &    
 }
 
@@ -211,9 +209,14 @@ function wait_topic_exists {
         if [[ "$search" == "$TOPIC" ]]; then
             break;
         fi
-        echo "XXX Debug: Topic $TOPIC not ready yet, waiting. (Discovered topics ${search})"
-        sleep 5
+        sleep .5
     done
+}
+
+function wait_topic_exists_async {
+    local TOPIC="$1"
+    
+    wait_topic_exists "$TOPIC"
 }
 
 #
