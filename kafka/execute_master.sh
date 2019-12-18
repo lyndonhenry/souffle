@@ -108,6 +108,7 @@ echo "Creating topics for iput facts"
 iterate_input_files create_topic_async
 echo "XXX: Debug waiting on barrier"
 wait
+echo "XXX: waiting DONE"
 
 START=$(date +%s.%N)
 
@@ -124,6 +125,7 @@ echo "Collecting results from stratas"
 iterate_stratas iterate_output_relations_strata read_output_data
 echo "XXX: Debug waiting on barrier"
 wait    #   Wait until all results are ready
+echo "XXX: waiting DONE"
 
 END=$(date +%s.%N)
 
