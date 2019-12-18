@@ -129,9 +129,9 @@ function send_message_async {
 # Read message from Kafka
 #
 function read_message {
-    local TOPIC=$1
-    local GROUP_NAME=$2
-    local DIR=${3}
+    local TOPIC="$1"
+    local GROUP_NAME="$2"
+    local DIR="$3"
 
     # Note that we create a message group for the consumer named as (topic, strata_index)
     # This is for other stratas to be able to consume the same messages as well (they will belong groups named by their topics and index)

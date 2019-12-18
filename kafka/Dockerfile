@@ -79,7 +79,8 @@ RUN apt-get update && apt-get install -y \
         curl \
         jq \
         docker.io \
-        kafkacat
+        kafkacat \
+        bc
 
 ARG PROGRAM
 ADD ${PROGRAM} .
