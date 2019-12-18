@@ -101,7 +101,7 @@ docker-compose up -d
 #
 # wait_kafka_ready
 
-echo "Creating topics for iput facts"
+# echo "Creating topics for iput facts"
 #
 #   Create topics for all input relations
 #
@@ -121,6 +121,6 @@ iterate_stratas iterate_output_relations_strata read_output_data
 
 echo "All results collected in ${OUTPUT_DIR}"
 
-docker-compose down
+# docker-compose down
 
 /bin/bash
