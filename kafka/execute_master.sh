@@ -46,9 +46,7 @@ function send_input_file {
     local TOPIC="$1"
     local FILE="$2"
 
-    echo "Sending file ${FILE} to topic ${TOPIC}"
-
-    send_message_async "${TOPIC}" ${FILE}
+    send_message_async "${TOPIC}" "${FILE}"
 }
 
 #

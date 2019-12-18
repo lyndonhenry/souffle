@@ -100,8 +100,8 @@ function iterate_incoming_relations_strata {
 #   Send message to kafka 
 #
 function send_message {
-    local TOPIC=$1
-    local FILE=${2}
+    local TOPIC="$1"
+    local FILE="$2"
 
     local ff=$(basename ${FILE})
     echo "Sending msg from file: ${ff} to topic: ${TOPIC}"
@@ -117,10 +117,12 @@ function send_message {
 }
 
 function send_message_async {
-    local TOPIC=$1
-    local FILE=${2}
+    local TOPIC="$1"
+    local FILE="$2"
 
-    send_message $TOPIC $FILE &    
+    echo "XXX Debug: send message async called"
+
+    send_message "$TOPIC" "$FILE" &    
 }
 
 #
