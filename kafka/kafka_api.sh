@@ -86,7 +86,7 @@ function iterate_incoming_relations_strata {
     local CONSUMED_RELATIONS=$(echo ${JSON_DATA} | jq -r ".consumed_relations_per_strata | .[\"${STRATUM_INDEX}\"]")
 
     for INPUT_RELATION in $(echo ${INPUT_RELATIONS} | jq -r ".[]"); do
-        $command "${INPUT_RELATION}-input" "${STRATUM_INDEX}" "${INPUT_DIR}"
+        $command "IIII${INPUT_RELATION}" "${STRATUM_INDEX}" "${INPUT_DIR}"
     done       
 
     # Read facts from Kafka and store to the .facts file in the output dir 
