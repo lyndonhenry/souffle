@@ -113,14 +113,14 @@ function send_message {
     #   continue with messages
     cat "$FILE" | kafka-console-producer.sh --broker-list ${KAFKA_HOST} --topic "${TOPIC}"
 
-    echo "Msg for fo topic: ${TOPIC} sent"
+    echo "Msg for topic: ${TOPIC} sent"
 }
 
 function send_message_async {
     local TOPIC="$1"
     local FILE="$2"
 
-    echo "XXX Debug: send message async called"
+    echo "XXX Debug: send message async called ... TOPIC $TOPIC and FILE $FILE"
 
     send_message "$TOPIC" "$FILE" &    
 }
@@ -150,11 +150,11 @@ function read_message {
 }
 
 function read_message_async {
-    local TOPIC=$1
-    local GROUP_NAME=$2
-    local DIR=${3}
+    local TOPIC="$1"
+    local GROUP_NAME="$2"
+    local DIR="$3"
 
-    read_message $TOPIC $GROUP_NAME $DIR &    
+    read_message "$TOPIC" "$GROUP_NAME" "$DIR" &    
 }
 
 #

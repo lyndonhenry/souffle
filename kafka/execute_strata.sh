@@ -49,4 +49,10 @@ echo "Executing Souffle ${PROGRAM_NAME}"
 echo "Colleting results and sending to Kafka"
 iterate_outgoing_relations_strata send_message_async $STRATUM_INDEX
 
+echo "XXX: Debug waiting on barrier"
+wait    # wait until all messages are sent
+echo "XXX: waiting DONE"
+
 echo "End of ${STRATUM_INDEX}"
+
+
