@@ -127,7 +127,10 @@ echo "All results collected in ${OUTPUT_DIR}"
 
 docker-compose down
 
+echo "Output dir content:"
+ls -lh ${OUTPUT_DIR}
+
 DIFF=$(echo "$END - $START" | bc)
-echo $DIFF
+echo "Total time: $DIFF (Sec.nanos)"
 
 /bin/bash
