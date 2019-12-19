@@ -20,7 +20,7 @@ source "$(dirname "$0")/kafka_api.sh"
 #
 #   Make sure Kafka is ready
 #
-# wait_kafka_ready
+wait_kafka_ready
 
 #
 #   Every strata should create topics which this strata provides

@@ -99,7 +99,7 @@ docker-compose up -d
 #
 #   Make sure Kafka is ready
 #
-# wait_kafka_ready
+wait_kafka_ready
 
 # echo "Creating topics for iput facts"
 #

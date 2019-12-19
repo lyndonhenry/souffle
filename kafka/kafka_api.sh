@@ -112,6 +112,8 @@ function send_message {
     echo "$ff" | kafkacat -b ${KAFKA_HOST} -P -t "${TOPIC}"
     #   continue with messages
     cat "$FILE" | kafkacat -b ${KAFKA_HOST} -P -t "${TOPIC}"
+
+    echo "Message for ${TOPIC} sent"
 }
 
 #
@@ -129,11 +131,11 @@ function read_message {
     echo "Reading msg from topic: ${TOPIC}, group ${group}, storing to dir ${DIR}"
 
     # get number of messages first
-    size=$(kafkacat -C -b ${KAFKA_HOST} -c 1 -X topic.auto.offset.reset=earliest -G ${group} ${TOPIC})
-    file=$(kafkacat -C -b ${KAFKA_HOST} -c 1 -X topic.auto.offset.reset=earliest -G ${group} ${TOPIC})
+    size=$(kafkacat -b ${KAFKA_HOST} -c 1 -X topic.auto.offset.reset=earliest -G ${group} ${TOPIC})
+    file=$(kafkacat -b ${KAFKA_HOST} -c 1 -X topic.auto.offset.reset=earliest -G ${group} ${TOPIC})
     echo "Incoming message length ${size}, file ${file}"
     # then get the messages
-    kafkacat -C -b ${KAFKA_HOST} -c ${size} -X topic.auto.offset.reset=earliest -t ${group} ${TOPIC} > "${DIR}/${file}"
+    kafkacat -b ${KAFKA_HOST} -c ${size} -X topic.auto.offset.reset=earliest -G ${group} ${TOPIC} > "${DIR}/${file}"
 }
 
 #
@@ -172,8 +174,7 @@ function wait_topic_exists {
         if [[ "$search" == "$TOPIC" ]]; then
             break;
         fi
-        echo "XXX Debug: Topic $TOPIC not ready yet, waiting. (Discovered topics ${search})"
-        sleep 5
+        sleep 0.5
     done
 }
 
