@@ -108,6 +108,7 @@ ADD kafka_api.sh .
 ADD execute_strata.sh .
 ADD docker-compose.yml .
 ADD execute_master.sh .
+ADD execute_standalone.sh .
 RUN chmod +x *.sh
 RUN cp *.json program.json
 

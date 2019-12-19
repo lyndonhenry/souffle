@@ -100,8 +100,8 @@ function iterate_incoming_relations_strata {
 #   Send message to kafka 
 #
 function send_message {
-    local TOPIC=$1
-    local FILE=${2}
+    local TOPIC="$1"
+    local FILE="$2"
 
     local ff=$(basename ${FILE})
     echo "Sending msg from file: ${ff} to topic: ${TOPIC}"
@@ -113,16 +113,23 @@ function send_message {
     #   continue with messages
     cat "$FILE" | kafkacat -b ${KAFKA_HOST} -P -t "${TOPIC}"
 
-    echo "Message for ${TOPIC} sent"
+    echo "Msg for topic: ${TOPIC} sent"
+}
+
+function send_message_async {
+    local TOPIC="$1"
+    local FILE="$2"
+
+    send_message "$TOPIC" "$FILE" &    
 }
 
 #
 # Read message from Kafka
 #
 function read_message {
-    local TOPIC=$1
-    local GROUP_NAME=$2
-    local DIR=${3}
+    local TOPIC="$1"
+    local GROUP_NAME="$2"
+    local DIR="$3"
 
     # Note that we create a message group for the consumer named as (topic, strata_index)
     # This is for other stratas to be able to consume the same messages as well (they will belong groups named by their topics and index)
@@ -136,6 +143,16 @@ function read_message {
     echo "Incoming message length ${size}, file ${file}"
     # then get the messages
     kafkacat -b ${KAFKA_HOST} -c ${size} -X topic.auto.offset.reset=earliest -G ${group} ${TOPIC} > "${DIR}/${file}"
+
+    echo "Msg from topic: ${TOPIC}, group ${group} read"
+}
+
+function read_message_async {
+    local TOPIC="$1"
+    local GROUP_NAME="$2"
+    local DIR="$3"
+
+    read_message "$TOPIC" "$GROUP_NAME" "$DIR" &    
 }
 
 #
@@ -149,6 +166,24 @@ function create_topic() {
     kafka-topics.sh --create --bootstrap-server ${KAFKA_HOST} --replication-factor 1 --partitions 1 --topic "${TOPIC}"
 }
 
+function create_topic_async {
+    local TOPIC=$1
+
+    create_topic $TOPIC &
+}
+
+#
+#   Create topic if it does not exist. It may be slow because it calls Kafka, so be careful 
+#
+function create_topic_if_missing {
+    local TOPIC=$1
+
+    local search=$(kafka-topics.sh --list --bootstrap-server ${KAFKA_HOST} | grep $TOPIC)
+    if [[ "$search" != "$TOPIC" ]]; then
+        create_topic $TOPIC
+    fi
+
+}
 
 #   
 #   Delete a topic
@@ -174,8 +209,14 @@ function wait_topic_exists {
         if [[ "$search" == "$TOPIC" ]]; then
             break;
         fi
-        sleep 0.5
+        sleep .5
     done
+}
+
+function wait_topic_exists_async {
+    local TOPIC="$1"
+    
+    wait_topic_exists "$TOPIC"
 }
 
 #
