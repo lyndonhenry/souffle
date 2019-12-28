@@ -396,9 +396,17 @@ void TopologicallySortedSCCGraph::run(const AstTranslationUnit& translationUnit)
 }
 
 void TopologicallySortedSCCGraph::print(std::ostream& os) const {
+    // @TODO
     if (Global::config().has("engine")) {
-        std::ofstream ofstream(simpleName(Global::config().get("")) + ".json");
-        printAsJson(ofstream);
+        {
+            std::ofstream ofstream(simpleName(Global::config().get("")) + ".json");
+            printAsJson(ofstream);
+        }
+        {
+            std::stringstream ss;
+            printAsSpecialText(ss);
+            Global::config().set("_metadata", ss.str());
+        }
     }
 
     os << "--- partial order of strata as list of pairs ---" << std::endl;

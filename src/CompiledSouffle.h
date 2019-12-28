@@ -23,6 +23,7 @@
 #include "souffle/CompiledTuple.h"
 #include "souffle/IODirectives.h"
 #include "souffle/IOSystem.h"
+#include "souffle/Kafka.h"
 #include "souffle/ParallelUtils.h"
 #include "souffle/RamTypes.h"
 #include "souffle/SignalHandler.h"

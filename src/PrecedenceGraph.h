@@ -180,19 +180,6 @@ public:
         return sccToRelation.at(scc);
     }
 
-    /** Get all external relations of a given SCC. */
-    const std::set<const AstRelation*> getExternalRelations(const size_t scc) const {
-        std::set<const AstRelation*> externs;
-        for (const auto& relation : getInternalRelations(scc)) {
-            for (const auto& predecessor : precedenceGraph->graph().predecessors(relation)) {
-                if (relationToScc.at(predecessor) != scc) {
-                    externs.insert(predecessor);
-                }
-            }
-        }
-        return externs;
-    }
-
     /** Get all external output predecessor relations of a given SCC. */
     const std::set<const AstRelation*> getExternalOutputPredecessorRelations(const size_t scc) const {
         std::set<const AstRelation*> externOutPreds;
@@ -346,8 +333,36 @@ public:
         return indices;
     }
 
+    /** Output information for topologically sorted strongly connected component graph in special text format.
+     */
+    void printAsSpecialText(std::ostream& os) const {
+        // @TODO
+        const auto fn = [&os](const std::set<const AstRelation*>& relations) -> void {
+            os << " " << relations.size();
+            for (const auto& relation : relations) {
+                os << " \"" << relation->getName() << "\"";
+            }
+        };
+        os << sccOrder.size();
+        for (const auto index : sccOrder) {
+            // name
+            os << " \"" << index << "\"";
+            // input
+            fn(sccGraph->getInternalInputRelations(index));
+            // output
+            fn(sccGraph->getInternalOutputRelations(index));
+            // produced
+            fn(sccGraph->getInternalRelationsWithExternalSuccessors(index));
+            // consumed
+            fn(sccGraph->getExternalPredecessorRelations(index));
+            // negated
+            os << " " << 0;
+        }
+    }
+
     /** Output information for topologically sorted strongly connected component graph in JSON format. */
     void printAsJson(std::ostream& os) const {
+        // @TODO
         constexpr auto ONE_TAB = "    ";
         constexpr auto TWO_TABS = "        ";
 
@@ -435,7 +450,7 @@ public:
                 const auto scc = sccOrder.at(i);
                 os << TWO_TABS << "\"" << scc << "\": "
                    << "["
-                   << join(sccGraph->getExternalRelations(scc), ", ",
+                   << join(sccGraph->getExternalPredecessorRelations(scc), ", ",
                               [](std::ostream& out, const AstRelation* rel) {
                                   out << "\"" << rel->getName() << "\"";
                               })

@@ -17,9 +17,13 @@
 #include "IODirectives.h"
 #include "ReadStream.h"
 #include "ReadStreamCSV.h"
+// @TODO: rename new
+#include "ReadStreamNew.h"
 #include "SymbolTable.h"
 #include "WriteStream.h"
 #include "WriteStreamCSV.h"
+// @TODO: rename new
+#include "WriteStreamNew.h"
 
 #ifdef USE_SQLITE
 #include "ReadStreamSQLite.h"
@@ -78,8 +82,12 @@ private:
     IOSystem() {
         registerReadStreamFactory(std::make_shared<ReadFileCSVFactory>());
         registerReadStreamFactory(std::make_shared<ReadCinCSVFactory>());
+        // @TODO: rename new
+        registerReadStreamFactory(std::make_shared<ReadNewFactory>());
         registerWriteStreamFactory(std::make_shared<WriteFileCSVFactory>());
         registerWriteStreamFactory(std::make_shared<WriteCoutCSVFactory>());
+        // @TODO: rename new
+        registerWriteStreamFactory(std::make_shared<WriteNewFactory>());
         registerWriteStreamFactory(std::make_shared<WriteCoutPrintSizeFactory>());
 #ifdef USE_SQLITE
         registerReadStreamFactory(std::make_shared<ReadSQLiteFactory>());

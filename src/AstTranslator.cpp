@@ -1575,6 +1575,8 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
         }
 
         {
+            // @TODO: use the new io read stream
+
             // load all internal input relations from the facts dir with a .facts extension
             for (const auto& relation : internIns) {
                 makeRamLoad(current, relation, "fact-dir", ".facts");
@@ -1601,6 +1603,8 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
                                : translateRecursiveRelation(allInterns, recursiveClauses);
         appendStmt(current, std::move(bodyStatement));
         {
+            // @TODO: use the new io write stream
+
             // if a communication engine is enabled...
             if (Global::config().has("engine")) {
                 // store all internal non-output relations with external successors to the output dir with
@@ -1641,6 +1645,7 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
         }
 
         if (current) {
+            // @TODO: ensure indexation done right here, was different before
             // append the current SCC as a stratum to the sequence
             appendStmt(
                     res, std::make_unique<RamStratum>(std::move(current), sccOrder.order().at(indexOfScc)));

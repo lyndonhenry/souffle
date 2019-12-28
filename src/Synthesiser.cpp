@@ -2285,7 +2285,20 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
         os << R"_(souffle::ProfileEventSingleton::instance().makeConfigRecord("version", ")_"
            << Global::config().get("version") << R"_(");)_" << '\n';
     }
-    os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), opt.getStratumIndex());\n";
+    // @@@TODO
+    if (Global::config().get("engine") == "kafka") {
+        os << "{" << std::endl;
+        os << R"(std::stringstream ss;)" << std::endl;
+        os << R"(ss << "\"" << opt.getInputFileDir() << "\" \"" << opt.getOutputFileDir() << "\" ";)"
+           << std::endl;
+        os << "ss << R\"(" << Global::config().get("_metadata") << ")\";" << std::endl;
+        os << R"(auto kafkaObject = souffle::kafka::Kafka(ss.str());)" << std::endl;
+        os << R"(kafkaObject.print(std::cout);)" << std::endl;
+        os << R"(kafkaObject.run(&obj, opt.getStratumIndex());)" << std::endl;
+        os << "}" << std::endl;
+    } else {
+        os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), opt.getStratumIndex());\n";
+    }
 
     if (Global::config().get("provenance") == "explain") {
         os << "explain(obj, false, false);\n";

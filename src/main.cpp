@@ -299,7 +299,7 @@ int main(int argc, char** argv) {
                 throw std::invalid_argument("Error: Use of engine option not yet available for interpreter.");
             }
             const auto& engine = Global::config().get("engine");
-            if (engine != "file") {
+            if (engine != "file" && engine != "kafka") {
                 throw std::invalid_argument("Error: Use of engine '" + engine + "' is not supported.");
             }
         }
