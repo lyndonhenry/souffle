@@ -396,6 +396,11 @@ void TopologicallySortedSCCGraph::run(const AstTranslationUnit& translationUnit)
 }
 
 void TopologicallySortedSCCGraph::print(std::ostream& os) const {
+    if (Global::config().has("engine")) {
+        std::ofstream ofstream(simpleName(Global::config().get("")) + ".json");
+        printAsJson(ofstream);
+    }
+
     os << "--- partial order of strata as list of pairs ---" << std::endl;
     for (size_t sccIndex = 0; sccIndex < sccOrder.size(); sccIndex++) {
         const auto& successorSccs = sccGraph->getSuccessorSCCs(sccOrder.at(sccIndex));
