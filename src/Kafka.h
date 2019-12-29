@@ -927,10 +927,9 @@ public:
         handle->poll(timeout_ms);
     }
     template <typename T>
-    static void produceProducer(RdKafka::Producer* producer, RdKafka::Topic* topic, std::vector<T>& payload) {
+    static void produceProducer(RdKafka::Producer* producer, RdKafka::Topic* topic, std::vector<T>& payload, const std::int32_t partition = RdKafka::Topic::PARTITION_UA) {
         assert(producer);
         assert(topic);
-        const std::int32_t partition = RdKafka::Topic::PARTITION_UA;
         const int msgflags = RdKafka::Producer::MSG_COPY;
         const std::string* key = nullptr;
         void* msg_opaque = nullptr;
@@ -947,10 +946,9 @@ public:
             pollHandle(producer, timeout_ms);
         }
     }
-    static void startConsumer(RdKafka::Consumer* consumer, RdKafka::Topic* topic) {
+    static void startConsumer(RdKafka::Consumer* consumer, RdKafka::Topic* topic, const int32_t partition = 0) {
         assert(consumer);
         assert(topic);
-        const int32_t partition = 0;
         // @TODO: which offset to use? const int64_t offset = RdKafka::Topic::OFFSET_BEGINNING;
         const int64_t offset = RdKafka::Topic::OFFSET_END;
         RdKafka::ErrorCode errorCode = consumer->start(topic, partition, offset);
@@ -959,18 +957,16 @@ public:
         }
         pollHandle(consumer, 0);
     }
-    static void stopConsumer(RdKafka::Consumer* consumer, RdKafka::Topic* topic) {
+    static void stopConsumer(RdKafka::Consumer* consumer, RdKafka::Topic* topic, const int32_t partition = RdKafka::Topic::PARTITION_UA) {
         assert(consumer);
         assert(topic);
-        const int32_t partition = RdKafka::Topic::PARTITION_UA;
         consumer->stop(topic, partition);
         pollHandle(consumer, 1000);
     }
     template <typename T>
-    static void consumeConsumer(RdKafka::Consumer* consumer, RdKafka::Topic* topic, std::vector<T>& payload) {
+    static void consumeConsumer(RdKafka::Consumer* consumer, RdKafka::Topic* topic, std::vector<T>& payload, const int32_t partition = 0) {
         assert(consumer);
         assert(topic);
-        const int32_t partition = 0;
         // @TODO: maybe use std::numeric_limits<int>::max();
         const int timeout_ms = 1000;
         while (true) {
@@ -1232,7 +1228,7 @@ public:
     }
 #endif
     template <typename T>
-    void produce(RdKafka::Topic* topic, std::vector<T>& payload) {
+    void produce(RdKafka::Topic* topic, std::vector<T>& payload, const std::int32_t partition = RdKafka::Topic::PARTITION_UA) {
 #ifdef DEBUG
         {
             std::stringstream stringstream;
@@ -1240,11 +1236,11 @@ public:
             debug(stringstream, payload);
         }
 #endif
-        KafkaHelper::produceProducer(producer_, topic, payload);
+        KafkaHelper::produceProducer(producer_, topic, payload, partition);
     }
     template <typename T>
-    void consume(RdKafka::Topic* topic, std::vector<T>& payload) {
-        KafkaHelper::consumeConsumer(consumer_, topic, payload);
+    void consume(RdKafka::Topic* topic, std::vector<T>& payload, const std::int32_t partition = 0) {
+        KafkaHelper::consumeConsumer(consumer_, topic, payload, partition);
 #ifdef DEBUG
         {
             std::stringstream stringstream;
@@ -1253,11 +1249,11 @@ public:
         }
 #endif
     }
-    void startConsumer(RdKafka::Topic* topic) {
-        KafkaHelper::startConsumer(consumer_, topic);
+    void startConsumer(RdKafka::Topic* topic, const std::int32_t partition = 0) {
+        KafkaHelper::startConsumer(consumer_, topic, partition);
     }
-    void stopConsumer(RdKafka::Topic* topic) {
-        KafkaHelper::stopConsumer(consumer_, topic);
+    void stopConsumer(RdKafka::Topic* topic, const std::int32_t partition = RdKafka::Topic::PARTITION_UA) {
+        KafkaHelper::stopConsumer(consumer_, topic, partition);
     }
     void pollProducer(const int timeoutMs) {
         KafkaHelper::pollHandle(producer_, timeoutMs);
