@@ -25,25 +25,30 @@ wait_kafka_ready
 #
 #   Every strata should create topics which this strata provides
 #
-echo "Creating topics for outcomming messages."
-iterate_outgoing_relations_strata create_topic $STRATUM_INDEX
+# echo "Creating topics for outcomming messages."
+# iterate_outgoing_relations_strata create_topic $STRATUM_INDEX
 
 #
 #   Wait for topics for incommings messages to be created
 #
-echo "Waiting untill all incomming topics are created. "
-iterate_incoming_relations_strata wait_topic_exists $STRATUM_INDEX
-
+# echo "Waiting untill all incomming topics are created. "
+# iterate_incoming_relations_strata wait_topic_exists_async $STRATUM_INDEX
+# wait
 
 echo "Invoking computation for strata index ${STRATUM_INDEX}"
 
 # Execute program - (1) wait for incomming messages, (2) run the program, (3) send outcomming messages
-iterate_incoming_relations_strata read_message $STRATUM_INDEX
+iterate_incoming_relations_strata read_message_async $STRATUM_INDEX
+wait    # wait until all incoming data are here and all outgoing topics are created - in this case we can continue
 
 echo "Executing Souffle ${PROGRAM_NAME}"
 ./${PROGRAM_NAME} -i${STRATUM_INDEX}
 
 echo "Colleting results and sending to Kafka"
-iterate_outgoing_relations_strata send_message $STRATUM_INDEX
+iterate_outgoing_relations_strata send_message_async $STRATUM_INDEX
+
+wait    # wait until all messages are sent, otherwise child processed are killed with the end of this container
 
 echo "End of ${STRATUM_INDEX}"
+
+

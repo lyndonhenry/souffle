@@ -100,27 +100,36 @@ function iterate_incoming_relations_strata {
 #   Send message to kafka 
 #
 function send_message {
-    local TOPIC=$1
-    local FILE=${2}
+    local TOPIC="$1"
+    local FILE="$2"
 
     local ff=$(basename ${FILE})
     echo "Sending msg from file: ${ff} to topic: ${TOPIC}"
 
     #   Send number of messages first
-    cat "$FILE" | wc -l | kafka-console-producer.sh --broker-list ${KAFKA_HOST} --topic "${TOPIC}"
+    cat "$FILE" | wc -l | kafkacat -b ${KAFKA_HOST} -P -t "${TOPIC}"
     #   Send file name as part of message so we know where to store the message for unmarshalling
-    echo "$ff" | kafka-console-producer.sh --broker-list ${KAFKA_HOST} --topic "${TOPIC}"
+    echo "$ff" | kafkacat -b ${KAFKA_HOST} -P -t "${TOPIC}"
     #   continue with messages
-    cat "$FILE" | kafka-console-producer.sh --broker-list ${KAFKA_HOST} --topic "${TOPIC}"
+    cat "$FILE" | kafkacat -b ${KAFKA_HOST} -P -t "${TOPIC}"
+
+    echo "Msg for topic: ${TOPIC} sent"
+}
+
+function send_message_async {
+    local TOPIC="$1"
+    local FILE="$2"
+
+    send_message "$TOPIC" "$FILE" &    
 }
 
 #
 # Read message from Kafka
 #
 function read_message {
-    local TOPIC=$1
-    local GROUP_NAME=$2
-    local DIR=${3}
+    local TOPIC="$1"
+    local GROUP_NAME="$2"
+    local DIR="$3"
 
     # Note that we create a message group for the consumer named as (topic, strata_index)
     # This is for other stratas to be able to consume the same messages as well (they will belong groups named by their topics and index)
@@ -129,11 +138,21 @@ function read_message {
     echo "Reading msg from topic: ${TOPIC}, group ${group}, storing to dir ${DIR}"
 
     # get number of messages first
-    size=$(kafka-console-consumer.sh --bootstrap-server ${KAFKA_HOST} --consumer-property auto.offset.reset=earliest --group ${group} --max-messages 1 --topic ${TOPIC})
-    file=$(kafka-console-consumer.sh --bootstrap-server ${KAFKA_HOST} --consumer-property auto.offset.reset=earliest --group ${group} --max-messages 1 --topic ${TOPIC})
+    size=$(kafkacat -b ${KAFKA_HOST} -c 1 -X topic.auto.offset.reset=earliest -G ${group} ${TOPIC})
+    file=$(kafkacat -b ${KAFKA_HOST} -c 1 -X topic.auto.offset.reset=earliest -G ${group} ${TOPIC})
     echo "Incoming message length ${size}, file ${file}"
     # then get the messages
-    kafka-console-consumer.sh --bootstrap-server ${KAFKA_HOST} --consumer-property auto.offset.reset=earliest --group ${group}  --max-messages ${size} --topic ${TOPIC} > "${DIR}/${file}"
+    kafkacat -b ${KAFKA_HOST} -c ${size} -X topic.auto.offset.reset=earliest -G ${group} ${TOPIC} > "${DIR}/${file}"
+
+    echo "Msg from topic: ${TOPIC}, group ${group} read"
+}
+
+function read_message_async {
+    local TOPIC="$1"
+    local GROUP_NAME="$2"
+    local DIR="$3"
+
+    read_message "$TOPIC" "$GROUP_NAME" "$DIR" &    
 }
 
 #
@@ -145,6 +164,12 @@ function create_topic() {
     echo "Creating topic: ${TOPIC}"
 
     kafka-topics.sh --create --bootstrap-server ${KAFKA_HOST} --replication-factor 1 --partitions 1 --topic "${TOPIC}"
+}
+
+function create_topic_async {
+    local TOPIC=$1
+
+    create_topic $TOPIC &
 }
 
 #
@@ -184,9 +209,14 @@ function wait_topic_exists {
         if [[ "$search" == "$TOPIC" ]]; then
             break;
         fi
-        echo "XXX Debug: Topic $TOPIC not ready yet, waiting. (Discovered topics ${search})"
-        sleep 5
+        sleep .5
     done
+}
+
+function wait_topic_exists_async {
+    local TOPIC="$1"
+    
+    wait_topic_exists "$TOPIC"
 }
 
 #
