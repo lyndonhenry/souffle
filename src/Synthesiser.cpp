@@ -215,18 +215,6 @@ void Synthesiser::emitCode(std::ostream& out, const RamStatement& stmt) {
 
         // -- relation statements --
 
-        void visitCreate(const RamCreate& /*create*/, std::ostream& out) override {
-            PRINT_BEGIN_COMMENT(out);
-            PRINT_END_COMMENT(out);
-        }
-
-        void visitFact(const RamFact& fact, std::ostream& out) override {
-            PRINT_BEGIN_COMMENT(out);
-            out << synthesiser.getRelationName(fact.getRelation()) << "->"
-                << "insert(" << join(fact.getValues(), ",", rec) << ");\n";
-            PRINT_END_COMMENT(out);
-        }
-
         void visitLoad(const RamLoad& load, std::ostream& out) override {
             PRINT_BEGIN_COMMENT(out);
             out << "if (performIO) {\n";
@@ -390,17 +378,10 @@ void Synthesiser::emitCode(std::ostream& out, const RamStatement& stmt) {
 
         void visitClear(const RamClear& clear, std::ostream& out) override {
             PRINT_BEGIN_COMMENT(out);
-            out << synthesiser.getRelationName(clear.getRelation()) << "->"
-                << "purge();\n";
-            PRINT_END_COMMENT(out);
-        }
-
-        void visitDrop(const RamDrop& drop, std::ostream& out) override {
-            PRINT_BEGIN_COMMENT(out);
 
             out << "if (!isHintsProfilingEnabled()"
-                << (drop.getRelation().isTemp() ? ") " : "&& performIO) ");
-            out << synthesiser.getRelationName(drop.getRelation()) << "->"
+                << (clear.getRelation().isTemp() ? ") " : "&& performIO) ");
+            out << synthesiser.getRelationName(clear.getRelation()) << "->"
                 << "purge();\n";
 
             PRINT_END_COMMENT(out);
@@ -1722,17 +1703,16 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
     os << "namespace souffle {\n";
     os << "using namespace ram;\n";
 
-    visitDepthFirst(*(prog.getMain()), [&](const RamCreate& create) {
-        // get some table details
-        const RamRelation& rel = create.getRelation();
-        const std::string& raw_name = rel.getName();
+    // synthesise data-structures for relations
+    for (auto rel : prog.getAllRelations()) {
+        const std::string& datalogName = rel->getName();
 
-        bool isProvInfo = raw_name.find("@info") != std::string::npos;
+        bool isProvInfo = datalogName.find("@info") != std::string::npos;
         auto relationType = SynthesiserRelation::getSynthesiserRelation(
-                rel, idxAnalysis->getIndexes(rel), Global::config().has("provenance") && !isProvInfo);
+                *rel, idxAnalysis->getIndexes(*rel), Global::config().has("provenance") && !isProvInfo);
 
         generateRelationTypeStruct(os, std::move(relationType));
-    });
+    }
     os << '\n';
 
     os << "class " << classname << " : public SouffleProgram {\n";
@@ -1795,9 +1775,9 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
         visitDepthFirst(*(prog.getMain()), [&](const RamStatement& node) { numFreq++; });
         os << "  size_t freqs[" << numFreq << "]{};\n";
         size_t numRead = 0;
-        visitDepthFirst(*(prog.getMain()), [&](const RamCreate& node) {
-            if (!node.getRelation().isTemp()) numRead++;
-        });
+        for (auto rel : prog.getAllRelations()) {
+            if (!rel->isTemp()) numRead++;
+        }
         os << "  size_t reads[" << numRead << "]{};\n";
     }
 
@@ -1805,56 +1785,53 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
     std::string initCons;     // initialization of constructor
     std::string registerRel;  // registration of relations
     int relCtr = 0;
-    std::string tempType;  // string to hold the type of the temporary relations
     std::set<std::string> storeRelations;
     std::set<std::string> loadRelations;
     visitDepthFirst(*(prog.getMain()),
             [&](const RamStore& store) { storeRelations.insert(store.getRelation().getName()); });
     visitDepthFirst(*(prog.getMain()),
             [&](const RamLoad& load) { loadRelations.insert(load.getRelation().getName()); });
-    visitDepthFirst(*(prog.getMain()), [&](const RamCreate& create) {
-        // get some table details
-        const auto& rel = create.getRelation();
-        int arity = rel.getArity();
-        int numberOfHeights = rel.getNumberOfHeights();
-        const std::string& raw_name = rel.getName();
-        const std::string& name = getRelationName(rel);
 
-        // TODO: make this correct
-        // ensure that the type of the new knowledge is the same as that of the delta knowledge
-        bool isDelta = rel.isTemp() && raw_name.find("@delta") != std::string::npos;
-        bool isProvInfo = raw_name.find("@info") != std::string::npos;
+    for (auto rel : prog.getAllRelations()) {
+        // get some table details
+        int arity = rel->getArity();
+        int numberOfHeights = rel->getNumberOfHeights();
+        const std::string& datalogName = rel->getName();
+        const std::string& cppName = getRelationName(*rel);
+
+        // TODO(b-scholz): we need a qualifier for info relations used by the provenance system
+        // this would permit a more efficient storage of relations (no indexes!!)
+        bool isProvInfo = datalogName.find("@info") != std::string::npos;
         auto relationType = SynthesiserRelation::getSynthesiserRelation(
-                rel, idxAnalysis->getIndexes(rel), Global::config().has("provenance") && !isProvInfo);
-        tempType = isDelta ? relationType->getTypeName() : tempType;
-        const std::string& type = (rel.isTemp()) ? tempType : relationType->getTypeName();
+                *rel, idxAnalysis->getIndexes(*rel), Global::config().has("provenance") && !isProvInfo);
+        const std::string& type = relationType->getTypeName();
 
         // defining table
-        os << "// -- Table: " << raw_name << "\n";
+        os << "// -- Table: " << datalogName << "\n";
 
-        os << "std::unique_ptr<" << type << "> " << name << " = std::make_unique<" << type << ">();\n";
-        if (!rel.isTemp()) {
+        os << "std::unique_ptr<" << type << "> " << cppName << " = std::make_unique<" << type << ">();\n";
+        if (!rel->isTemp()) {
             os << "souffle::RelationWrapper<";
             os << relCtr++ << ",";
             os << type << ",";
             os << "Tuple<RamDomain," << arity << ">,";
             os << arity << ",";
             os << numberOfHeights;
-            os << "> wrapper_" << name << ";\n";
+            os << "> wrapper_" << cppName << ";\n";
 
             // construct types
             std::string tupleType = "std::array<const char *," + std::to_string(arity) + ">{{";
             std::string tupleName = "std::array<const char *," + std::to_string(arity) + ">{{";
 
-            if (rel.getArity()) {
-                tupleType += "\"" + rel.getArgTypeQualifier(0) + "\"";
+            if (rel->getArity()) {
+                tupleType += "\"" + rel->getArgTypeQualifier(0) + "\"";
                 for (int i = 1; i < arity; i++) {
-                    tupleType += ",\"" + rel.getArgTypeQualifier(i) + "\"";
+                    tupleType += ",\"" + rel->getArgTypeQualifier(i) + "\"";
                 }
 
-                tupleName += "\"" + rel.getArg(0) + "\"";
+                tupleName += "\"" + rel->getArg(0) + "\"";
                 for (int i = 1; i < arity; i++) {
-                    tupleName += ",\"" + rel.getArg(i) + "\"";
+                    tupleName += ",\"" + rel->getArg(i) + "\"";
                 }
             }
             tupleType += "}}";
@@ -1863,15 +1840,15 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
             if (!initCons.empty()) {
                 initCons += ",\n";
             }
-            initCons += "\nwrapper_" + name + "(" + "*" + name + ",symTable,\"" + raw_name + "\"," +
+            initCons += "\nwrapper_" + cppName + "(" + "*" + cppName + ",symTable,\"" + datalogName + "\"," +
                         tupleType + "," + tupleName + ")";
-            registerRel += "addRelation(\"" + raw_name + "\",&wrapper_" + name + ",";
-            registerRel += (loadRelations.count(rel.getName()) > 0) ? "true" : "false";
+            registerRel += "addRelation(\"" + datalogName + "\",&wrapper_" + cppName + ",";
+            registerRel += (loadRelations.count(rel->getName()) > 0) ? "true" : "false";
             registerRel += ",";
-            registerRel += (storeRelations.count(rel.getName()) > 0) ? "true" : "false";
+            registerRel += (storeRelations.count(rel->getName()) > 0) ? "true" : "false";
             registerRel += ");\n";
         }
-    });
+    }
 
     os << "public:\n";
 
@@ -1902,7 +1879,7 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
 
     // -- run function --
     os << "private:\nvoid runFunction(std::string inputDirectory = \".\", "
-          "std::string outputDirectory = \".\", size_t stratumIndex = (size_t) -1, bool performIO = false) "
+          "std::string outputDirectory = \".\", size_t stratumIndex = (size_t) -2, bool performIO = false) "
           "{\n";
 
     os << "SignalHandler::instance()->set();\n";
@@ -1934,9 +1911,9 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
            << R"_(Logger logger("@runtime;", 0);)_" << '\n';
         // Store count of relations
         size_t relationCount = 0;
-        visitDepthFirst(*(prog.getMain()), [&](const RamCreate& create) {
-            if (create.getRelation().getName()[0] != '@') ++relationCount;
-        });
+        for (auto rel : prog.getAllRelations()) {
+            if (rel->getName()[0] != '@') ++relationCount;
+        }
         // Store configuration
         os << R"_(ProfileEventSingleton::instance().makeConfigRecord("relationCount", std::to_string()_"
            << relationCount << "));";
@@ -1946,9 +1923,9 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
         // Record relations created in each stratum
         visitDepthFirst(*(prog.getMain()), [&](const RamStratum& stratum) {
             std::map<std::string, size_t> relNames;
-            visitDepthFirst(stratum, [&](const RamCreate& create) {
-                relNames[create.getRelation().getName()] = create.getRelation().getArity();
-            });
+            for (auto rel : prog.getAllRelations()) {
+                relNames[rel->getName()] = rel->getArity();
+            }
             for (const auto& cur : relNames) {
                 // Skip temporary relations, marked with '@'
                 if (cur.first[0] == '@') {
@@ -1970,13 +1947,13 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
             hasAtLeastOneStrata = true;
             // go to stratum of index in switch
             auto i = stratum.getIndex();
-            ss << "case " << i << ":\ngoto STRATUM_" << i << ";\nbreak;\n";
+            ss << "case  (size_t)" << i << ":\ngoto STRATUM_" << (size_t)i << ";\nbreak;\n";
         });
         if (hasAtLeastOneStrata) {
             os << "switch (stratumIndex) {\n";
             {
-                // otherwise use stratum 0 if index is -1
-                os << "case (size_t) -1:\ngoto STRATUM_0;\nbreak;\n";
+                // otherwise use stratum 0 if index is -2
+                os << "case (size_t) -2:\ngoto STRATUM_0;\nbreak;\n";
             }
             os << ss.str();
             os << "}\n";
@@ -1989,13 +1966,13 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
         if (Global::config().has("engine")) {
             // go to the stratum with the max value for int as a suffix if calling the master stratum
             auto i = stratum.getIndex();
-            os << "STRATUM_" << i << ":\n";
+            os << "STRATUM_" << (size_t)i << ":\n";
         }
         os << "[&]() {\n";
         emitCode(os, stratum.getBody());
         os << "}();\n";
         if (Global::config().has("engine")) {
-            os << "if (stratumIndex != (size_t) -1) goto EXIT;\n";
+            os << "if (stratumIndex != (size_t) -2) goto EXIT;\n";
         }
         os << "/* END STRATUM " << stratum.getIndex() << " */\n";
     });
@@ -2014,12 +1991,12 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
     os << "\n// -- relation hint statistics --\n";
     os << "if(isHintsProfilingEnabled()) {\n";
     os << "std::cout << \" -- Operation Hint Statistics --\\n\";\n";
-    visitDepthFirst(*(prog.getMain()), [&](const RamCreate& create) {
-        auto name = getRelationName(create.getRelation());
+    for (auto rel : prog.getAllRelations()) {
+        auto name = getRelationName(*rel);
         os << "std::cout << \"Relation " << name << ":\\n\";\n";
         os << name << "->printHintStatistics(std::cout,\"  \");\n";
         os << "std::cout << \"\\n\";\n";
-    });
+    }
     os << "}\n";
 
     os << "SignalHandler::instance()->reset();\n";
@@ -2027,10 +2004,10 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
     os << "}\n";  // end of runFunction() method
 
     // add methods to run with and without performing IO (mainly for the interface)
-    os << "public:\nvoid run(size_t stratumIndex = (size_t) -1) override { runFunction(\".\", \".\", "
+    os << "public:\nvoid run(size_t stratumIndex = (size_t) -2) override { runFunction(\".\", \".\", "
           "stratumIndex, false); }\n";
     os << "public:\nvoid runAll(std::string inputDirectory = \".\", std::string outputDirectory = \".\", "
-          "size_t stratumIndex = (size_t) -1) "
+          "size_t stratumIndex = (size_t) -2) "
           "override { ";
     if (Global::config().has("live-profile")) {
         os << "std::thread profiler([]() { profile::Tui().runProf(); });\n";
@@ -2169,20 +2146,19 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
         if (Global::config().get("provenance") == "subtreeHeights") {
             // method that populates provenance indices
             os << "void copyIndex() {\n";
-            visitDepthFirst(*(prog.getMain()), [&](const RamCreate& create) {
+            for (auto rel : prog.getAllRelations()) {
                 // get some table details
-                const auto& rel = create.getRelation();
-                const std::string& name = getRelationName(rel);
-                const std::string& raw_name = rel.getName();
+                const std::string& cppName = getRelationName(*rel);
+                const std::string& datalogName = rel->getName();
 
-                bool isProvInfo = raw_name.find("@info") != std::string::npos;
-                auto relationType = SynthesiserRelation::getSynthesiserRelation(
-                        rel, idxAnalysis->getIndexes(rel), Global::config().has("provenance") && !isProvInfo);
+                bool isProvInfo = datalogName.find("@info") != std::string::npos;
+                auto relationType = SynthesiserRelation::getSynthesiserRelation(*rel,
+                        idxAnalysis->getIndexes(*rel), Global::config().has("provenance") && !isProvInfo);
 
                 if (!relationType->getProvenenceIndexNumbers().empty()) {
-                    os << name << "->copyIndex();\n";
+                    os << cppName << "->copyIndex();\n";
                 }
-            });
+            }
             os << "}\n";
         }
 
@@ -2257,7 +2233,7 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
         os << "R\"()\",\n";
     }
     os << std::stoi(Global::config().get("jobs")) << ",\n";
-    os << "-1";
+    os << "-2";
     os << ");\n";
 
     os << "if (!opt.parse(argc,argv)) return 1;\n";
@@ -2285,16 +2261,10 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
         os << R"_(souffle::ProfileEventSingleton::instance().makeConfigRecord("version", ")_"
            << Global::config().get("version") << R"_(");)_" << '\n';
     }
-    // @@@TODO
+    
     if (Global::config().get("engine") == "kafka") {
         os << "{" << std::endl;
-        os << R"(std::stringstream ss;)" << std::endl;
-        os << R"(ss << "\"" << opt.getInputFileDir() << "\" \"" << opt.getOutputFileDir() << "\" ";)"
-           << std::endl;
-        os << "ss << R\"(" << Global::config().get("_metadata") << ")\";" << std::endl;
-        os << R"(auto kafkaObject = souffle::kafka::Kafka(ss.str());)" << std::endl;
-        os << R"(kafkaObject.print(std::cout);)" << std::endl;
-        os << R"(kafkaObject.run(&obj, opt.getStratumIndex());)" << std::endl;
+        os << R"(souffle::kafka::Kafka().run(opt.getInputFileDir(), opt.getOutputFileDir(), &obj, opt.getStratumIndex(), R"()" << Global::config().get("_metadata") << ")\");" << std::endl;
         os << "}" << std::endl;
     } else {
         os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), opt.getStratumIndex());\n";

@@ -333,46 +333,17 @@ public:
         return indices;
     }
 
-    /** Output information for topologically sorted strongly connected component graph in special text format.
-     */
-    void printAsSpecialText(std::ostream& os) const {
-        // @TODO
-        const auto fn = [&os](const std::set<const AstRelation*>& relations) -> void {
-            os << " " << relations.size();
-            for (const auto& relation : relations) {
-                os << " \"" << relation->getName() << "\"";
-            }
-        };
-        os << sccOrder.size();
-        for (const auto index : sccOrder) {
-            // name
-            os << " \"" << index << "\"";
-            // input
-            fn(sccGraph->getInternalInputRelations(index));
-            // output
-            fn(sccGraph->getInternalOutputRelations(index));
-            // produced
-            fn(sccGraph->getInternalRelationsWithExternalSuccessors(index));
-            // consumed
-            fn(sccGraph->getExternalPredecessorRelations(index));
-            // negated
-            os << " " << 0;
-        }
-    }
-
-    /** Output information for topologically sorted strongly connected component graph in JSON format. */
-    void printAsJson(std::ostream& os) const {
-        // @TODO
+    void printMetadata(std::ostream& os) const {
         constexpr auto ONE_TAB = "    ";
         constexpr auto TWO_TABS = "        ";
 
         os << "{" << std::endl;
 
         /**
-         * Print the topological order of the strata.
+         * Print the stratum names.
          */
         {
-            os << ONE_TAB << "\"strata_topological_order\": [" << std::endl
+            os << ONE_TAB << "\"StratumNames\": [" << std::endl
                << join(sccOrder, ",\n",
                           [](std::ostream& out, const std::size_t scc) {
                               out << TWO_TABS << "\"" << scc << "\"";
@@ -382,91 +353,20 @@ public:
         }
 
         /*
-         * Print the input relations for each strata.
+         * Print the relation names.
          */
         {
-            os << ONE_TAB << "\"input_relations_per_strata\": {" << std::endl;
+            os << ONE_TAB << "\"RelationNames\": [" << std::endl;
             for (std::size_t i = 0; i < sccOrder.size(); ++i) {
-                const auto scc = sccOrder.at(i);
-                os << TWO_TABS << "\"" << scc << "\": "
-                   << "["
-                   << join(sccGraph->getInternalInputRelations(scc), ", ",
+                os << join(sccGraph->getInternalRelations(sccOrder.at(i)), ",\n",
                               [](std::ostream& out, const AstRelation* rel) {
-                                  out << "\"" << rel->getName() << "\"";
-                              })
-                   << "]";
-                if (i != sccOrder.size() - 1) os << ",";
-                os << std::endl;
+                                  out << TWO_TABS << "\"" << rel->getName() << "\"";
+                              });
+                              if (i != sccOrder.size() - 1) {
+                                  os << ",\n";
+                              }
             }
-            os << ONE_TAB << "}," << std::endl;
-        }
-
-        /*
-         * Print the output relations for each strata.
-         */
-        {
-            os << ONE_TAB << "\"output_relations_per_strata\": {" << std::endl;
-            for (std::size_t i = 0; i < sccOrder.size(); ++i) {
-                const auto scc = sccOrder.at(i);
-                os << TWO_TABS << "\"" << scc << "\": "
-                   << "["
-                   << join(sccGraph->getInternalOutputRelations(scc), ", ",
-                              [](std::ostream& out, const AstRelation* rel) {
-                                  out << "\"" << rel->getName() << "\"";
-                              })
-                   << "]";
-                if (i != sccOrder.size() - 1) os << ",";
-                os << std::endl;
-            }
-            os << ONE_TAB << "}," << std::endl;
-        }
-
-        /*
-         * Print the relations produced by each strata.
-         */
-        {
-            os << ONE_TAB << "\"produced_relations_per_strata\": {" << std::endl;
-            for (std::size_t i = 0; i < sccOrder.size(); ++i) {
-                const auto scc = sccOrder.at(i);
-                os << TWO_TABS << "\"" << scc << "\": "
-                   << "["
-                   << join(sccGraph->getInternalRelations(scc), ", ",
-                              [](std::ostream& out, const AstRelation* rel) {
-                                  out << "\"" << rel->getName() << "\"";
-                              })
-                   << "]";
-                if (i != sccOrder.size() - 1) os << ",";
-                os << std::endl;
-            }
-            os << ONE_TAB << "}," << std::endl;
-        }
-
-        /*
-         * Print the relations consumed by each strata.
-         */
-        {
-            os << ONE_TAB << "\"consumed_relations_per_strata\": {" << std::endl;
-            for (std::size_t i = 0; i < sccOrder.size(); ++i) {
-                const auto scc = sccOrder.at(i);
-                os << TWO_TABS << "\"" << scc << "\": "
-                   << "["
-                   << join(sccGraph->getExternalPredecessorRelations(scc), ", ",
-                              [](std::ostream& out, const AstRelation* rel) {
-                                  out << "\"" << rel->getName() << "\"";
-                              })
-                   << "]";
-                if (i != sccOrder.size() - 1) os << ",";
-                os << std::endl;
-            }
-            os << ONE_TAB << "}," << std::endl;
-        }
-
-        /*
-         * Print other information about the strata graph.
-         */
-        {
-            os << ONE_TAB << "\"topological_ordering_cost\": " << topologicalOrderingCost(sccOrder)
-               << std::endl;
+            os << "\n" << ONE_TAB << "]" << std::endl;
         }
 
         os << "}";

@@ -396,15 +396,12 @@ void TopologicallySortedSCCGraph::run(const AstTranslationUnit& translationUnit)
 }
 
 void TopologicallySortedSCCGraph::print(std::ostream& os) const {
-    // @TODO
+    
+    // set program metadata for use by kafka engine, @see Synthesizer.cpp
     if (Global::config().has("engine")) {
         {
-            std::ofstream ofstream(simpleName(Global::config().get("")) + ".json");
-            printAsJson(ofstream);
-        }
-        {
             std::stringstream ss;
-            printAsSpecialText(ss);
+            printMetadata(ss);
             Global::config().set("_metadata", ss.str());
         }
     }

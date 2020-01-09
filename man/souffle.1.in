@@ -1,4 +1,4 @@
-.TH SOUFFLE 1 2020-01-09
+.TH SOUFFLE 1 @ISODATE@
 
 .SH NAME
 .B souffle
@@ -112,7 +112,7 @@ souffle program.dl
 souffle -c program.dl -Ffacts -D- -j20
 
 .SH VERSION
-0.0.1-4980-g1e57f80e
+@PACKAGE_VERSION@
 
 .SH LICENSE
 Copyright (c) 2016 Oracle and/or its affiliates. All Rights reserved.

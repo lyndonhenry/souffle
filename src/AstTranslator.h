@@ -282,14 +282,15 @@ private:
         return toString(join(id.getNames(), "."));
     }
 
-    void makeIODirective(IODirectives& ioDirective, const AstRelation* rel, const std::string& filePath,
-            const std::string& fileExt, const bool isIntermediate);
+ std::unique_ptr<RamStatement> makeRamLoad(const AstRelation* relation, IODirectives& ioDirective);
 
-    std::vector<IODirectives> getInputIODirectives(const AstRelation* rel,
-            std::string filePath = std::string(), const std::string& fileExt = std::string());
+ std::unique_ptr<RamStatement> makeRamStore(const AstRelation* relation, IODirectives& ioDirective);
 
-    std::vector<IODirectives> getOutputIODirectives(const AstRelation* rel,
-            std::string filePath = std::string(), const std::string& fileExt = std::string());
+    void makeIODirective(IODirectives& ioDirective, const AstRelation* rel);
+
+    std::vector<IODirectives> getInputIODirectives(const AstRelation* rel, IODirectives& ioDirectives);
+
+    std::vector<IODirectives> getOutputIODirectives(const AstRelation* rel, IODirectives& ioDirectives);
 
     /** create a reference to a RAM relation */
     std::unique_ptr<RamRelationReference> createRelationReference(const std::string name, const size_t arity,

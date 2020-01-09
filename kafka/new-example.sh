@@ -3,14 +3,12 @@
 set -ouex
 
 function ensure_kafka_topic_created() {
-    # @TODO: check for existence
     local KAFKA_HOST="${1}"
     local TOPIC="${2}"
     kafka-topics.sh --create --bootstrap-server "${KAFKA_HOST}" --topic "${TOPIC}" --replication-factor 1 --partitions 1  || :
 }
 
 function ensure_kafka_topic_deleted() {
-    # @TODO: check for existence
     local KAFKA_HOST="${1}"
     local TOPIC="${2}"
     kafka-topics.sh --delete --bootstrap-server "${KAFKA_HOST}" --topic "${TOPIC}" || :
@@ -248,45 +246,76 @@ function ensure_souffle_test_case_is_built_for_kafka() {
 
 function main() {
 
+    # ensure that we are in the root directory of the souffle project
     [[ $(basename ${PWD}) != souffle ]] && exit 1
 
-    rm -rf tests/testsuite.dir 
+    # ensure that the testsuite directory does does not exist yet
+    local TESTSUITE_DIR="${PWD}/tests/testsuite.dir"
+    rm -rf "${TESTSUITE_DIR}"
 
+    # set the test case used by this script
     local TEST_CASE="example/input_output_numbers"
 
+    # set variables for kafka
     local KAFKA_HOST="localhost:9092"
     local KAFKA_DOCKER_PATH="${PWD}/kafka"
     export PATH="${PWD}/kafka/tmp/kafka_2.12-2.3.1/bin:${PATH}"
 
+    # ensure dependencies are installed
     ensure_kafka_depencencies_are_installed "${PWD}/kafka/tmp"
     ensure_jq_is_installed "${PWD}/kafka/tmp"
+
+    # ensure that the test case is built with souffle 
     ensure_souffle_is_built_for_kafka "${PWD}"
     ensure_souffle_test_case_is_built_for_kafka "${PWD}" "${TEST_CASE}"
 
-    local EXE="${PWD}/tests/testsuite.dir/${TEST_CASE}/$(basename ${TEST_CASE})"
+    # set the executable for the test case
+    local EXE="${TESTSUITE_DIR}/${TEST_CASE}/$(basename ${TEST_CASE})"
 
+    # print program metadata in json format, schema is {"StratumNames": [...], "RelationNames": [...]}
     ${EXE} -i-2 | jq
 
+    # extract stratum names and relation names from json metadata
     local JSON_DATA=$(${EXE} -i-2)
-
     local RELATION_NAMES="$(echo ${JSON_DATA} | jq -r '.RelationNames | .[]')"
     local STRATUM_NAMES="$(echo ${JSON_DATA} | jq -r '.StratumNames | .[]')"
 
+    # start the kafka broker
     ensure_docker_compose_is_up "${KAFKA_DOCKER_PATH}"
+
+    # ensure that the debugging topic exists
     ensure_kafka_topic_created ${KAFKA_HOST} _DEBUG_
-    for_each "ensure_kafka_topic_created ${KAFKA_HOST}" default ${RELATION_NAMES}
 
-    ${EXE} -i-1 &
-
-    sleep 5s
-
-    for_each_async "${EXE} -i" ${STRATUM_NAMES}
-
+    # ensure that all program specific topics are initially empty by deleting them
+    for_each_async "ensure_kafka_topic_deleted ${KAFKA_HOST}" ${RELATION_NAMES}
     wait
 
+    # ensure that all program specific topics exist
+    for_each_async "ensure_kafka_topic_created ${KAFKA_HOST}" ${RELATION_NAMES}
+    wait
+
+    # show the line count of the expected output files
+    wc -l "${TESTSUITE_DIR}/${TEST_CASE}"/*.csv
+
+    # remove the expected output files, these are overridden by actual outputs on execution
+    rm -rf "${TESTSUITE_DIR}/${TEST_CASE}"/*.csv
+
+    # run all program strata as subprograms
+    # the master stratum at index -1 reads input .facts from the fact-dir, 
+    # produces input relations to topics, consumes output relations to topics, 
+    # and writes output .csv to the output-dir
+    # the slave strata at all other indices will consume input and intermediate 
+    # relations and produce output and intermediate relations on kafka topics
+    for_each_async "${EXE} -i" -1 ${STRATUM_NAMES}
+    wait
+
+    # show the line count of the actual output files, the user should compare this to the expected produced above
+    wc -l "${TESTSUITE_DIR}/${TEST_CASE}"/*.csv
+
+    # prompt the user to continue with cleanup
     read -p "Continue?"
 
-    for_each "ensure_kafka_topic_deleted ${KAFKA_HOST}" default ${RELATION_NAMES}
+    # stop the kafka broker
     ensure_docker_compose_is_down "${KAFKA_DOCKER_PATH}"
 
     exit 0
