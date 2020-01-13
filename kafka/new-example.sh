@@ -114,7 +114,7 @@ function ensure_file_is_downloaded() {
 function ensure_tarball_is_unzipped() {
     local DIRNAME="$(dirname ${1})"
     local BASENAME="$(basename ${1})"
-    if [ ! -e "${DIRNAME}/${BASENAME%%.*}" ]
+    if [ ! -e "${DIRNAME}/${BASENAME%.*}" ]
     then
         cd "${DIRNAME}"
         tar -xzf "${BASENAME}"
@@ -213,10 +213,13 @@ function ensure_souffle_program_is_built_for_kafka() {
     local DIRNAME="$(dirname ${FILE})"
     local BASENAME="$(basename ${FILE})"
     local NAME="${BASENAME%%.*}"
+
+    # @@@TODO: ensure this works both with and without -a option, and with -efile also
     if [ ! -e "${DIRNAME}/${NAME}" ]
     then
         cd "${DIRNAME}"
         "${EXE}" \
+            -a \
             -ekafka \
             -D"${DIRNAME}" \
             -F"${DIRNAME}/facts" \
@@ -225,6 +228,7 @@ function ensure_souffle_program_is_built_for_kafka() {
             "${FILE}"
         cd -
     fi
+
 }
 
 function ensure_kafka_depencencies_are_installed() {
@@ -253,6 +257,7 @@ function main() {
     local TESTSUITE_DIR="${PWD}/tests/testsuite.dir"
     rm -rf "${TESTSUITE_DIR}"
 
+    # @@@TODO: try with 'input_output_numbers_recursive'
     # set the test case used by this script
     local TEST_CASE="example/input_output_numbers"
 
@@ -290,6 +295,8 @@ function main() {
     for_each_async "ensure_kafka_topic_deleted ${KAFKA_HOST}" ${RELATION_NAMES}
     wait
 
+    sleep 1s
+
     # ensure that all program specific topics exist
     for_each_async "ensure_kafka_topic_created ${KAFKA_HOST}" ${RELATION_NAMES}
     wait
@@ -306,7 +313,7 @@ function main() {
     # and writes output .csv to the output-dir
     # the slave strata at all other indices will consume input and intermediate 
     # relations and produce output and intermediate relations on kafka topics
-    for_each_async "${EXE} -i" -1 ${STRATUM_NAMES}
+    for_each_async "${EXE} -Xmetadata.broker.list=${KAFKA_HOST} -i" -1 ${STRATUM_NAMES}
     wait
 
     # show the line count of the actual output files, the user should compare this to the expected produced above

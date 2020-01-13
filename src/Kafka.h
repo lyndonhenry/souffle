@@ -12,7 +12,6 @@
  *
  ***********************************************************************/
 
-
 #pragma once
 
 #include <librdkafka/rdkafkacpp.h>
@@ -76,9 +75,6 @@ public:
         if (conf->set(key, value, errstr) != RdKafka::Conf::CONF_OK) {
             throwFatalException(errstr);
         }
-    }
-    static void setMetadataBrokerList(RdKafka::Conf* conf, const std::string& metadataBrokerList) {
-        setConf(conf, "metadata.broker.list", metadataBrokerList);
     }
     static void eventCb(RdKafka::Event& event) {
         switch (event.type()) {
@@ -274,8 +270,10 @@ private:
 #endif
 private:
     explicit KafkaClient() {}
+
 public:
     ~KafkaClient() {}
+
 public:
     static KafkaClient& getInstance() {
         // get instance for singleton design pattern
@@ -286,13 +284,16 @@ public:
     KafkaClient(KafkaClient const&) = delete;
     // deleted constructor for singleton design pattern
     void operator=(KafkaClient const&) = delete;
+
 public:
-    void beginClient(const std::string& brokers) {
+    void beginClient(const std::unordered_map<std::string, std::string>& globalConf) {
         KafkaHelper::unthrowException();
         KafkaHelper::setSigintAndSigterm();
         globalConf_ = KafkaHelper::createGlobalConf();
         topicConf_ = KafkaHelper::createTopicConf();
-        KafkaHelper::setMetadataBrokerList(globalConf_, brokers);
+        for (auto it = globalConf.begin(); it != globalConf.end(); ++it) {
+            KafkaHelper::setConf(globalConf_, it->first, it->second);
+        }
         KafkaHelper::setEventCb(globalConf_, &eventCb_);
         KafkaHelper::setDeliveryReportCb(globalConf_, &deliveryReportCb_);
         KafkaHelper::setDefaultTopicConf(globalConf_, topicConf_);
@@ -393,21 +394,31 @@ public:
 }  // namespace kafka
 }  // namespace souffle
 
-#include <fstream>
 #include "SouffleInterface.h"
+#include <fstream>
 
 namespace souffle {
 namespace kafka {
 class Kafka {
+    // @TODO (lh): document use of the kafka communication engine
 public:
     explicit Kafka() {}
-    void run(const std::string& inputDirectory, const std::string& outputDirectory, souffle::SouffleProgram* souffleProgram, std::size_t stratumIndex, const std::string& metadataString) const {
-        if (stratumIndex == static_cast<std::size_t>(-2)) { 
+    void run(const std::unordered_map<std::string, std::string>& globalConf,
+            const std::string& inputDirectory, const std::string& outputDirectory,
+            souffle::SouffleProgram* souffleProgram, std::size_t stratumIndex,
+            const std::string& metadataString) const {
+        if (stratumIndex == static_cast<std::size_t>(-2)) {
             std::cout << metadataString << std::endl;
         } else {
+            /**
+             * Note that the `globalConf` parameter sets the global configuration properties for Kafka.
+             * It is passed to the program with the -X option, using the format key=value.
+             * For example, running with -Xmetadata.broker.list=localhost:9092 sets the Kafka broker.
+             * See https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
+             * for a full list of availble options.
+             */
             auto& kafkaClient = detail::KafkaClient::getInstance();
-            const auto brokers = "localhost";
-            kafkaClient.beginClient(brokers);
+            kafkaClient.beginClient(globalConf);
             souffleProgram->runAll(inputDirectory, outputDirectory, stratumIndex);
             kafkaClient.endClient();
         }

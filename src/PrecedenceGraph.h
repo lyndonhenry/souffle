@@ -359,12 +359,12 @@ public:
             os << ONE_TAB << "\"RelationNames\": [" << std::endl;
             for (std::size_t i = 0; i < sccOrder.size(); ++i) {
                 os << join(sccGraph->getInternalRelations(sccOrder.at(i)), ",\n",
-                              [](std::ostream& out, const AstRelation* rel) {
-                                  out << TWO_TABS << "\"" << rel->getName() << "\"";
-                              });
-                              if (i != sccOrder.size() - 1) {
-                                  os << ",\n";
-                              }
+                        [](std::ostream& out, const AstRelation* rel) {
+                            out << TWO_TABS << "\"" << rel->getName() << "\"";
+                        });
+                if (i != sccOrder.size() - 1) {
+                    os << ",\n";
+                }
             }
             os << "\n" << ONE_TAB << "]" << std::endl;
         }

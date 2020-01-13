@@ -396,7 +396,6 @@ void TopologicallySortedSCCGraph::run(const AstTranslationUnit& translationUnit)
 }
 
 void TopologicallySortedSCCGraph::print(std::ostream& os) const {
-    
     // set program metadata for use by kafka engine, @see Synthesizer.cpp
     if (Global::config().has("engine")) {
         {

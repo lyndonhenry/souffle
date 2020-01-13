@@ -67,7 +67,13 @@ private:
     const TypeEnvironment* typeEnv = nullptr;
 
     /** RAM program */
-    std::unique_ptr<RamProgram> ramProg;
+    std::unique_ptr<RamStatement> ramMain;
+
+    /** Subroutines */
+    std::map<std::string, std::unique_ptr<RamStatement>> ramSubs;
+
+    /** RAM relations */
+    std::map<std::string, std::unique_ptr<RamRelation>> ramRels;
 
     /**
      * Concrete attribute
@@ -282,9 +288,9 @@ private:
         return toString(join(id.getNames(), "."));
     }
 
- std::unique_ptr<RamStatement> makeRamLoad(const AstRelation* relation, IODirectives& ioDirective);
+    std::unique_ptr<RamStatement> makeRamLoad(const AstRelation* relation, IODirectives& ioDirective);
 
- std::unique_ptr<RamStatement> makeRamStore(const AstRelation* relation, IODirectives& ioDirective);
+    std::unique_ptr<RamStatement> makeRamStore(const AstRelation* relation, IODirectives& ioDirective);
 
     void makeIODirective(IODirectives& ioDirective, const AstRelation* rel);
 

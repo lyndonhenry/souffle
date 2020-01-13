@@ -148,6 +148,9 @@ int main(int argc, char** argv) {
         // the empty string if they take none
         // main option, the datalog program itself, has an empty key
         std::vector<MainOption> options{{"", 0, "", "", false, ""},
+                // @TODO (lh): use this to enable non-blocking communication for the kafka engine
+                {"async", 'a', "", "", false,
+                        "Enable asynchronous execution (i.e. non-blocking Kafka with -ekafka)."},
                 {"fact-dir", 'F', "DIR", ".", false, "Specify directory for fact files."},
                 {"include-dir", 'I', "DIR", ".", true, "Specify directory for include files."},
                 {"output-dir", 'D', "DIR", ".", false,
@@ -501,10 +504,6 @@ int main(int argc, char** argv) {
     if (ramTranslationUnit->getErrorReport().getNumIssues() != 0) {
         std::cerr << ramTranslationUnit->getErrorReport();
     }
-
-    if (!ramTranslationUnit->getProgram()->getMain()) {
-        return 0;
-    };
 
     // Output the transformed RAM program and return
     if (Global::config().has("transformed-ram")) {
