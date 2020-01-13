@@ -68,8 +68,34 @@ std::unique_ptr<RamTupleElement> AstTranslator::makeRamTupleElement(const Locati
     return std::make_unique<RamTupleElement>(loc.identifier, loc.element);
 }
 
-void AstTranslator::makeIODirective(IODirectives& ioDirective, const AstRelation* rel,
-        const std::string& filePath, const std::string& fileExt, const bool isIntermediate) {
+std::unique_ptr<RamStatement> AstTranslator::makeRamLoad(const AstRelation* relation, IODirectives& ioDirectives) {
+std::unique_ptr<RamStatement> statement =
+                std::make_unique<RamLoad>(std::unique_ptr<RamRelationReference>(translateRelation(relation)),
+                        getInputIODirectives(relation, ioDirectives));
+        if (Global::config().has("profile")) {
+            const std::string logTimerStatement =
+                    LogStatement::tRelationLoadTime(toString(relation->getName()), relation->getSrcLoc());
+            statement = std::make_unique<RamLogRelationTimer>(std::move(statement), logTimerStatement,
+                    std::unique_ptr<RamRelationReference>(translateRelation(relation)));
+        }
+        return statement;
+}
+
+std::unique_ptr<RamStatement> AstTranslator::makeRamStore(const AstRelation* relation, IODirectives& ioDirectives) {
+std::unique_ptr<RamStatement> statement = std::make_unique<RamStore>(
+                std::unique_ptr<RamRelationReference>(translateRelation(relation)),
+                getOutputIODirectives(relation, ioDirectives));
+        if (Global::config().has("profile")) {
+            const std::string logTimerStatement =
+                    LogStatement::tRelationSaveTime(toString(relation->getName()), relation->getSrcLoc());
+            statement = std::make_unique<RamLogRelationTimer>(std::move(statement), logTimerStatement,
+                    std::unique_ptr<RamRelationReference>(translateRelation(relation)));
+        }
+        return statement;
+}
+
+void AstTranslator::makeIODirective(IODirectives& ioDirective, const AstRelation* rel) {
+
     // set relation name correctly
     ioDirective.setRelationName(getRelationName(rel->getName()));
 
@@ -80,27 +106,26 @@ void AstTranslator::makeIODirective(IODirectives& ioDirective, const AstRelation
 
     // load intermediate relations from correct files
     if (ioDirective.getIOType() == "file") {
-        // all intermediate relations are given the default delimiter and have no headers
-        if (isIntermediate) {
-            ioDirective.set("intermediate", "true");
-            ioDirective.set("delimiter", "\t");
-            ioDirective.set("headers", "false");
+          // set filename by relation if not given, or if relation is intermediate
+        if (!ioDirective.has("filename") || ioDirective.get("intermediate") == "true") {
+            ioDirective.setFileName(ioDirective.getRelationName() + ioDirective.get("extension"));
         }
 
-        // set filename by relation if not given, or if relation is intermediate
-        if (!ioDirective.has("filename") || isIntermediate) {
-            ioDirective.setFileName(ioDirective.getRelationName() + fileExt);
-        }
-
-        // if filename is not an absolute path, concat with cmd line facts directory
+        // if filename is not an absolute path, concat with cmd line directory
         if (ioDirective.getIOType() == "file" && ioDirective.getFileName().front() != '/') {
-            ioDirective.setFileName(filePath + "/" + ioDirective.getFileName());
+            ioDirective.setFileName(ioDirective.get("directory") + "/" + ioDirective.getFileName());
         }
     }
 }
 
-std::vector<IODirectives> AstTranslator::getInputIODirectives(
-        const AstRelation* rel, std::string filePath, const std::string& fileExt) {
+std::vector<IODirectives> AstTranslator::getInputIODirectives(const AstRelation* rel, IODirectives& baseIoDirectives) {
+
+    const auto location = baseIoDirectives.get("location");
+    const auto filePath = baseIoDirectives.get("directory");
+    const auto fileExt = baseIoDirectives.get("extension");
+    const auto stratumIndex = baseIoDirectives.get("stratum");
+    const auto ioType = baseIoDirectives.getIOType();
+
     std::vector<IODirectives> inputDirectives;
 
     for (const auto& current : rel->getLoads()) {
@@ -123,14 +148,32 @@ std::vector<IODirectives> AstTranslator::getInputIODirectives(
                     inputFileExt == ".facts");
 
     for (auto& ioDirective : inputDirectives) {
-        makeIODirective(ioDirective, rel, inputFilePath, inputFileExt, isIntermediate);
+        // all intermediate relations are given the default delimiter and have no headers
+        if (isIntermediate) {
+            ioDirective.set("intermediate", "true");
+            ioDirective.set("delimiter", "\t");
+            ioDirective.set("headers", "false");
+        }
+        ioDirective.set("location", location);
+        ioDirective.set("directory", inputFilePath);
+        ioDirective.set("extension", inputFileExt);
+        ioDirective.set("stratum", stratumIndex);
+        ioDirective.setIOType(ioType);
+        makeIODirective(ioDirective, rel);
     }
 
     return inputDirectives;
 }
 
-std::vector<IODirectives> AstTranslator::getOutputIODirectives(
-        const AstRelation* rel, std::string filePath, const std::string& fileExt) {
+std::vector<IODirectives> AstTranslator::getOutputIODirectives(const AstRelation* rel, IODirectives& baseIoDirectives) {
+
+    const auto location = baseIoDirectives.get("location");
+    const auto filePath = baseIoDirectives.get("directory");
+    const auto fileExt = baseIoDirectives.get("extension");
+    const auto stratumIndex = baseIoDirectives.get("stratum");
+    const auto ioType = baseIoDirectives.getIOType();
+    const auto isAppend = baseIoDirectives.get("append");
+
     std::vector<IODirectives> outputDirectives;
 
     // If stdout is requested then remove all directives from the datalog file.
@@ -170,7 +213,19 @@ std::vector<IODirectives> AstTranslator::getOutputIODirectives(
                     outputFileExt == ".facts");
 
     for (auto& ioDirective : outputDirectives) {
-        makeIODirective(ioDirective, rel, outputFilePath, outputFileExt, isIntermediate);
+        // all intermediate relations are given the default delimiter and have no headers
+        if (isIntermediate) {
+            ioDirective.set("intermediate", "true");
+            ioDirective.set("delimiter", "\t");
+            ioDirective.set("headers", "false");
+        }
+        ioDirective.set("location", location);
+        ioDirective.set("directory", outputFilePath);
+        ioDirective.set("extension", outputFileExt);
+        ioDirective.set("stratum", stratumIndex);
+        ioDirective.set("append", isAppend);
+        ioDirective.setIOType(ioType);
+        makeIODirective(ioDirective, rel);
 
         if (!ioDirective.has("attributeNames")) {
             std::string delimiter("\t");
@@ -663,7 +718,8 @@ std::unique_ptr<RamStatement> AstTranslator::ClauseTranslator::translateClause(
         }
 
         // create a fact statement
-        return std::make_unique<RamFact>(translator.translateRelation(head), std::move(values));
+        return std::make_unique<RamQuery>(
+                std::make_unique<RamProject>(translator.translateRelation(head), std::move(values)));
     }
 
     // the rest should be rules
@@ -833,6 +889,14 @@ std::unique_ptr<RamStatement> AstTranslator::ClauseTranslator::translateClause(
                 }
             }
 
+            // check whether all arguments are unnamed variables
+            bool isAllArgsUnnamed = true;
+            for (auto* argument : atom->getArguments()) {
+                if (dynamic_cast<AstUnnamedVariable*>(argument) == nullptr) {
+                    isAllArgsUnnamed = false;
+                }
+            }
+
             // add check for emptiness for an atom
             op = std::make_unique<RamFilter>(
                     std::make_unique<RamNegation>(
@@ -840,7 +904,7 @@ std::unique_ptr<RamStatement> AstTranslator::ClauseTranslator::translateClause(
                     std::move(op));
 
             // add a scan level
-            if (atom->getArity() != 0) {
+            if (atom->getArity() != 0 && !isAllArgsUnnamed) {
                 if (head->getArity() == 0) {
                     op = std::make_unique<RamBreak>(
                             std::make_unique<RamNegation>(
@@ -1059,9 +1123,9 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
 
         /* drop temporary tables after recursion */
         appendStmt(postamble, std::make_unique<RamSequence>(
-                                      std::make_unique<RamDrop>(
+                                      std::make_unique<RamClear>(
                                               std::unique_ptr<RamRelationReference>(relDelta[rel]->clone())),
-                                      std::make_unique<RamDrop>(
+                                      std::make_unique<RamClear>(
                                               std::unique_ptr<RamRelationReference>(relNew[rel]->clone()))));
 
         /* Generate code for non-recursive part of relation */
@@ -1491,43 +1555,91 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
     // handle the case of an empty SCC graph
     if (sccGraph.getNumberOfSCCs() == 0) return;
 
+    // create a variable for the index of the current scc
+    size_t indexOfScc;
+
     // a function to load relations
     const auto& makeRamLoad = [&](std::unique_ptr<RamStatement>& current, const AstRelation* relation,
-                                      const std::string& inputDirectory, const std::string& fileExtension) {
-        std::unique_ptr<RamStatement> statement =
-                std::make_unique<RamLoad>(std::unique_ptr<RamRelationReference>(translateRelation(relation)),
-                        getInputIODirectives(relation, Global::config().get(inputDirectory), fileExtension));
-        if (Global::config().has("profile")) {
-            const std::string logTimerStatement =
-                    LogStatement::tRelationLoadTime(toString(relation->getName()), relation->getSrcLoc());
-            statement = std::make_unique<RamLogRelationTimer>(std::move(statement), logTimerStatement,
-                    std::unique_ptr<RamRelationReference>(translateRelation(relation)));
-        }
+                                      const std::string& inputDirectory, const std::string& fileExtension, const std::string& ioType = Global::config().has("engine") ? Global::config().get("engine") : "file") {
+        IODirectives ioDirectives;
+        ioDirectives.set("location", inputDirectory);
+        ioDirectives.set("directory", Global::config().get(inputDirectory));
+        ioDirectives.set("extension", fileExtension);
+        ioDirectives.setIOType(ioType);
+        ioDirectives.set("stratum", (indexOfScc == (size_t) -1) ? "master" : "slave");
+        auto statement = AstTranslator::makeRamLoad(relation, ioDirectives);
         appendStmt(current, std::move(statement));
     };
 
     // a function to store relations
     const auto& makeRamStore = [&](std::unique_ptr<RamStatement>& current, const AstRelation* relation,
-                                       const std::string& outputDirectory, const std::string& fileExtension) {
-        std::unique_ptr<RamStatement> statement = std::make_unique<RamStore>(
-                std::unique_ptr<RamRelationReference>(translateRelation(relation)),
-                getOutputIODirectives(relation, Global::config().get(outputDirectory), fileExtension));
-        if (Global::config().has("profile")) {
-            const std::string logTimerStatement =
-                    LogStatement::tRelationSaveTime(toString(relation->getName()), relation->getSrcLoc());
-            statement = std::make_unique<RamLogRelationTimer>(std::move(statement), logTimerStatement,
-                    std::unique_ptr<RamRelationReference>(translateRelation(relation)));
-        }
+                                       const std::string& outputDirectory, const std::string& fileExtension,  const std::string& ioType = Global::config().has("engine") ? Global::config().get("engine") : "file") {
+        IODirectives ioDirectives;
+        ioDirectives.set("location", outputDirectory);
+        ioDirectives.set("directory", Global::config().get(outputDirectory));
+        ioDirectives.set("extension", fileExtension);
+        ioDirectives.setIOType(ioType);
+        ioDirectives.set("stratum", (indexOfScc == (size_t) -1) ? "master" : "slave");
+        ioDirectives.set("append", "true");
+        auto statement = AstTranslator::makeRamStore(relation, ioDirectives);
         appendStmt(current, std::move(statement));
     };
 
     // a function to drop relations
-    const auto& makeRamDrop = [&](std::unique_ptr<RamStatement>& current, const AstRelation* relation) {
-        appendStmt(current, std::make_unique<RamDrop>(translateRelation(relation)));
+    const auto& makeRamClear = [&](std::unique_ptr<RamStatement>& current, const AstRelation* relation) {
+        appendStmt(current, std::make_unique<RamClear>(translateRelation(relation)));
     };
 
+    if (Global::config().has("engine") && Global::config().get("engine") == "kafka") {
+        // set the stratum index to -1
+        indexOfScc = -1;
+
+        // make a new ram statement for the master stratum
+        std::unique_ptr<RamStatement> current;
+
+        // iterate over each scc and load all input relations
+        for (const auto& scc : sccOrder.order()) {
+            // get all input relations of the current scc
+            const auto& inputRelations = sccGraph.getInternalInputRelations(scc);
+
+            // make load statements for each input relation
+            for (const auto& inputRelation : inputRelations) {
+                makeRamLoad(current, inputRelation, "fact-dir", ".facts", "file");
+            }
+
+            // make store statements for each input relation to produce with kafak
+            for (const auto& inputRelation : inputRelations) {
+                makeRamStore(current, inputRelation, "fact-dir", ".facts");
+            }
+
+        }
+
+        // iterate over each scc and store all output relations
+        for (const auto& scc : sccOrder.order()) {
+            // get all output relations of the current scc
+            const auto& outputRelations = sccGraph.getInternalOutputRelations(scc);
+
+            // make load statements for each output relation to consume with kafak
+            for (const auto& outputRelation : outputRelations) {
+                makeRamLoad(current, outputRelation, "output-dir", ".csv");
+            }
+
+
+            // make store statements for each output relation
+            for (const auto& outputRelation : outputRelations) {
+                makeRamStore(current, outputRelation, "output-dir", ".csv", "file");
+            }
+        }
+
+        // ensure that current exists, i.e. there is at least one output or printSize relation in the program
+        assert(current);
+
+        // append the master stratum
+        appendStmt(res, std::make_unique<RamStratum>(std::move(current), (size_t)-1));
+    }
+
     // maintain the index of the SCC within the topological order
-    size_t indexOfScc = 0;
+    indexOfScc = 0;
 
     // iterate over each SCC according to the topological order
     for (const auto& scc : sccOrder.order()) {
@@ -1545,26 +1657,11 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
         const auto& externOutPreds = sccGraph.getExternalOutputPredecessorRelations(scc);
         const auto& externNonOutPreds = sccGraph.getExternalNonOutputPredecessorRelations(scc);
 
-        // const auto& externPreds = sccGraph.getExternalPredecessorRelations(scc);
-        // const auto& internsWithExternSuccs = sccGraph.getInternalRelationsWithExternalSuccessors(scc);
         const auto& internNonOutsWithExternSuccs =
                 sccGraph.getInternalNonOutputRelationsWithExternalSuccessors(scc);
 
         // make a variable for all relations that are expired at the current SCC
         const auto& internExps = expirySchedule.at(indexOfScc).expired();
-
-        // create all internal relations of the current scc
-        for (const auto& relation : allInterns) {
-            appendStmt(current, std::make_unique<RamCreate>(
-                                        std::unique_ptr<RamRelationReference>(translateRelation(relation))));
-            // create new and delta relations if required
-            if (isRecursive) {
-                appendStmt(current, std::make_unique<RamCreate>(std::unique_ptr<RamRelationReference>(
-                                            translateDeltaRelation(relation))));
-                appendStmt(current, std::make_unique<RamCreate>(std::unique_ptr<RamRelationReference>(
-                                            translateNewRelation(relation))));
-            }
-        }
 
         {
             // load all internal input relations from the facts dir with a .facts extension
@@ -1593,6 +1690,7 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
                                : translateRecursiveRelation(allInterns, recursiveClauses);
         appendStmt(current, std::move(bodyStatement));
         {
+
             // if a communication engine is enabled...
             if (Global::config().has("engine")) {
                 // store all internal non-output relations with external successors to the output dir with
@@ -1614,27 +1712,28 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
             if (Global::config().has("engine")) {
                 // drop all internal relations
                 for (const auto& relation : allInterns) {
-                    makeRamDrop(current, relation);
+                    makeRamClear(current, relation);
                 }
                 // drop external output predecessor relations
                 for (const auto& relation : externOutPreds) {
-                    makeRamDrop(current, relation);
+                    makeRamClear(current, relation);
                 }
                 // drop external non-output predecessor relations
                 for (const auto& relation : externNonOutPreds) {
-                    makeRamDrop(current, relation);
+                    makeRamClear(current, relation);
                 }
             } else {
                 // otherwise, drop all  relations expired as per the topological order
                 for (const auto& relation : internExps) {
-                    makeRamDrop(current, relation);
+                    makeRamClear(current, relation);
                 }
             }
         }
 
         if (current) {
             // append the current SCC as a stratum to the sequence
-            appendStmt(res, std::make_unique<RamStratum>(std::move(current), indexOfScc));
+            appendStmt(
+                    res, std::make_unique<RamStratum>(std::move(current), sccOrder.order().at(indexOfScc)));
 
             // increment the index of the current SCC
             indexOfScc++;

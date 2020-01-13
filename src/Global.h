@@ -38,11 +38,11 @@ public:
         data(other.data());
         return *this;
     }
-    /* Set the raw data. */
+    /* Get the raw data. */
     const std::map<K, V>& data() const {
         return _data;
     }
-    /* Get the raw data. */
+    /* Set the raw data. */
     void data(const std::map<K, V>& otherData) {
         _data = otherData;
     }

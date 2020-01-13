@@ -46,7 +46,7 @@ public:
             const IODirectives& ioDirectives, const size_t numberOfHeights = 0, const bool provenance = false)
             : WriteStream(symbolMask, symbolTable, provenance, numberOfHeights),
               delimiter(getDelimiter(ioDirectives)),
-              file(ioDirectives.getFileName(), std::ios::out | std::ios::binary) {
+              file(ioDirectives.getFileName(), (ioDirectives.get("append") == "true" ? std::ios::app : std::ios::out) | std::ios::binary) {
         if (ioDirectives.has("headers") && ioDirectives.get("headers") == "true") {
             file << ioDirectives.get("attributeNames") << std::endl;
         }

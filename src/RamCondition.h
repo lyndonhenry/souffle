@@ -24,8 +24,8 @@
 #include "SymbolTable.h"
 
 #include <algorithm>
+#include <queue>
 #include <sstream>
-#include <stack>
 #include <string>
 
 #include <cstdlib>
@@ -446,29 +446,29 @@ protected:
 
 /**
  * @brief Convert terms of a conjunction to a list
- * @param A RAM condition
- * @param A list of RAM conditions
+ * @param conds A RAM condition
+ * @return A list of RAM conditions
  *
  * Convert a condition of the format C1 /\ C2 /\ ... /\ Cn
  * to a list {C1, C2, ..., Cn}.
  */
 inline std::vector<std::unique_ptr<RamCondition>> toConjunctionList(const RamCondition* condition) {
-    std::vector<std::unique_ptr<RamCondition>> list;
-    std::stack<const RamCondition*> stack;
+    std::vector<std::unique_ptr<RamCondition>> conditionList;
+    std::queue<const RamCondition*> conditionsToProcess;
     if (condition != nullptr) {
-        stack.push(condition);
-        while (!stack.empty()) {
-            condition = stack.top();
-            stack.pop();
+        conditionsToProcess.push(condition);
+        while (!conditionsToProcess.empty()) {
+            condition = conditionsToProcess.front();
+            conditionsToProcess.pop();
             if (const auto* ramConj = dynamic_cast<const RamConjunction*>(condition)) {
-                stack.push(&ramConj->getLHS());
-                stack.push(&ramConj->getRHS());
+                conditionsToProcess.push(&ramConj->getLHS());
+                conditionsToProcess.push(&ramConj->getRHS());
             } else {
-                list.emplace_back(condition->clone());
+                conditionList.emplace_back(condition->clone());
             }
         }
     }
-    return list;
+    return conditionList;
 }
 
 /**
@@ -479,9 +479,9 @@ inline std::vector<std::unique_ptr<RamCondition>> toConjunctionList(const RamCon
  * Convert a list {C1, C2, ..., Cn} to a condition of
  * the format C1 /\ C2 /\ ... /\ Cn.
  */
-inline std::unique_ptr<RamCondition> toCondition(const std::vector<const RamCondition*>& list) {
+inline std::unique_ptr<RamCondition> toCondition(const std::vector<const RamCondition*>& conds) {
     std::unique_ptr<RamCondition> result;
-    for (const RamCondition* cur : list) {
+    for (const RamCondition* cur : conds) {
         if (result == nullptr) {
             result = std::unique_ptr<RamCondition>(cur->clone());
         } else {
@@ -490,6 +490,22 @@ inline std::unique_ptr<RamCondition> toCondition(const std::vector<const RamCond
         }
     }
     return result;
+}
+
+/**
+ * @brief Convert list of conditions to a conjunction
+ * @param conds A list of RAM conditions
+ * @return A RAM condition
+ *
+ * Convert a list {C1, C2, ..., Cn} to a condition of
+ * the format C1 /\ C2 /\ ... /\ Cn.
+ */
+inline std::unique_ptr<RamCondition> toCondition(const std::vector<std::unique_ptr<RamCondition>>& conds) {
+    std::vector<const RamCondition*> args;
+    for (const auto& cur : conds) {
+        args.push_back(cur.get());
+    }
+    return toCondition(args);
 }
 
 }  // end of namespace souffle

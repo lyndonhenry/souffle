@@ -23,6 +23,7 @@
 #include "RamIndexAnalysis.h"
 #include "RamVisitor.h"
 #include <memory>
+#include <queue>
 
 namespace souffle {
 
@@ -48,9 +49,6 @@ public:
             if (dynamic_cast<const RamQuery*>(&node) != nullptr) {
                 newQueryBlock();
             }
-            if (const auto* create = dynamic_cast<const RamCreate*>(&node)) {
-                encodeRelation(create->getRelation());
-            }
             if (const auto* indexSearch = dynamic_cast<const RamIndexOperation*>(&node)) {
                 encodeIndexPos(*indexSearch);
                 encodeView(indexSearch);
@@ -64,6 +62,17 @@ public:
         });
         // Parse program
         return visit(root);
+    }
+
+    /** @brief Encode and return the relation id */
+    size_t encodeRelation(const RamRelation& rel) {
+        auto pos = relTable.find(&rel);
+        if (pos != relTable.end()) {
+            return pos->second;
+        }
+        size_t id = getNewRelId();
+        relTable[&rel] = id;
+        return id;
     }
 
     NodePtr visitNumber(const RamNumber& num) override {
@@ -140,7 +149,6 @@ public:
             children.push_back(visit(value));
         }
         std::vector<size_t> data;
-        data.push_back(encodeRelation(exists.getRelation()));
         data.push_back(encodeView(&exists));
         return std::make_unique<InterpreterNode>(
                 I_ExistenceCheck, &exists, std::move(children), std::move(data));
@@ -393,22 +401,10 @@ public:
         return std::make_unique<InterpreterNode>(I_Stratum, &stratum, std::move(children));
     }
 
-    NodePtr visitCreate(const RamCreate& create) override {
-        std::vector<size_t> data;
-        data.push_back((encodeRelation(create.getRelation())));
-        return std::make_unique<InterpreterNode>(I_Create, &create, NodePtrVec{}, std::move(data));
-    }
-
     NodePtr visitClear(const RamClear& clear) override {
         std::vector<size_t> data;
         data.push_back((encodeRelation(clear.getRelation())));
         return std::make_unique<InterpreterNode>(I_Clear, &clear, NodePtrVec{}, std::move(data));
-    }
-
-    NodePtr visitDrop(const RamDrop& drop) override {
-        std::vector<size_t> data;
-        data.push_back((encodeRelation(drop.getRelation())));
-        return std::make_unique<InterpreterNode>(I_Drop, &drop, NodePtrVec{}, std::move(data));
     }
 
     NodePtr visitLogSize(const RamLogSize& size) override {
@@ -427,16 +423,6 @@ public:
         std::vector<size_t> data;
         data.push_back((encodeRelation(store.getRelation())));
         return std::make_unique<InterpreterNode>(I_Store, &store, NodePtrVec{}, std::move(data));
-    }
-
-    NodePtr visitFact(const RamFact& fact) override {
-        NodePtrVec children;
-        for (auto& val : fact.getValues()) {
-            children.push_back(visit(val));
-        }
-        std::vector<size_t> data;
-        data.push_back((encodeRelation(fact.getRelation())));
-        return std::make_unique<InterpreterNode>(I_Fact, &fact, std::move(children), std::move(data));
     }
 
     NodePtr visitQuery(const RamQuery& query) override {
@@ -570,17 +556,6 @@ private:
         return id;
     }
 
-    /** @brief Encode and return the relation id */
-    size_t encodeRelation(const RamRelation& rel) {
-        auto pos = relTable.find(&rel);
-        if (pos != relTable.end()) {
-            return pos->second;
-        }
-        size_t id = getNewRelId();
-        relTable[&rel] = id;
-        return id;
-    }
-
     /**
      * @brief Find all operations under the root node that requires a view.
      * Return a list of InterpreterNodes.
@@ -627,22 +602,22 @@ private:
      * to a list {C1, C2, ..., Cn}.
      */
     inline std::vector<const RamCondition*> toConjunctionList(const RamCondition* condition) {
-        std::vector<const RamCondition*> list;
-        std::stack<const RamCondition*> stack;
+        std::vector<const RamCondition*> conditionList;
+        std::queue<const RamCondition*> conditionsToProcess;
         if (condition != nullptr) {
-            stack.push(condition);
-            while (!stack.empty()) {
-                condition = stack.top();
-                stack.pop();
+            conditionsToProcess.push(condition);
+            while (!conditionsToProcess.empty()) {
+                condition = conditionsToProcess.front();
+                conditionsToProcess.pop();
                 if (const auto* ramConj = dynamic_cast<const RamConjunction*>(condition)) {
-                    stack.push(&ramConj->getLHS());
-                    stack.push(&ramConj->getRHS());
+                    conditionsToProcess.push(&ramConj->getLHS());
+                    conditionsToProcess.push(&ramConj->getRHS());
                 } else {
-                    list.emplace_back(condition);
+                    conditionList.emplace_back(condition);
                 }
             }
         }
-        return list;
+        return conditionList;
     }
 };
 }  // namespace souffle

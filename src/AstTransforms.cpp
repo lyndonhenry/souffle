@@ -796,18 +796,6 @@ bool PartitionBodyLiteralsTransformer::transform(AstTranslationUnit& translation
 bool ReduceExistentialsTransformer::transform(AstTranslationUnit& translationUnit) {
     AstProgram& program = *translationUnit.getProgram();
 
-    // Checks whether a given clause is recursive
-    auto isRecursiveClause = [&](const AstClause& clause) {
-        AstRelationIdentifier relationName = clause.getHead()->getName();
-        bool recursive = false;
-        visitDepthFirst(clause.getBodyLiterals(), [&](const AstAtom& atom) {
-            if (atom.getName() == relationName) {
-                recursive = true;
-            }
-        });
-        return recursive;
-    };
-
     // Checks whether an atom is of the form a(_,_,...,_)
     auto isExistentialAtom = [&](const AstAtom& atom) {
         for (AstArgument* arg : atom.getArguments()) {
@@ -1020,6 +1008,39 @@ bool ReplaceSingletonVariablesTransformer::transform(AstTranslationUnit& transla
             // Replace the singletons found with underscores
             replaceSingletons update(singletons);
             clause->apply(update);
+        }
+    }
+
+    return changed;
+}
+
+bool NameUnnamedVariablesTransformer::transform(AstTranslationUnit& translationUnit) {
+    bool changed = false;
+    static constexpr const char* boundPrefix = "+underscore";
+
+    struct nameVariables : public AstNodeMapper {
+        mutable bool changed;
+        mutable size_t count;
+        nameVariables() : changed(false), count(0) {}
+
+        std::unique_ptr<AstNode> operator()(std::unique_ptr<AstNode> node) const override {
+            if (dynamic_cast<AstUnnamedVariable*>(node.get()) != nullptr) {
+                changed = true;
+                std::stringstream name;
+                name << boundPrefix << "_" << count++;
+                return std::make_unique<AstVariable>(name.str());
+            }
+            node->apply(*this);
+            return node;
+        }
+    };
+
+    AstProgram& program = *translationUnit.getProgram();
+    for (AstRelation* rel : program.getRelations()) {
+        for (AstClause* clause : rel->getClauses()) {
+            nameVariables update;
+            clause->apply(update);
+            changed |= update.changed;
         }
     }
 

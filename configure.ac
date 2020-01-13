@@ -14,6 +14,9 @@ AC_INIT(souffle, SOUFFLE_VERSION, [souffle-talk@googlegroups.com])
 AC_PREREQ(2.68)
 AC_COPYRIGHT(['2013-15 Oracle and/or its affiliates'])
 
+ISODATE=$(date +%Y-%m-%d)
+AC_SUBST([ISODATE])
+
 #LT_PREREQ([2.4])
 LT_INIT([dlopen])
 
@@ -74,16 +77,15 @@ if test "$BUILD_TYPE" == "Debug" ; then
   CXXFLAGS="$CXXFLAGS -O0 -g3"
 fi
 
-# Enable MPI
+# Enable kakfa
 AC_ARG_ENABLE(
-  [mpi],
-  [AS_HELP_STRING([--enable-mpi], [Enable MPI])]
+  [kafka],
+  [AS_HELP_STRING([--enable-kafka], [Enable kafka])]
 )
-AS_IF([test "x$enable_mpi" = "xyes"], [
-    AS_VAR_APPEND(CXXFLAGS, [" $(mpiCC --showme:compile) "])
-    AS_VAR_APPEND(LDFLAGS, [" $(mpiCC --showme:link) "])
+AS_IF([test "x$enable_kafka" = "xyes"], [
+  LIBS="$LIBS -lrdkafka++"
+  AS_VAR_APPEND(CXXFLAGS, [" -DUSE_KAFKA "])
 ])
-AM_CONDITIONAL([MPI], [test "x$enable_mpi" = "xyes"])
 
 # Enable SWIG
 AC_ARG_ENABLE(
@@ -297,6 +299,7 @@ AC_CONFIG_LINKS([include/souffle/EquivalenceRelation.h:src/EquivalenceRelation.h
 AC_CONFIG_LINKS([include/souffle/IODirectives.h:src/IODirectives.h])
 AC_CONFIG_LINKS([include/souffle/IOSystem.h:src/IOSystem.h])
 AC_CONFIG_LINKS([include/souffle/IterUtils.h:src/IterUtils.h])
+AC_CONFIG_LINKS([include/souffle/Kafka.h:src/Kafka.h])
 AC_CONFIG_LINKS([include/souffle/LambdaBTree.h:src/LambdaBTree.h])
 AC_CONFIG_LINKS([include/souffle/Logger.h:src/Logger.h])
 AC_CONFIG_LINKS([include/souffle/ParallelUtils.h:src/ParallelUtils.h])
@@ -306,6 +309,7 @@ AC_CONFIG_LINKS([include/souffle/ProfileEvent.h:src/ProfileEvent.h])
 AC_CONFIG_LINKS([include/souffle/RamTypes.h:src/RamTypes.h])
 AC_CONFIG_LINKS([include/souffle/ReadStream.h:src/ReadStream.h])
 AC_CONFIG_LINKS([include/souffle/ReadStreamCSV.h:src/ReadStreamCSV.h])
+AC_CONFIG_LINKS([include/souffle/ReadStreamKafka.h:src/ReadStreamKafka.h])
 AC_CONFIG_LINKS([include/souffle/ReadStreamSQLite.h:src/ReadStreamSQLite.h])
 AC_CONFIG_LINKS([include/souffle/SignalHandler.h:src/SignalHandler.h])
 AC_CONFIG_LINKS([include/souffle/SouffleInterface.h:src/SouffleInterface.h])
@@ -316,6 +320,7 @@ AC_CONFIG_LINKS([include/souffle/UnionFind.h:src/UnionFind.h])
 AC_CONFIG_LINKS([include/souffle/Util.h:src/Util.h])
 AC_CONFIG_LINKS([include/souffle/WriteStream.h:src/WriteStream.h])
 AC_CONFIG_LINKS([include/souffle/WriteStreamCSV.h:src/WriteStreamCSV.h])
+AC_CONFIG_LINKS([include/souffle/WriteStreamKafka.h:src/WriteStreamKafka.h])
 AC_CONFIG_LINKS([include/souffle/WriteStreamSQLite.h:src/WriteStreamSQLite.h])
 AC_CONFIG_LINKS([include/souffle/gzfstream.h:src/gzfstream.h])
 AC_CONFIG_LINKS([include/souffle/json11.h:src/json11.h])
@@ -359,6 +364,6 @@ AC_SUBST(SOUFFLE_CXXFLAGS)
 CXXFLAGS="$CXXFLAGS $ENV_CXXFLAGS"
 
 AC_OUTPUT(
-  [ src/souffle-compile src/souffle-config debian/changelog ],
+  [ src/souffle-compile src/souffle-config debian/changelog man/souffle.1 man/souffle-compile.1 man/souffle-config.1 man/souffle-profile.1],
   [ chmod +x src/souffle-compile src/souffle-config ]
 )

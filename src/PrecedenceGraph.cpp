@@ -396,6 +396,16 @@ void TopologicallySortedSCCGraph::run(const AstTranslationUnit& translationUnit)
 }
 
 void TopologicallySortedSCCGraph::print(std::ostream& os) const {
+    
+    // set program metadata for use by kafka engine, @see Synthesizer.cpp
+    if (Global::config().has("engine")) {
+        {
+            std::stringstream ss;
+            printMetadata(ss);
+            Global::config().set("_metadata", ss.str());
+        }
+    }
+
     os << "--- partial order of strata as list of pairs ---" << std::endl;
     for (size_t sccIndex = 0; sccIndex < sccOrder.size(); sccIndex++) {
         const auto& successorSccs = sccGraph->getSuccessorSCCs(sccOrder.at(sccIndex));

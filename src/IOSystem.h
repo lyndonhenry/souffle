@@ -26,6 +26,11 @@
 #include "WriteStreamSQLite.h"
 #endif
 
+#ifdef USE_KAFKA
+#include "ReadStreamKafka.h"
+#include "WriteStreamKafka.h"
+#endif
+
 #include <map>
 #include <memory>
 #include <string>
@@ -84,6 +89,10 @@ private:
 #ifdef USE_SQLITE
         registerReadStreamFactory(std::make_shared<ReadSQLiteFactory>());
         registerWriteStreamFactory(std::make_shared<WriteSQLiteFactory>());
+#endif
+#ifdef USE_KAFKA
+        registerReadStreamFactory(std::make_shared<kafka::ReadStreamKafkaFactory>());
+        registerWriteStreamFactory(std::make_shared<kafka::WriteStreamKafkaFactory>());
 #endif
     };
     std::map<std::string, std::shared_ptr<WriteStreamFactory>> outputFactories;

@@ -1,0 +1,113 @@
+// Souffle - A Datalog Compiler
+// Copyright (c) 2018, The Souffle Developers. All rights reserved
+// Licensed under the Universal Permissive License v 1.0 as shown at:
+// - https://opensource.org/licenses/UPL
+// - <souffle root>/licenses/SOUFFLE-UPL.txt
+//
+// input_output_numbers.dl
+//
+// Test for propagation of tuples between program strata
+// under multiple input and output configurations.
+//
+//
+// Relations are names by the following schema, with
+// <x|y> denoting the exclusive or of x and y, and
+// [x] denoting the optional occurrence of x.
+//
+// [<Receiver|Sender|Receive|Send|ReceiveSend>] [<Input|Output|InputOutput>]
+//
+// Sender relations propagate tuples to Receive and ReceiveSend
+// relations, while Send and ReceiveSend relations propagate
+// tuples to Receiver relations.
+//
+// Input relations are marked with .input, Output relations
+// with .output, and InputOutput relations with both .input
+// and .output.
+//
+// Note that this only tests the 'number' datatype, for a test
+// of both the 'number' and 'symbol' datatypes, see
+// //tests/example/input_output.
+//
+//
+
+.decl Sender(x:number, y:number)
+.input Sender()
+
+.decl Receiver(x:number, y:number)
+.output Receiver()
+
+.decl Input(x:number, y:number)
+.input Input()
+Input(1, 2).
+
+.decl Output(x:number, y:number)
+.output Output()
+Output(1, 2).
+
+.decl InputOutput(x:number, y:number)
+.input InputOutput()
+.output InputOutput()
+InputOutput(1, 2).
+
+.decl Receive(x:number, y:number)
+Receive(1, 2).
+Receive(x, y) :- Sender(x, y).
+
+.decl Send(x:number, y:number)
+Send(1, 2).
+Receiver(x, y) :- Send(x, y).
+
+.decl ReceiveSend(x:number, y:number)
+ReceiveSend(1, 2).
+ReceiveSend(x, y) :- Sender(x, y).
+
+.decl InputReceive(x:number, y:number)
+.input InputReceive()
+InputReceive(1, 2).
+InputReceive(x, y) :- Sender(x, y).
+
+.decl OutputReceive(x:number, y:number)
+.output OutputReceive()
+OutputReceive(1, 2).
+OutputReceive(x, y) :- Sender(x, y).
+
+.decl InputOutputReceive(x:number, y:number)
+.input InputOutputReceive()
+.output InputOutputReceive()
+InputOutputReceive(1, 2).
+InputOutputReceive(x, y) :- Sender(x, y).
+
+.decl InputSend(x:number, y:number)
+.input InputSend()
+InputSend(1, 2).
+Receiver(x, y) :- InputSend(x, y).
+
+.decl OutputSend(x:number, y:number)
+.output OutputSend()
+OutputSend(1, 2).
+Receiver(x, y) :- OutputSend(x, y).
+
+.decl InputOutputSend(x:number, y:number)
+.input InputOutputSend()
+.output InputOutputSend()
+InputOutputSend(1, 2).
+Receiver(x, y) :- InputOutputSend(x, y).
+
+.decl InputReceiveSend(x:number, y:number)
+.input InputReceiveSend()
+InputReceiveSend(1, 2).
+InputReceiveSend(x, y) :- Sender(x, y).
+Receiver(x, y) :- InputReceiveSend(x, y).
+
+.decl OutputReceiveSend(x:number, y:number)
+.output OutputReceiveSend()
+OutputReceiveSend(1, 2).
+OutputReceiveSend(x, y) :- Sender(x, y).
+Receiver(x, y) :- OutputReceiveSend(x, y).
+
+.decl InputOutputReceiveSend(x:number, y:number)
+.input InputOutputReceiveSend()
+.output InputOutputReceiveSend()
+InputOutputReceiveSend(1, 2).
+InputOutputReceiveSend(x, y) :- Sender(x, y).
+Receiver(x, y) :- InputOutputReceiveSend(x, y).

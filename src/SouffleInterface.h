@@ -21,6 +21,7 @@
 
 #include <initializer_list>
 #include <iostream>
+#include <iterator>
 #include <map>
 #include <string>
 #include <utility>
@@ -661,7 +662,7 @@ public:
     /**
      * Execute the souffle program, without any loads or stores.
      */
-    virtual void run(size_t stratumIndex = -1) {}
+    virtual void run(size_t stratumIndex = -2) {}
 
     /**
      * Execute program, loading inputs and storing outputs as required.
@@ -672,7 +673,7 @@ public:
      * To view the generated C++ code, run Souffle with the `-g` option.
      */
     virtual void runAll(std::string inputDirectory = ".", std::string outputDirectory = ".",
-            size_t stratumIndex = -1) = 0;
+            size_t stratumIndex = -2) = 0;
 
     /**
      * Read all input relations from the given directory. If no directory is given, the
@@ -704,8 +705,8 @@ public:
     /**
      * Set the number of threads to be used
      */
-    void setNumThreads(std::size_t numThreads) {
-        this->numThreads = numThreads;
+    void setNumThreads(std::size_t numThreadsValue) {
+        this->numThreads = numThreadsValue;
     }
 
     /**
