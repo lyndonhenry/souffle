@@ -12,7 +12,6 @@
  *
  ***********************************************************************/
 
-
 #pragma once
 
 #include "IODirectives.h"
@@ -29,13 +28,14 @@
 #include <string>
 
 namespace souffle {
-    namespace kafka {
+namespace kafka {
 class ReadStreamKafka : public ReadStream {
 private:
     const std::string relationName_;
     kafka::detail::KafkaClient& kafkaClient_;
     std::vector<RamDomain> payload_;
     std::size_t index_;
+
 public:
     ReadStreamKafka(const std::vector<bool>& symbolMask, SymbolTable& symbolTable,
             const IODirectives& ioDirectives, const size_t numberOfHeights = 0, const bool provenance = false)
@@ -43,9 +43,11 @@ public:
               relationName_(ioDirectives.getRelationName()),
               kafkaClient_(kafka::detail::KafkaClient::getInstance()), index_(0) {}
     virtual ~ReadStreamKafka() = default;
+
 protected:
     virtual void beginReader() = 0;
     virtual void endReader() = 0;
+
 private:
     void beforeReadAll() override {
         beginReader();
@@ -53,6 +55,7 @@ private:
     void afterReadAll() override {
         endReader();
     }
+
 protected:
     void beginConsumption() {
         kafkaClient_.beginConsumption(relationName_);
@@ -74,6 +77,7 @@ protected:
     void pollConsumer() {
         kafkaClient_.pollConsumer();
     }
+
 public:
     std::unique_ptr<RamDomain[]> readNextTuple() override {
         if (index_ == payload_.size()) {
@@ -93,6 +97,7 @@ public:
             const IODirectives& ioDirectives, const size_t numberOfHeights = 0, const bool provenance = false)
             : ReadStreamKafka(symbolMask, symbolTable, ioDirectives, numberOfHeights, provenance) {}
     virtual ~ReadStreamKafkaDefault() = default;
+
 private:
     void beginReader() override {
         beginConsumption();
@@ -108,6 +113,7 @@ public:
             const IODirectives& ioDirectives, const size_t numberOfHeights = 0, const bool provenance = false)
             : ReadStreamKafka(symbolMask, symbolTable, ioDirectives, numberOfHeights, provenance) {}
     virtual ~ReadStreamKafkaNullPayload() = default;
+
 private:
     void beginReader() override {
         beginConsumption();
@@ -140,5 +146,5 @@ public:
     }
     ~ReadStreamKafkaFactory() override = default;
 };
-    }
+}  // namespace kafka
 } /* namespace souffle */

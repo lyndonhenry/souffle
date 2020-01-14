@@ -12,7 +12,6 @@
  *
  ***********************************************************************/
 
-
 #pragma once
 
 #include "IODirectives.h"
@@ -28,12 +27,13 @@
 #include <string>
 
 namespace souffle {
-    namespace kafka {
+namespace kafka {
 class WriteStreamKafka : public WriteStream {
 protected:
     const std::string relationName_;
     kafka::detail::KafkaClient& kafkaClient_;
     std::vector<RamDomain> payload_;
+
 public:
     WriteStreamKafka(const std::vector<bool>& symbolMask, const SymbolTable& symbolTable,
             const IODirectives& ioDirectives, const size_t numberOfHeights = 0, const bool provenance = false)
@@ -41,9 +41,11 @@ public:
               relationName_(ioDirectives.getRelationName()),
               kafkaClient_(kafka::detail::KafkaClient::getInstance()) {}
     virtual ~WriteStreamKafka() = default;
+
 protected:
     virtual void beginWriter() = 0;
     virtual void endWriter() = 0;
+
 private:
     void beforeWriteAll() override {
         beginWriter();
@@ -51,6 +53,7 @@ private:
     void afterWriteAll() override {
         endWriter();
     }
+
 protected:
     void beginProduction() {
         kafkaClient_.beginProduction(relationName_);
@@ -71,6 +74,7 @@ protected:
     void pollProducerUntilEmpty() {
         kafkaClient_.pollProducerUntilEmpty();
     }
+
 public:
     void writeNullary() override {
         payload_.push_back(1);
@@ -87,6 +91,7 @@ public:
             const IODirectives& ioDirectives, const size_t numberOfHeights = 0, const bool provenance = false)
             : WriteStreamKafka(symbolMask, symbolTable, ioDirectives, numberOfHeights, provenance) {}
     virtual ~WriteStreamKafkaDefault() = default;
+
 private:
     void beginWriter() override {
         beginProduction();
@@ -103,6 +108,7 @@ public:
             const IODirectives& ioDirectives, const size_t numberOfHeights = 0, const bool provenance = false)
             : WriteStreamKafka(symbolMask, symbolTable, ioDirectives, numberOfHeights, provenance) {}
     virtual ~WriteStreamKafkaNullPayload() = default;
+
 private:
     void beginWriter() override {
         beginProduction();
@@ -124,7 +130,7 @@ public:
             return std::make_unique<WriteStreamKafkaDefault>(
                     symbolMask, symbolTable, ioDirectives, numberOfHeights, provenance);
         } else if (ioDirectives.get("stratum") == "slave") {
-            // if (output-dir, .facts, slave) or (output-dir, .csv, slave) 
+            // if (output-dir, .facts, slave) or (output-dir, .csv, slave)
             return std::make_unique<WriteStreamKafkaNullPayload>(
                     symbolMask, symbolTable, ioDirectives, numberOfHeights, provenance);
         } else {
@@ -137,5 +143,5 @@ public:
     }
     ~WriteStreamKafkaFactory() override = default;
 };
-}
+}  // namespace kafka
 } /* namespace souffle */

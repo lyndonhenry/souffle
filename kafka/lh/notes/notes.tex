@@ -1,0 +1,56 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb}
+\newcommand{\stepthecounter}[2]{\stepcounter{#1} #2 \texttt{.}}
+\begin{document}
+\section{Seminaive Evaluation}
+\subsection{Non-Distributed Algorithm}
+\newcounter{mycounter}
+\[
+\begin{array}{ll}
+\stepthecounter{mycounter}{\themycounter} & ARGUMENTS : (P, I) \\
+\stepthecounter{mycounter}{\themycounter} & RETURN : P(I) \\
+\stepthecounter{mycounter}{\themycounter} & P^{'} := \{ rule : rule \in rules(P) \land idb(P) \cap body(rule) = \emptyset \} \\
+\stepthecounter{mycounter}{\themycounter} & \forall S \in idb(P) : S := \emptyset \\
+\stepthecounter{mycounter}{\themycounter} & \forall S \in idb(P) : \Delta^{1}_{S} := P'(I)(S) \\
+\stepthecounter{mycounter}{\themycounter} & i := 1 \\
+\stepthecounter{mycounter}{\themycounter} & \texttt{DO} \\
+\stepthecounter{mycounter}{\themycounter} & \quad \texttt{FOR } S \in idb(P) \\
+\stepthecounter{mycounter}{\themycounter} & \quad \texttt{BEGIN} \\
+\stepthecounter{mycounter}{\themycounter} & \quad \quad P_{S} := \{ rule : rule \in rules(P) \land S = head(rule) \} \\
+\stepthecounter{mycounter}{\themycounter} & \quad \quad T := \bigcup_{rule \in P_{S}} body(rule) \\
+\stepthecounter{mycounter}{\themycounter} & \quad \quad S^{i} := S^{i-1} \cup \Delta^{i}_{S} \\
+\stepthecounter{mycounter}{\themycounter} & \quad \quad \Delta^{i+1}_{S} := P^{i}_{S}(I, T^{i-1}, T^{i}, \Delta^{i}_{T}) - S \\
+\stepthecounter{mycounter}{\themycounter} & \quad \texttt{END} \\
+\stepthecounter{mycounter}{\themycounter} & \quad i := i + 1 \\
+\stepthecounter{mycounter}{\themycounter} & \texttt{UNTIL } \forall S \in idb(P) : \Delta^{i}_{S} = \emptyset \\
+\end{array}
+\]
+\newline
+% @@TODO: also do \subsection{Distributed Blocking Algorithm}
+\subsection{Distributed Streaming Algorithm}
+% @@TODO
+\[
+\begin{array}{l}
+\texttt{REMOVE I AS ARGUMENT AND USE IO DIRECTIVES HERE} \\
+ARGUMENTS : (P, I) \\
+RETURN : P(I) \\
+P^{'} := \{ rule : rule \in rules(P) \land idb(P) \cap body(rule) = \emptyset \} \\
+\forall S \in idb(P) : S := \emptyset \\
+\forall S \in idb(P) : \Delta^{1}_{S} := P'(I)(S) \\
+\texttt{CONSUME AND MERGE ALL INPUT RELATIONS HERE} \\
+i := 1 \\
+\texttt{DO} \\
+\quad \texttt{FOR } S \in idb(P) \\
+\quad \texttt{BEGIN} \\
+\quad \quad P_{S} := \{ rule : rule \in rules(P) \land S = head(rule) \} \\
+\quad \quad T := \bigcup_{rule \in P_{S}} body(rule) \\
+\quad \quad S^{i} := S^{i-1} \cup \Delta^{i}_{S} \\
+\quad \quad \Delta^{i+1}_{S} := P^{i}_{S}(I, T^{i-1}, T^{i}, \Delta^{i}_{T}) - S \\
+\quad \quad \texttt{PRODUCE DELTA i + 1 HERE} \\
+\quad \quad \texttt{CONSUME AND MERGE WITH DELTA i + 1 HERE} \\
+\quad \texttt{END} \\
+\quad i := i + 1 \\
+\texttt{UNTIL } \forall S \in idb(P) : \Delta^{i}_{S} = \emptyset \\
+\end{array}
+\]
+\end{document}
