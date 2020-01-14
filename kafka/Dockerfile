@@ -22,15 +22,16 @@ RUN apt-get update && apt-get install -y \
         mcpp \
         python \
         sqlite \
-        zlib1g-dev
+        zlib1g-dev \
+        librdkafka-dev
 
 ARG SOUFFLE_CC="gcc"
 ARG SOUFFLE_CXX="g++"
-ARG SOUFFLE_CONFIGURE_OPTIONS=""
+ARG SOUFFLE_CONFIGURE_OPTIONS="--enable-kafka"
 ARG SOUFFLE_GITHUB_USER="kjezek"
-ARG SOUFFLE_GIT_BRANCH="feature/1-messaging"
+ARG SOUFFLE_GIT_BRANCH="master"
 ARG SOUFFLE_GIT_REVISION="HEAD"
-ARG SOUFFLE_MAKE_JOBS="2"
+ARG SOUFFLE_MAKE_JOBS="8"
 
 ENV CC "${SOUFFLE_CC}"
 ENV CXX "${SOUFFLE_CXX}"
@@ -80,7 +81,8 @@ RUN apt-get update && apt-get install -y \
         jq \
         docker.io \
         kafkacat \
-        bc
+        bc \
+        docker-compose
 
 ARG PROGRAM
 ADD ${PROGRAM} .
@@ -101,11 +103,14 @@ RUN ./souffle/src/souffle \
             -rprogram.html \
             ${PROGRAM}
 
-ADD kafka_api.sh .
-ADD execute_strata.sh .
-ADD docker-compose.yml .
-ADD execute_master.sh .
-ADD execute_standalone.sh .
+ADD cli/kafka_api.sh .
+ADD cli/execute_strata.sh .
+ADD cli/docker-compose.yml .
+ADD cli/execute_master.sh .
+ADD cli/execute_standalone.sh .
+
+ADD native/execute_master_native.sh .
+
 RUN chmod +x *.sh
 RUN cp *.json program.json
 

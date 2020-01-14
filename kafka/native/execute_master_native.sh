@@ -8,23 +8,6 @@ INPUT_FACTS=$(ls facts/*.facts)
 
 source "$(dirname "$0")/kafka_api.sh"
 
-#
-#   This is a master who does initialization work.
-#
-
-#
-#   Start-up all workers i.e. docker images for all stratas
-#   This is kind of innovative, we run docker containers from the master container. 
-#
-# function execute_strata_docker {
-#     STRATUM_INDEX="$1"
-
-#     echo "Starting node for strata ${STRATUM_INDEX}"
-
-#     # TODO - we may want to run it as a Docker service here
-#     docker run  -e STRATUM_INDEX=${STRATUM_INDEX} -e KAFKA_HOST=${KAFKA_HOST} --network kafka_app-tier -d -i ${DOCKER_IMAGE} ./execute_strata.sh program
-# }   
-
 
 #
 #   Iterate all input files
@@ -87,6 +70,7 @@ function extend_compose {
 #
 #   Extend docker compose with images containers that represent stratas
 #
+extend_compose -1
 iterate_stratas extend_compose
 
 #
@@ -99,12 +83,6 @@ docker-compose up -d
 #
 wait_kafka_ready
 
-# echo "Creating topics for iput facts"
-#
-#   Create topics for all input relations
-#
-# iterate_input_files create_topic_async
-# wait
 
 START=$(date +%s.%N)
 

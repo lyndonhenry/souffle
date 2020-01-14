@@ -58,7 +58,7 @@ function ensure_autoconf_project_is_installed() {
     ensure_autoconf_project_is_built "${CWD}" "${CONFIGURE_FLAGS}"
     cd "${CWD}"
     sudo make install
-    sudo ldconfig
+  ##  sudo ldconfig
     cd -
 }
 
