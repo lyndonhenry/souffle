@@ -82,7 +82,7 @@ docker-compose up -d
 wait_kafka_ready
 
 # ensure that all program specific topics exist
-# Ask Lyndon if we need this
+# TODO:: Ask Lyndon if we need this
 for_each_async create_topic ${RELATION_NAMES}
 wait  
 

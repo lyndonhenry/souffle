@@ -32,7 +32,6 @@ ARG LIBRDKAFKA_GIT_BRANCH="master"
 WORKDIR /tmp/kafka
 RUN git clone https://github.com/edenhill/librdkafka.git librdkafka
 WORKDIR /tmp/kafka/librdkafka
-ARG LIBRDKAFKA_GIT_REVISION="d91ad87"
 RUN git checkout ${LIBRDKAFKA_GIT_BRANCH} &&  git reset --hard ${LIBRDKAFKA_GIT_REVISION} && git clean -xdf 
 
 RUN ./configure --install-deps
@@ -44,7 +43,7 @@ ARG SOUFFLE_CXX="g++"
 ARG SOUFFLE_CONFIGURE_OPTIONS="--enable-kafka"
 ARG SOUFFLE_GITHUB_USER="kjezek"
 ARG SOUFFLE_GIT_BRANCH="master"
-ARG SOUFFLE_GIT_REVISION="HEAD"
+ARG SOUFFLE_GIT_REVISION="3ec9442"
 ARG SOUFFLE_MAKE_JOBS="2"
 
 ENV CC "${SOUFFLE_CC}"
@@ -112,7 +111,6 @@ ARG LIBRDKAFKA_GIT_BRANCH="master"
 WORKDIR /tmp/kafka
 RUN git clone https://github.com/edenhill/librdkafka.git librdkafka
 WORKDIR /tmp/kafka/librdkafka
-ARG LIBRDKAFKA_GIT_REVISION="d91ad87"
 RUN git checkout ${LIBRDKAFKA_GIT_BRANCH} &&  git reset --hard ${LIBRDKAFKA_GIT_REVISION} && git clean -xdf 
 
 RUN ./configure --install-deps
