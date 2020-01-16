@@ -23,16 +23,6 @@ function iterate_input_files {
 }
 
 #
-#   Read input file and send it to kafka
-#
-function send_input_file {
-    local TOPIC="$1"
-    local FILE="$2"
-
-    send_message_async "${TOPIC}" "${FILE}"
-}
-
-#
 #   Read output data from Kafka messages and store them in files. 
 #
 function read_output_data {
@@ -77,20 +67,13 @@ docker-compose up -d
 #
 wait_kafka_ready
 
-# echo "Creating topics for iput facts"
-#
-#   Create topics for all input relations
-#
-# iterate_input_files create_topic_async
-# wait
-
 START=$(date +%s.%N)
 
 echo "Distributing input facts to stratas"
 #
 #   Iterate over input facts and send them into Kafka 
 #   
-iterate_input_files send_input_file
+iterate_input_files send_message_async
 
 echo "Collecting results from stratas"
 #
@@ -106,9 +89,9 @@ echo "All results collected in ${OUTPUT_DIR}"
 docker-compose down
 
 echo "Output dir content:"
-ls -lh ${OUTPUT_DIR}
+wc -l ${OUTPUT_DIR}/*.csv
 
 DIFF=$(echo "$END - $START" | bc)
 echo "Total time: $DIFF (Sec.nanos)"
 
-# /bin/bash
+/bin/bash

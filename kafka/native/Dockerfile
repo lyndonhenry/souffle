@@ -42,7 +42,7 @@ ARG SOUFFLE_CC="gcc"
 ARG SOUFFLE_CXX="g++"
 ARG SOUFFLE_CONFIGURE_OPTIONS="--enable-kafka"
 ARG SOUFFLE_GITHUB_USER="kjezek"
-ARG SOUFFLE_GIT_BRANCH="master"
+ARG SOUFFLE_GIT_BRANCH="3ec9442"
 ARG SOUFFLE_GIT_REVISION="3ec9442"
 ARG SOUFFLE_MAKE_JOBS="2"
 
@@ -123,7 +123,8 @@ RUN mkdir output && mkdir facts
 # Compile a program by Souffle
 # The program is passed in as a build argument (--build-argument) 
 RUN ./souffle/src/souffle \
-            -efile \
+            -a \
+            -ekafka \
             -Doutput \
             -Ffacts \
             -oprogram \
