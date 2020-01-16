@@ -21,6 +21,7 @@
 #include "AstAnalysis.h"
 #include "AstIOTypeAnalysis.h"
 #include "AstRelation.h"
+#include "AstUtils.h"
 #include "GraphUtils.h"
 #include <algorithm>
 #include <cassert>
@@ -103,11 +104,32 @@ private:
     bool computeIsRecursive(const AstClause& clause, const AstTranslationUnit& translationUnit) const;
 };
 
+class AggregatedAndNegatedRelations : public AstAnalysis {
+public:
+
+    static constexpr const char* name = "aggregated-and-negated-relations";
+
+    void run(const AstTranslationUnit& translationUnit) override;
+
+    void print(std::ostream& os) const override;
+
+    bool isAggregatedOrNegatedInClausesOfRelation(const AstRelation* headRelation, const AstRelation* bodyRelation) const {
+        return aggregatedAndNegatedRelationsInClausesOfRelation.at(headRelation).count(bodyRelation);
+    }
+
+    private:
+
+    std::map<const AstRelation*, const std::set<const AstRelation*>> aggregatedAndNegatedRelationsInClausesOfRelation;
+
+};
 /**
  * Analysis pass computing the strongly connected component (SCC) graph for the datalog program.
  */
 class SCCGraph : public AstAnalysis {
 private:
+
+    AggregatedAndNegatedRelations* aggregatedAndNegatedRelations = nullptr;
+
     PrecedenceGraph* precedenceGraph = nullptr;
 
     /** Map from node number to SCC number */
@@ -204,6 +226,22 @@ public:
             }
         }
         return externNonOutPreds;
+    }
+
+    /** Get all external predecessor relations of a given SCC that occur aggregated or negated within that scc. */
+    const std::set<const AstRelation*> getAggregatedAndNegatedExternalPredecessorRelations(const size_t scc) const {
+        // @TODO (lh): surely this can be done more efficiently?
+        std::set<const AstRelation*> aggregatedAndNegatedExternalPredecessorRelations;
+        const auto internalRelations = getInternalRelations(scc);
+        const auto externalPredecessorRelations = getExternalPredecessorRelations(scc);
+        for (const auto& headRelation : internalRelations) {
+            for (const auto& bodyRelation : externalPredecessorRelations) {
+                if (aggregatedAndNegatedRelations->isAggregatedOrNegatedInClausesOfRelation(headRelation, bodyRelation)) {
+                    aggregatedAndNegatedExternalPredecessorRelations.insert(bodyRelation);
+                }
+            }
+        }
+        return aggregatedAndNegatedExternalPredecessorRelations;
     }
 
     /** Get all external predecessor relations of a given SCC. */

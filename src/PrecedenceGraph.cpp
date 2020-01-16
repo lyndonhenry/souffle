@@ -181,8 +181,42 @@ bool RecursiveClauses::computeIsRecursive(
     return false;
 }
 
+void AggregatedAndNegatedRelations::run(const AstTranslationUnit& translationUnit) {
+    // @@@TODO (lh)
+    const AstProgram* program = translationUnit.getProgram();
+    for (const AstRelation* relation : program->getRelations()) {
+        aggregatedAndNegatedRelationsInClausesOfRelation.insert({relation, souffle::getAggregatedAndNegatedRelationsInClausesOfRelation(relation, program)});
+    }
+}
+
+void AggregatedAndNegatedRelations::print(std::ostream& os) const {
+    constexpr auto ONE_TAB = "    ";
+    constexpr auto TWO_TABS = "        ";
+    const auto& mapOfSets = aggregatedAndNegatedRelationsInClausesOfRelation;
+    os << std::endl << "{";
+    for (auto it_i = mapOfSets.begin(); it_i != mapOfSets.end(); ++it_i) {
+        if (it_i != mapOfSets.begin()) {
+            os << ",";
+        }
+        os << std::endl << ONE_TAB << "\"" << it_i->first->getName() << "\": [";
+        if (it_i->second.empty()) {
+            os << "]";
+        } else {
+            for (auto it_j = it_i->second.begin(); it_j != it_i->second.end(); ++it_j) {
+                if (it_j != it_i->second.begin()) {
+                    os << ",";
+                }
+                os << std::endl << TWO_TABS << "\"" << (*it_j)->getName() << "\"";
+            }
+            os << std::endl << ONE_TAB << "]";
+        }
+    }
+    os << std::endl << "}" << std::endl;
+}
+
 void SCCGraph::run(const AstTranslationUnit& translationUnit) {
     precedenceGraph = translationUnit.getAnalysis<PrecedenceGraph>();
+    aggregatedAndNegatedRelations = translationUnit.getAnalysis<AggregatedAndNegatedRelations>();
     ioType = translationUnit.getAnalysis<IOType>();
     sccToRelation.clear();
     relationToScc.clear();

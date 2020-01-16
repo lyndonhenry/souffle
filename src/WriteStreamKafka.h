@@ -71,6 +71,9 @@ protected:
     void pollProducer() {
         kafkaClient_.pollProducer();
     }
+    void pollProducerNonBlocking() {
+        kafkaClient_.pollProducer(0);
+    }
     void pollProducerUntilEmpty() {
         kafkaClient_.pollProducerUntilEmpty();
     }
@@ -98,7 +101,7 @@ private:
     }
     void endWriter() override {
         producePayload();
-        pollProducerUntilEmpty();
+        pollProducerNonBlocking();
         endProduction();
     }
 };
@@ -116,7 +119,7 @@ private:
     void endWriter() override {
         producePayload();
         produceNullPayload();
-        pollProducerUntilEmpty();
+        pollProducerNonBlocking();
         endProduction();
     }
 };

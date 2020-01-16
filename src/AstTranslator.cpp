@@ -1587,7 +1587,8 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
         ioDirectives.set("extension", fileExtension);
         ioDirectives.setIOType(ioType);
         ioDirectives.set("stratum", (indexOfScc == (size_t)-1) ? "master" : "slave");
-        ioDirectives.set("append", "true");
+        // @TODO (lh): ensure that this is done correctly with -a/--async
+        ioDirectives.set("append", (Global::config().has("async") && Global::config().get("async") == "true") ? "true" : "false");
         auto statement = AstTranslator::makeRamStore(relation, ioDirectives);
         appendStmt(current, std::move(statement));
     };
@@ -1597,7 +1598,7 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
         appendStmt(current, std::make_unique<RamClear>(translateRelation(relation)));
     };
 
-    if (Global::config().has("engine") && Global::config().get("engine") == "kafka") {
+    if (Global::config().has("engine")) {
         // set the stratum index to -1
         indexOfScc = -1;
 
@@ -1661,6 +1662,7 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
         const auto& internOuts = sccGraph.getInternalOutputRelations(scc);
         const auto& externOutPreds = sccGraph.getExternalOutputPredecessorRelations(scc);
         const auto& externNonOutPreds = sccGraph.getExternalNonOutputPredecessorRelations(scc);
+        const auto& externAggNegPreds = sccGraph.getAggregatedAndNegatedExternalPredecessorRelations(scc);
 
         const auto& internNonOutsWithExternSuccs =
                 sccGraph.getInternalNonOutputRelationsWithExternalSuccessors(scc);
@@ -1676,15 +1678,29 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
 
             // if a communication engine has been specified...
             if (Global::config().has("engine")) {
+                // load all external aggregated or negated predecessor relations
+                for (const auto& relation : externAggNegPreds) {
+                    if (externOutPreds.count(relation)) {
+                        // if relation is output, load from the output dir with a .csv extension
+                        makeRamLoad(current, relation, "output-dir", ".csv");
+                    } else {
+                        // otherwise, relation is non-output, load from the output dir with a .facts extension
+                        makeRamLoad(current, relation, "output-dir", ".facts");
+                    }                 
+                }
                 // load all external output predecessor relations from the output dir with a .csv
                 // extension
                 for (const auto& relation : externOutPreds) {
-                    makeRamLoad(current, relation, "output-dir", ".csv");
+                    if (!externAggNegPreds.count(relation)) {
+                        makeRamLoad(current, relation, "output-dir", ".csv");
+                    }
                 }
-                // load all external output predecessor relations from the output dir with a .facts
+                // load all external non-output predecessor relations from the output dir with a .facts
                 // extension
                 for (const auto& relation : externNonOutPreds) {
-                    makeRamLoad(current, relation, "output-dir", ".facts");
+                    if (!externAggNegPreds.count(relation)) {
+                        makeRamLoad(current, relation, "output-dir", ".facts");
+                    }
                 }
             }
         }

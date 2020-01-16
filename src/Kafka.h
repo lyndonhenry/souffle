@@ -206,7 +206,8 @@ public:
         assert(consumer);
         assert(topic);
         const int32_t partition = 0;
-        const int timeout_ms = 1000;
+        // @@@TODO (lh): get the timeout right here, -1 just means it will wait forever
+        const int timeout_ms = -1;
         while (true) {
             RdKafka::Message* message = consumer->consume(topic, partition, timeout_ms);
             pollHandle(consumer, 0);
@@ -295,6 +296,7 @@ public:
             KafkaHelper::setConf(globalConf_, it->first, it->second);
         }
         KafkaHelper::setEventCb(globalConf_, &eventCb_);
+        // @@@TODO (lh): remove these if possible and get polling right, see https://docs.confluent.io/2.0.0/clients/librdkafka/classRdKafka_1_1Handle.html
         KafkaHelper::setDeliveryReportCb(globalConf_, &deliveryReportCb_);
         KafkaHelper::setDefaultTopicConf(globalConf_, topicConf_);
         producer_ = KafkaHelper::createProducer(globalConf_);
@@ -306,6 +308,7 @@ public:
 #endif
     }
     void endClient() {
+        KafkaHelper::pollProducerUntilEmpty(producer_);
 #ifdef KAFKA_DEBUG
         delete debugTopic_;
 #endif

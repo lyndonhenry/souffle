@@ -247,9 +247,14 @@ void DebugReporter::generateDebugReport(
     DebugReportSection topsortSCCGraphSection =
             getCodeSection(id + "-topsort-scc-graph", "SCC Topological Sort Order", topsortSCCGraph.str());
 
+    std::stringstream aggregatedAndNegatedRelations;
+    translationUnit.getAnalysis<AggregatedAndNegatedRelations>()->print(aggregatedAndNegatedRelations);
+    DebugReportSection aggregatedAndNegatedRelationsSection = 
+            getCodeSection(id + "-" + AggregatedAndNegatedRelations::name, "Aggregated And Negated Relations", aggregatedAndNegatedRelations.str());
+
     translationUnit.getDebugReport().addSection(DebugReportSection(id, std::move(title),
             {datalogSection, typeAnalysisSection, typeEnvironmentAnalysisSection, precedenceGraphSection,
-                    sccGraphSection, topsortSCCGraphSection},
+                    sccGraphSection, topsortSCCGraphSection, aggregatedAndNegatedRelationsSection},
             ""));
 }
 
