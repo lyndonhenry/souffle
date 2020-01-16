@@ -26,12 +26,5 @@ services:
     #   - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - app-tier
-  # strate0:
-  #   image: 'souffle-io-example:latest'  
-  #   environment: 
-  #     STRATUM_INDEX: 0  
-  #     KAFKA_HOST: kafka:29092
-  #   networks:
-  #     - app-tier
 
 

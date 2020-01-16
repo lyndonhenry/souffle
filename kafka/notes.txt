@@ -3,5 +3,5 @@
 docker build  . -t souffle-io-example --build-arg PROGRAM=input_output.dl 
 docker run  -e KAFKA_HOST=localhost:9092 -e DOCKER_IMAGE=souffle-io-example  --net=host -v /var/run/docker.sock:/var/run/docker.sock -v /Users/kjezek/projects/souffle/tests/example/input_output/facts/:/facts  -it souffle-io-example 
 
-
-docker run  -e KAFKA_HOST=kafka:29092 -e DOCKER_IMAGE=souffle-io-example  --network kafka_app-tier -v /var/run/docker.sock:/var/run/docker.sock -v /Users/kjezek/projects/souffle/tests/example/input_output/facts/:/facts  -it souffle-io-example 
+# CLI only version (contains older checkout of Souffle, which produces a JSON file)
+docker run  -e KAFKA_HOST=localhost:9092 -e DOCKER_IMAGE=souffle-cli-io-example  --net=host -v /var/run/docker.sock:/var/run/docker.sock -v /Users/kjezek/projects/souffle/tests/example/input_output/facts/:/facts  -it souffle-cli-io-example
