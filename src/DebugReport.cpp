@@ -249,8 +249,9 @@ void DebugReporter::generateDebugReport(
 
     std::stringstream aggregatedAndNegatedRelations;
     translationUnit.getAnalysis<AggregatedAndNegatedRelations>()->print(aggregatedAndNegatedRelations);
-    DebugReportSection aggregatedAndNegatedRelationsSection = 
-            getCodeSection(id + "-" + AggregatedAndNegatedRelations::name, "Aggregated And Negated Relations", aggregatedAndNegatedRelations.str());
+    DebugReportSection aggregatedAndNegatedRelationsSection =
+            getCodeSection(id + "-" + AggregatedAndNegatedRelations::name, "Aggregated And Negated Relations",
+                    aggregatedAndNegatedRelations.str());
 
     translationUnit.getDebugReport().addSection(DebugReportSection(id, std::move(title),
             {datalogSection, typeAnalysisSection, typeEnvironmentAnalysisSection, precedenceGraphSection,

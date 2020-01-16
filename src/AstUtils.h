@@ -137,34 +137,39 @@ bool isRecursiveClause(const AstClause& clause);
  * @param clause the clause to search within
  * @param program the program containing the relations
  */
- std::set<const AstRelation*> getNegatedRelationsInClause(const AstClause* clause, const AstProgram* program);
+std::set<const AstRelation*> getNegatedRelationsInClause(const AstClause* clause, const AstProgram* program);
 
 /**
  * Returns the set of negated relations in all clauses of the given relation.
  * @param relation the relation to search the clauses of
  * @param program the program containing the relations
  */
-  std::set<const AstRelation*> getNegatedRelationsInClausesOfRelation(const AstRelation* relation, const AstProgram* program);
+std::set<const AstRelation*> getNegatedRelationsInClausesOfRelation(
+        const AstRelation* relation, const AstProgram* program);
 
 /**
  * Returns the set of relations involved in an aggregation in the clause.
  * @param clause the clause to search within
  * @param program the program containing the relations
  */
- std::set<const AstRelation*> getAggregatedRelationsInClause(const AstClause* clause, const AstProgram* program);
+std::set<const AstRelation*> getAggregatedRelationsInClause(
+        const AstClause* clause, const AstProgram* program);
 
 /**
  * Returns the set of relations involved in an aggregation in all clauses of the given relation.
  * @param relation the relation to search the clauses of
  * @param program the program containing the relations
  */
- std::set<const AstRelation*> getAggregatedRelationsInClausesOfRelation(const AstRelation* relation, const AstProgram* program);
- 
- /**
- * Returns the set of relations involved in an aggregation or occuring negated in all clauses of the given relation.
+std::set<const AstRelation*> getAggregatedRelationsInClausesOfRelation(
+        const AstRelation* relation, const AstProgram* program);
+
+/**
+ * Returns the set of relations involved in an aggregation or occuring negated in all clauses of the given
+ * relation.
  * @param relation the relation to search the clauses of
  * @param program the program containing the relations
  */
- std::set<const AstRelation*> getAggregatedAndNegatedRelationsInClausesOfRelation(const AstRelation* relation, const AstProgram* program);
+std::set<const AstRelation*> getAggregatedAndNegatedRelationsInClausesOfRelation(
+        const AstRelation* relation, const AstProgram* program);
 
 }  // end of namespace souffle

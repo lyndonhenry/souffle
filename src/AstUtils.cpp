@@ -122,7 +122,7 @@ bool isRecursiveClause(const AstClause& clause) {
     return recursive;
 }
 
- std::set<const AstRelation*> getNegatedRelationsInClause(const AstClause* clause, const AstProgram* program) {
+std::set<const AstRelation*> getNegatedRelationsInClause(const AstClause* clause, const AstProgram* program) {
     std::set<const AstRelation*> negatedRelationsInClause;
     for (const AstNegation* negation : clause->getNegations()) {
         negatedRelationsInClause.insert(getAtomRelation(negation->getAtom(), program));
@@ -130,16 +130,18 @@ bool isRecursiveClause(const AstClause& clause) {
     return negatedRelationsInClause;
 }
 
-  std::set<const AstRelation*> getNegatedRelationsInClausesOfRelation(const AstRelation* relation, const AstProgram* program) {
+std::set<const AstRelation*> getNegatedRelationsInClausesOfRelation(
+        const AstRelation* relation, const AstProgram* program) {
     std::set<const AstRelation*> negatedRelationsInClausesOfRelation;
-    for (const AstClause *clause : relation->getClauses()) {
+    for (const AstClause* clause : relation->getClauses()) {
         const auto negatedRelations = getNegatedRelationsInClause(clause, program);
         negatedRelationsInClausesOfRelation.insert(negatedRelations.begin(), negatedRelations.end());
     }
     return negatedRelationsInClausesOfRelation;
 }
 
- std::set<const AstRelation*> getAggregatedRelationsInClause(const AstClause* clause, const AstProgram* program) {
+std::set<const AstRelation*> getAggregatedRelationsInClause(
+        const AstClause* clause, const AstProgram* program) {
     std::set<const AstRelation*> aggregatedRelationsInClause;
     visitDepthFirst(*clause, [&](const AstAggregator& current) {
         visitDepthFirst(current, [&](const AstAtom& atom) {
@@ -149,30 +151,30 @@ bool isRecursiveClause(const AstClause& clause) {
     return aggregatedRelationsInClause;
 }
 
- std::set<const AstRelation*> getAggregatedRelationsInClausesOfRelation(const AstRelation* relation, const AstProgram* program) {
+std::set<const AstRelation*> getAggregatedRelationsInClausesOfRelation(
+        const AstRelation* relation, const AstProgram* program) {
     std::set<const AstRelation*> aggregatedRelationsInClausesOfRelation;
-    for (const AstClause *clause : relation->getClauses()) {
+    for (const AstClause* clause : relation->getClauses()) {
         const auto aggregatedRelations = getAggregatedRelationsInClause(clause, program);
         aggregatedRelationsInClausesOfRelation.insert(aggregatedRelations.begin(), aggregatedRelations.end());
     }
     return aggregatedRelationsInClausesOfRelation;
 }
 
- std::set<const AstRelation*> getAggregatedAndNegatedRelationsInClausesOfRelation(const AstRelation* relation, const AstProgram* program) {
+std::set<const AstRelation*> getAggregatedAndNegatedRelationsInClausesOfRelation(
+        const AstRelation* relation, const AstProgram* program) {
     std::set<const AstRelation*> aggregatedAndNegatedRelationsInClausesOfRelation;
     {
-    const auto aggregatedRelationsInClausesOfRelation = getAggregatedRelationsInClausesOfRelation(relation, program);
-    aggregatedAndNegatedRelationsInClausesOfRelation.insert(
-        aggregatedRelationsInClausesOfRelation.begin(),
-        aggregatedRelationsInClausesOfRelation.end()
-    );
+        const auto aggregatedRelationsInClausesOfRelation =
+                getAggregatedRelationsInClausesOfRelation(relation, program);
+        aggregatedAndNegatedRelationsInClausesOfRelation.insert(
+                aggregatedRelationsInClausesOfRelation.begin(), aggregatedRelationsInClausesOfRelation.end());
     }
     {
-    const auto negatedRelationsInClausesOfRelation = getNegatedRelationsInClausesOfRelation(relation, program);
-    aggregatedAndNegatedRelationsInClausesOfRelation.insert(
-        negatedRelationsInClausesOfRelation.begin(),
-        negatedRelationsInClausesOfRelation.end()
-    );
+        const auto negatedRelationsInClausesOfRelation =
+                getNegatedRelationsInClausesOfRelation(relation, program);
+        aggregatedAndNegatedRelationsInClausesOfRelation.insert(
+                negatedRelationsInClausesOfRelation.begin(), negatedRelationsInClausesOfRelation.end());
     }
     return aggregatedAndNegatedRelationsInClausesOfRelation;
 }

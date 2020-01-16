@@ -296,7 +296,8 @@ public:
             KafkaHelper::setConf(globalConf_, it->first, it->second);
         }
         KafkaHelper::setEventCb(globalConf_, &eventCb_);
-        // @@@TODO (lh): remove these if possible and get polling right, see https://docs.confluent.io/2.0.0/clients/librdkafka/classRdKafka_1_1Handle.html
+        // @@@TODO (lh): remove these if possible and get polling right, see
+        // https://docs.confluent.io/2.0.0/clients/librdkafka/classRdKafka_1_1Handle.html
         KafkaHelper::setDeliveryReportCb(globalConf_, &deliveryReportCb_);
         KafkaHelper::setDefaultTopicConf(globalConf_, topicConf_);
         producer_ = KafkaHelper::createProducer(globalConf_);

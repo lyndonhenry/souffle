@@ -185,7 +185,8 @@ void AggregatedAndNegatedRelations::run(const AstTranslationUnit& translationUni
     // @@@TODO (lh)
     const AstProgram* program = translationUnit.getProgram();
     for (const AstRelation* relation : program->getRelations()) {
-        aggregatedAndNegatedRelationsInClausesOfRelation.insert({relation, souffle::getAggregatedAndNegatedRelationsInClausesOfRelation(relation, program)});
+        aggregatedAndNegatedRelationsInClausesOfRelation.insert(
+                {relation, souffle::getAggregatedAndNegatedRelationsInClausesOfRelation(relation, program)});
     }
 }
 

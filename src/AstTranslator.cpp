@@ -1588,7 +1588,9 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
         ioDirectives.setIOType(ioType);
         ioDirectives.set("stratum", (indexOfScc == (size_t)-1) ? "master" : "slave");
         // @TODO (lh): ensure that this is done correctly with -a/--async
-        ioDirectives.set("append", (Global::config().has("async") && Global::config().get("async") == "true") ? "true" : "false");
+        ioDirectives.set("append", (Global::config().has("async") && Global::config().get("async") == "true")
+                                           ? "true"
+                                           : "false");
         auto statement = AstTranslator::makeRamStore(relation, ioDirectives);
         appendStmt(current, std::move(statement));
     };
@@ -1601,6 +1603,8 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
     if (Global::config().has("engine")) {
         // set the stratum index to -1
         indexOfScc = -1;
+
+        // @@@TODO (lh): try with a ram parallel statement for kafka loads and stores
 
         // make a new ram statement for the master stratum
         std::unique_ptr<RamStatement> current;
@@ -1686,7 +1690,7 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
                     } else {
                         // otherwise, relation is non-output, load from the output dir with a .facts extension
                         makeRamLoad(current, relation, "output-dir", ".facts");
-                    }                 
+                    }
                 }
                 // load all external output predecessor relations from the output dir with a .csv
                 // extension
