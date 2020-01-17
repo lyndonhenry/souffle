@@ -14,7 +14,44 @@
  *
  ***********************************************************************/
 
-// @@@TODO
+/// @@@TODO (lh): HERE!!!
+/*
+Tested and working:
+
+- undef USE_GENERAL, test.dl
+- -ekafka, undef USE_GENERAL, input_output_numbers.dl
+- define USE_GENERAL, test.dl
+
+Compiling but not working:
+
+- -ekafka, define USE_GENERAL, input_output_numbers.dl
+
+Not tested:
+
+- define USE_GENERAL, input_output_numbers.dl (i.e. no -e)
+- -efile, define/undef USE_GENERAL,
+  test.dl/input_output_numbers.dl
+
+Not compiling:
+
+- define USE_GENERAL_PRODUCERS,
+-efile/kafka/no -e, (must always have USE_GENERAL)
+
+Not implemented:
+
+- define USE_GENERAL_CONSUMERS,
+define USE_GENERAL_PRODUCERS/undef USE_GENERAL_PRODUCERS, (must
+always have USE_GENERAL, -ekafka)
+
+Next steps:
+
+1. try first "Not tested"
+2. try first "Compiling, but not working"
+3. try second "Not tested"
+4. do "Not compiling"
+*/
+
+// @@@TODO: see commit log for notes on this
 //#define USE_GENERAL
 #define USE_GENERAL
 #undef USE_GENERAL_PRODUCERS
@@ -74,18 +111,17 @@ std::unique_ptr<RamTupleElement> AstTranslator::makeRamTupleElement(const Locati
     return std::make_unique<RamTupleElement>(loc.identifier, loc.element);
 }
 
-    void AstTranslator::makeRamLoad(std::unique_ptr<RamStatement>& current, std::size_t indexOfScc, const AstRelation* relation,
-                                      const std::string& inputDirectory, const std::string& fileExtension,
-                                      const std::string& ioType = Global::config().has("engine")
-                                                                          ? Global::config().get("engine")
-                                                                          : "file") {
-        IODirectives ioDirectives;
-        ioDirectives.set("location", inputDirectory);
-        ioDirectives.set("directory", Global::config().get(inputDirectory));
-        ioDirectives.set("extension", fileExtension);
-        ioDirectives.setIOType(ioType);
-        ioDirectives.set(Global::config().get("engine"), "");
-        ioDirectives.set("stratum", (indexOfScc == (size_t)-1) ? "master" : "slave");
+void AstTranslator::makeRamLoad(std::unique_ptr<RamStatement>& current, std::size_t indexOfScc,
+        const AstRelation* relation, const std::string& inputDirectory, const std::string& fileExtension,
+        const std::string& ioType = Global::config().has("engine") ? Global::config().get("engine")
+                                                                   : "file") {
+    IODirectives ioDirectives;
+    ioDirectives.set("location", inputDirectory);
+    ioDirectives.set("directory", Global::config().get(inputDirectory));
+    ioDirectives.set("extension", fileExtension);
+    ioDirectives.setIOType(ioType);
+    ioDirectives.set(Global::config().get("engine"), "");
+    ioDirectives.set("stratum", (indexOfScc == (size_t)-1) ? "master" : "slave");
 
     std::unique_ptr<RamStatement> statement =
             std::make_unique<RamLoad>(std::unique_ptr<RamRelationReference>(translateRelation(relation)),
@@ -96,32 +132,32 @@ std::unique_ptr<RamTupleElement> AstTranslator::makeRamTupleElement(const Locati
         statement = std::make_unique<RamLogRelationTimer>(std::move(statement), logTimerStatement,
                 std::unique_ptr<RamRelationReference>(translateRelation(relation)));
     }
-        appendStmt(current, std::move(statement));
-    }
+    appendStmt(current, std::move(statement));
+}
 
-    void AstTranslator::makeRamStore(std::unique_ptr<RamStatement>& current, std::size_t indexOfScc, const AstRelation* relation,
-                                       const std::string& outputDirectory, const std::string& fileExtension,
-                                       const std::string& engineDirectives = "default",
-                                       const std::string& ioType = Global::config().has("engine")
-                                                                           ? Global::config().get("engine")
-                                                                           : "file") {
-        // @@@TODO (lh): HERE! THE NEXT STEP IS TO MAKE IT SO THAT THERE ARE SEPARATE HALT STATEMENTS FOR PRODUCERS IN THE BLOCKING VARIANT, THEN MOVE TO THE NON-BLOCKING -- 
-        IODirectives ioDirectives;
-        ioDirectives.set("location", outputDirectory);
-        ioDirectives.set("directory", Global::config().get(outputDirectory));
-        ioDirectives.set("extension", fileExtension);
-        ioDirectives.setIOType(ioType);
+void AstTranslator::makeRamStore(std::unique_ptr<RamStatement>& current, std::size_t indexOfScc,
+        const AstRelation* relation, const std::string& outputDirectory, const std::string& fileExtension,
+        const std::string& engineDirectives = "default",
+        const std::string& ioType = Global::config().has("engine") ? Global::config().get("engine")
+                                                                   : "file") {
+    // @@@TODO (lh): HERE! THE NEXT STEP IS TO MAKE IT SO THAT THERE ARE SEPARATE HALT STATEMENTS FOR
+    // PRODUCERS IN THE BLOCKING VARIANT, THEN MOVE TO THE NON-BLOCKING --
+    IODirectives ioDirectives;
+    ioDirectives.set("location", outputDirectory);
+    ioDirectives.set("directory", Global::config().get(outputDirectory));
+    ioDirectives.set("extension", fileExtension);
+    ioDirectives.setIOType(ioType);
 
-        // @@@TODO (lh): HERE! OK, SO MUST SPLIT INTO PAYLOAD BEARING AND END OF STREAM
-        ioDirectives.set(Global::config().get("engine"), engineDirectives);
+    // @@@TODO (lh): HERE! OK, SO MUST SPLIT INTO PAYLOAD BEARING AND END OF STREAM
+    ioDirectives.set(Global::config().get("engine"), engineDirectives);
 
-        ioDirectives.set("stratum", (indexOfScc == (size_t)-1) ? "master" : "slave");
-        // @TODO (lh): ensure that this is done correctly with -a/--async
-        #ifdef USE_GENERAL
-        ioDirectives.set("append", "true");
-        #else
-        ioDirectives.set("append", "false");
-        #endif
+    ioDirectives.set("stratum", (indexOfScc == (size_t)-1) ? "master" : "slave");
+// @TODO (lh): ensure that this is done correctly with -a/--async
+#ifdef USE_GENERAL
+    ioDirectives.set("append", "true");
+#else
+    ioDirectives.set("append", "false");
+#endif
 
     std::unique_ptr<RamStatement> statement =
             std::make_unique<RamStore>(std::unique_ptr<RamRelationReference>(translateRelation(relation)),
@@ -133,8 +169,7 @@ std::unique_ptr<RamTupleElement> AstTranslator::makeRamTupleElement(const Locati
         statement = std::make_unique<RamLogRelationTimer>(std::move(statement), logTimerStatement,
                 std::unique_ptr<RamRelationReference>(translateRelation(relation)));
     }
-        appendStmt(current, std::move(statement));
-
+    appendStmt(current, std::move(statement));
 }
 
 void AstTranslator::makeIODirective(IODirectives& ioDirective, const AstRelation* rel) {
@@ -1030,8 +1065,7 @@ void AstTranslator::appendStmt(std::unique_ptr<RamStatement>& stmtList, std::uni
 
 /** generate RAM code for a non-recursive relation */
 std::unique_ptr<RamStatement> AstTranslator::translateNonRecursiveRelation(
-    const AstTranslationUnit& translationUnit, const AstRelation& rel) {
-
+        const AstTranslationUnit& translationUnit, const AstRelation& rel) {
     const auto* recursiveClauses = translationUnit.getAnalysis<RecursiveClauses>();
 
     /* start with an empty sequence */
@@ -1131,14 +1165,14 @@ void AstTranslator::nameUnnamedVariables(AstClause* clause) {
 
 /** generate RAM code for recursive relations in a strongly-connected component */
 std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
-    const AstTranslationUnit& translationUnit, std::size_t indexOfScc) {
-
+        const AstTranslationUnit& translationUnit, std::size_t indexOfScc) {
     // @TODO (lh): make the sets computed here mutable, don't recompute always
     const auto* sccGraph = translationUnit.getAnalysis<SCCGraph>();
     const auto internalRelationsOfScc = sccGraph->getInternalRelations(indexOfScc);
     const auto externalPredecessorRelationsOfScc = sccGraph->getExternalPredecessorRelations(indexOfScc);
     const auto internalOutputRelations = sccGraph->getInternalOutputRelations(indexOfScc);
-    const auto internalNonOutputRelationsWithExternalSuccessors = sccGraph->getInternalRelationsWithExternalSuccessors(indexOfScc);
+    const auto internalNonOutputRelationsWithExternalSuccessors =
+            sccGraph->getInternalRelationsWithExternalSuccessors(indexOfScc);
 
 #ifndef USE_GENERAL
     const auto* recursiveClauses = translationUnit.getAnalysis<RecursiveClauses>();
@@ -1159,13 +1193,11 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
 #endif
 
 #ifdef USE_GENERAL
-for (const AstRelation* relation : externalPredecessorRelationsOfScc) {
+    for (const AstRelation* relation : externalPredecessorRelationsOfScc) {
         appendStmt(preamble,
-                std::make_unique<RamMerge>(
-                    std::unique_ptr<RamRelationReference>(relDelta[relation]->clone()),
-                        std::unique_ptr<RamRelationReference>(rrel[relation]->clone())
-                        ));
-}
+                std::make_unique<RamMerge>(std::unique_ptr<RamRelationReference>(relDelta[relation]->clone()),
+                        std::unique_ptr<RamRelationReference>(rrel[relation]->clone())));
+    }
 #endif
 
     /* Compute non-recursive clauses for relations in scc and push
@@ -1191,13 +1223,16 @@ for (const AstRelation* relation : externalPredecessorRelationsOfScc) {
                         std::make_unique<RamClear>(
                                 std::unique_ptr<RamRelationReference>(relNew[rel]->clone()))));
 
-        #ifdef USE_GENERAL_PRODUCERS
+#ifdef USE_GENERAL_PRODUCERS
+        // @@@TODO (lh): this does not work as IO directives need ast relations, but delta and new are ram
+        // relation references
         if (internalOutputRelations.count(rel)) {
-                makeRamStore(updateRelTable, indexOfScc, relDelta[rel], "output-dir", ".csv");
-        } else if (internalNonOutputRelationsWithExternalSuccessors.count(rel)) {
-                makeRamStore(updateRelTable, indexOfScc, relDelta[rel], "output-dir", ".facts");
+            makeRamStore(updateRelTable, indexOfScc, relDelta[rel], "output-dir", ".csv");
+        } else if (Global::config().has("engine") &&
+                   internalNonOutputRelationsWithExternalSuccessors.count(rel)) {
+            makeRamStore(updateRelTable, indexOfScc, relDelta[rel], "output-dir", ".facts");
         }
-        #endif
+#endif
 
         /* measure update time for each relation */
         if (Global::config().has("profile")) {
@@ -1228,8 +1263,7 @@ for (const AstRelation* relation : externalPredecessorRelationsOfScc) {
     }
 
 #ifdef USE_GENERAL
-    for(const AstRelation *rel :  externalPredecessorRelationsOfScc)  {
-
+    for (const AstRelation* rel : externalPredecessorRelationsOfScc) {
         std::unique_ptr<RamStatement> updateRelTable;
 
         /* Generate merge operation for temp tables */
@@ -1242,13 +1276,11 @@ for (const AstRelation* relation : externalPredecessorRelationsOfScc) {
                                 std::unique_ptr<RamRelationReference>(relNew[rel]->clone())),
                         std::make_unique<RamClear>(
                                 std::unique_ptr<RamRelationReference>(relNew[rel]->clone()))));
-        
+
         /* Add update operations of relations to parallel statements */
         updateTable->add(std::move(updateRelTable));
-
-    } 
+    }
 #endif
-
 
     // --- build main loop ---
 
@@ -1256,10 +1288,11 @@ for (const AstRelation* relation : externalPredecessorRelationsOfScc) {
 
     // create a utility to check SCC membership
     auto isInSameSCC = [&](const AstRelation* rel) {
-        return std::find(internalRelationsOfScc.begin(), internalRelationsOfScc.end(), rel) != internalRelationsOfScc.end();
+        return std::find(internalRelationsOfScc.begin(), internalRelationsOfScc.end(), rel) !=
+               internalRelationsOfScc.end();
     };
 #ifdef USE_GENERAL
-    (void) isInSameSCC;
+    (void)isInSameSCC;
 #endif
 
     /* Compute temp for the current tables */
@@ -1282,14 +1315,14 @@ for (const AstRelation* relation : externalPredecessorRelationsOfScc) {
             const auto& atoms = cl->getAtoms();
 
 #ifdef USE_GENERAL
-            if (atoms.size() == 0) { 
+            if (atoms.size() == 0) {
                 // modify the processed rule to use relDelta and write to relNew
                 std::unique_ptr<AstClause> r1(cl->clone());
                 r1->getHead()->setName(relNew[rel]->get()->getName());
 
                 if (r1->getHead()->getArity() > 0) {
-                    r1->addToBody(std::make_unique<AstNegation>(
-                        std::unique_ptr<AstAtom>(cl->getHead()->clone())));
+                    r1->addToBody(
+                            std::make_unique<AstNegation>(std::unique_ptr<AstAtom>(cl->getHead()->clone())));
                 }
 
                 std::unique_ptr<RamStatement> rule =
@@ -1299,8 +1332,7 @@ for (const AstRelation* relation : externalPredecessorRelationsOfScc) {
                 appendStmt(loopRelSeq, std::move(rule));
 
                 // @TODO (lh): handle logging, profiling, execution plans, and provenance, where possible
-
-            } 
+            }
 #endif
 
             for (size_t j = 0; j < atoms.size(); ++j) {
@@ -1732,7 +1764,7 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
 
             // make store statements for each input relation to produce with kafka
             for (const auto& inputRelation : inputRelations) {
-                makeRamStore(current,indexOfScc, inputRelation, "fact-dir", ".facts");
+                makeRamStore(current, indexOfScc, inputRelation, "fact-dir", ".facts");
             }
         }
 
@@ -1743,12 +1775,12 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
 
             // make load statements for each output relation to consume with kafak
             for (const auto& outputRelation : outputRelations) {
-                makeRamLoad(current,indexOfScc, outputRelation, "output-dir", ".csv");
+                makeRamLoad(current, indexOfScc, outputRelation, "output-dir", ".csv");
             }
 
             // make store statements for each output relation
             for (const auto& outputRelation : outputRelations) {
-                makeRamStore(current,indexOfScc, outputRelation, "output-dir", ".csv", "default", "file");
+                makeRamStore(current, indexOfScc, outputRelation, "output-dir", ".csv", "default", "file");
             }
         }
 
@@ -1767,13 +1799,12 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
         // make a new ram statement for the current SCC
         std::unique_ptr<RamStatement> current;
 
-
         // @@@TODO: move this down to the conditional,
         // then just use #ifdef USE_GENERAL for generalisation,
         // and change cli option "async" to "append" for now,
-        // then get working with blocking kafka/file IO and 
+        // then get working with blocking kafka/file IO and
         // USE_GENERAL defined, then start with *production*
-        // (not *consumption*) of the new relations with 
+        // (not *consumption*) of the new relations with
         // USE_GENERAL_WRITE/USE_GENERAL_PRODUCTION defined for both kafka and file
         // (and file must have -a or maybe just remove -a for now
         // and do USE_GENERAL_PRODUCTION instead
@@ -1805,7 +1836,7 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
         {
             // load all internal input relations from the facts dir with a .facts extension
             for (const auto& relation : internIns) {
-                makeRamLoad(current,indexOfScc, relation, "fact-dir", ".facts");
+                makeRamLoad(current, indexOfScc, relation, "fact-dir", ".facts");
             }
 
             // if a communication engine has been specified...
@@ -1814,24 +1845,24 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
                 for (const auto& relation : externAggNegPreds) {
                     if (externOutPreds.count(relation)) {
                         // if relation is output, load from the output dir with a .csv extension
-                        makeRamLoad(current,indexOfScc, relation, "output-dir", ".csv");
+                        makeRamLoad(current, indexOfScc, relation, "output-dir", ".csv");
                     } else {
                         // otherwise, relation is non-output, load from the output dir with a .facts extension
-                        makeRamLoad(current,indexOfScc, relation, "output-dir", ".facts");
+                        makeRamLoad(current, indexOfScc, relation, "output-dir", ".facts");
                     }
                 }
                 // load all external output predecessor relations from the output dir with a .csv
                 // extension
                 for (const auto& relation : externOutPreds) {
                     if (!externAggNegPreds.count(relation)) {
-                        makeRamLoad(current,indexOfScc, relation, "output-dir", ".csv");
+                        makeRamLoad(current, indexOfScc, relation, "output-dir", ".csv");
                     }
                 }
                 // load all external non-output predecessor relations from the output dir with a .facts
                 // extension
                 for (const auto& relation : externNonOutPreds) {
                     if (!externAggNegPreds.count(relation)) {
-                        makeRamLoad(current,indexOfScc, relation, "output-dir", ".facts");
+                        makeRamLoad(current, indexOfScc, relation, "output-dir", ".facts");
                     }
                 }
             }
@@ -1839,37 +1870,38 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
 
         // compute the relations themselves
         std::unique_ptr<RamStatement> bodyStatement =
-                (!isRecursive) ? translateNonRecursiveRelation(translationUnit, *((const AstRelation*)*allInterns.begin()))
+                (!isRecursive) ? translateNonRecursiveRelation(
+                                         translationUnit, *((const AstRelation*)*allInterns.begin()))
                                : translateRecursiveRelation(translationUnit, indexOfScc);
         appendStmt(current, std::move(bodyStatement));
-            #ifndef USE_GENERAL_PRODUCERS
+#ifndef USE_GENERAL_PRODUCERS
         {
             // if a communication engine is enabled...
             if (Global::config().has("engine")) {
                 // store all internal non-output relations with external successors to the output dir with
                 // a .facts extension
                 for (const auto& relation : internNonOutsWithExternSuccs) {
-                    makeRamStore(current,indexOfScc, relation, "output-dir", ".facts");
+                    makeRamStore(current, indexOfScc, relation, "output-dir", ".facts");
                 }
             }
 
             // store all internal output relations to the output dir with a .csv extension
             for (const auto& relation : internOuts) {
-                makeRamStore(current,indexOfScc, relation, "output-dir", ".csv");
+                makeRamStore(current, indexOfScc, relation, "output-dir", ".csv");
             }
         }
-        #endif
+#endif
         {
             // if a communication engine is enabled and is kafka...
             if (Global::config().get("engine") == "kafka") {
                 // send halts for all internal relations
                 for (const auto& relation : internNonOutsWithExternSuccs) {
-                        makeRamStore(current,indexOfScc, relation, "output-dir", ".facts", "null-payload");
+                    makeRamStore(current, indexOfScc, relation, "output-dir", ".facts", "null-payload");
                 }
-            // store all internal output relations to the output dir with a .csv extension
-            for (const auto& relation : internOuts) {
-                    makeRamStore(current,indexOfScc, relation, "output-dir", ".csv", "null-payload");
-            }
+                // store all internal output relations to the output dir with a .csv extension
+                for (const auto& relation : internOuts) {
+                    makeRamStore(current, indexOfScc, relation, "output-dir", ".csv", "null-payload");
+                }
             }
         }
 

@@ -292,15 +292,14 @@ private:
     std::string getRelationName(const AstRelationIdentifier& id) {
         return toString(join(id.getNames(), "."));
     }
-  // a function to load relations
-    void makeRamLoad(std::unique_ptr<RamStatement>& current, std::size_t indexOfScc, const AstRelation* relation,
-                                      const std::string& inputDirectory, const std::string& fileExtension,
-                                      const std::string& ioType);
+    // a function to load relations
+    void makeRamLoad(std::unique_ptr<RamStatement>& current, std::size_t indexOfScc,
+            const AstRelation* relation, const std::string& inputDirectory, const std::string& fileExtension,
+            const std::string& ioType);
     // a function to store relations
-    void makeRamStore(std::unique_ptr<RamStatement>& current, std::size_t indexOfScc, const AstRelation* relation,
-                                       const std::string& outputDirectory, const std::string& fileExtension,
-                                       const std::string& engineDirectives,
-                                       const std::string& ioType);
+    void makeRamStore(std::unique_ptr<RamStatement>& current, std::size_t indexOfScc,
+            const AstRelation* relation, const std::string& outputDirectory, const std::string& fileExtension,
+            const std::string& engineDirectives, const std::string& ioType);
 
     void makeIODirective(IODirectives& ioDirective, const AstRelation* rel);
 
@@ -391,11 +390,11 @@ private:
      * @return a corresponding statement or null if there are no non-recursive clauses.
      */
     std::unique_ptr<RamStatement> translateNonRecursiveRelation(
-        const AstTranslationUnit& translationUnit, const AstRelation& rel);
+            const AstTranslationUnit& translationUnit, const AstRelation& rel);
 
     /** translate RAM code for recursive relations in a strongly-connected component */
     std::unique_ptr<RamStatement> translateRecursiveRelation(
-        const AstTranslationUnit& translationUnit, std::size_t indexOfScc);
+            const AstTranslationUnit& translationUnit, std::size_t indexOfScc);
 
     /** translate RAM code for subroutine to get subproofs */
     std::unique_ptr<RamStatement> makeSubproofSubroutine(const AstClause& clause);

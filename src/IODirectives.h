@@ -68,11 +68,11 @@ public:
     }
 
     const std::string getRelationNamePrefix() const {
-    // @TODO: ensure that this works
+        // @TODO: ensure that this works
         const auto& name = getRelationName();
         if (name.at(0) == '@') {
             return std::string(name.begin(), name.begin() + name.find('_'));
-} else {
+        } else {
             return name;
         }
     }

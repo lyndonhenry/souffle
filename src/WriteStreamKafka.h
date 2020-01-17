@@ -126,16 +126,15 @@ public:
     std::unique_ptr<WriteStream> getWriter(const std::vector<bool>& symbolMask,
             const SymbolTable& symbolTable, const IODirectives& ioDirectives, const bool provenance,
             const size_t numberOfHeights) override {
-                if (ioDirectives.get("kafka") == "default") {
+        if (ioDirectives.get("kafka") == "default") {
             // if (fact-dir, .facts, master)
             return std::make_unique<WriteStreamKafkaDefault>(
                     symbolMask, symbolTable, ioDirectives, numberOfHeights, provenance);
-                } else if (ioDirectives.get("kafka") == "null-payload") {
-                    
+        } else if (ioDirectives.get("kafka") == "null-payload") {
             // if (output-dir, .facts, slave) or (output-dir, .csv, slave)
             return std::make_unique<WriteStreamKafkaNullPayload>(
                     symbolMask, symbolTable, ioDirectives, numberOfHeights, provenance);
-                } else {
+        } else {
             assert(false);
         }
     }

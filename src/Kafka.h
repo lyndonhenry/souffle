@@ -257,7 +257,8 @@ namespace souffle {
 namespace kafka {
 namespace detail {
 class KafkaClient {
-    // @@@TODO (lh): use mutex and lock_gaurd for now, see http://www.cplusplus.com/reference/mutex/lock_guard/ 
+    // @@@TODO (lh): use mutex and lock_gaurd for now, see
+    // http://www.cplusplus.com/reference/mutex/lock_guard/
 private:
     RdKafka::Conf* globalConf_;
     RdKafka::Conf* topicConf_;

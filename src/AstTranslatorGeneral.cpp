@@ -14,7 +14,6 @@
  *
  ***********************************************************************/
 
-#include "AstTranslator.h"
 #include "AstArgument.h"
 #include "AstAttribute.h"
 #include "AstClause.h"
@@ -25,6 +24,7 @@
 #include "AstProgram.h"
 #include "AstRelation.h"
 #include "AstTranslationUnit.h"
+#include "AstTranslator.h"
 #include "AstTypeEnvironmentAnalysis.h"
 #include "AstUtils.h"
 #include "AstVisitor.h"
@@ -1028,7 +1028,7 @@ void AstTranslator::nameUnnamedVariables(AstClause* clause) {
 /** generate RAM code for recursive relations in a strongly-connected component */
 std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
         const std::set<const AstRelation*>& relations, const RecursiveClauses* recursiveClauses,
-         const AstTranslationUnit& translationUnit, std::size_t indexOfScc) {
+        const AstTranslationUnit& translationUnit, std::size_t indexOfScc) {
     // initialize sections
     std::unique_ptr<RamStatement> preamble(new RamSequence());
     std::unique_ptr<RamSequence> updateTable(new RamSequence());
@@ -1043,27 +1043,21 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
     // TODO: add merge for all external predecessors of scc 
         /* create update statements for fixpoint (even iteration) */
 
-#endif 
+#endif
 
-    for(const AstRelation *rel :  externalPreds)  {
-
+    for (const AstRelation* rel : externalPreds) {
         /* Generate merge operation for temp tables */
         appendStmt(preamble,
-                std::make_unique<RamMerge>(
-                    std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()),
-                        std::unique_ptr<RamRelationReference>(rrel[rel]->clone())
-                        ));
-
-    } 
+                std::make_unique<RamMerge>(std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()),
+                        std::unique_ptr<RamRelationReference>(rrel[rel]->clone())));
+    }
 
     /* Compute non-recursive clauses for relations in scc and push
        the results in their delta tables. */
     for (const AstRelation* rel : relations) {
-
         std::cout << *rel << std::endl;
 
         std::unique_ptr<RamStatement> updateRelTable;
-
 
         /* create update statements for fixpoint (even iteration) */
         appendStmt(updateRelTable,
@@ -1101,15 +1095,13 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                 std::make_unique<RamMerge>(std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()),
                         std::unique_ptr<RamRelationReference>(rrel[rel]->clone())));
 
-#endif 
-
+#endif
 
         /* Add update operations of relations to parallel statements */
         updateTable->add(std::move(updateRelTable));
     }
 
-    for(const AstRelation *rel :  externalPreds)  {
-
+    for (const AstRelation* rel : externalPreds) {
         std::unique_ptr<RamStatement> updateRelTable;
 
         /* Generate merge operation for temp tables */
@@ -1125,9 +1117,7 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
 
         /* Add update operations of relations to parallel statements */
         updateTable->add(std::move(updateRelTable));
-
-
-    } 
+    }
 
     // --- build main loop ---
 
@@ -1145,28 +1135,28 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
         /* Find clauses for relation rel */
         for (size_t i = 0; i < rel->clauseSize(); i++) {
             AstClause* cl = rel->getClause(i);
-             std::cout << "\t" <<  *cl << std::endl;
+            std::cout << "\t" << *cl << std::endl;
 
 #if 0
             // skip non-recursive clauses
             if (!recursiveClauses->recursive(cl)) {
                 continue;
             }
-#endif 
+#endif
 
             // each recursive rule results in several operations
             int version = 0;
             const auto& atoms = cl->getAtoms();
 
-            std::cout << "\t\t" << atoms.size() << std::endl; 
-            if (atoms.size() == 0) { 
+            std::cout << "\t\t" << atoms.size() << std::endl;
+            if (atoms.size() == 0) {
                 // modify the processed rule to use relDelta and write to relNew
                 std::unique_ptr<AstClause> r1(cl->clone());
                 r1->getHead()->setName(relNew[rel]->get()->getName());
 
                 if (r1->getHead()->getArity() > 0)
-                    r1->addToBody(std::make_unique<AstNegation>(
-                        std::unique_ptr<AstAtom>(cl->getHead()->clone())));
+                    r1->addToBody(
+                            std::make_unique<AstNegation>(std::unique_ptr<AstAtom>(cl->getHead()->clone())));
 
                 std::unique_ptr<RamStatement> rule =
                         ClauseTranslator(*this).translateClause(*r1, *cl, version);
@@ -1174,20 +1164,18 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                 // add to loop body
                 appendStmt(loopRelSeq, std::move(rule));
 
-                // TODO: handle logging 
-
-            } 
+                // TODO: handle logging
+            }
             for (size_t j = 0; j < atoms.size(); ++j) {
                 const AstAtom* atom = atoms[j];
                 const AstRelation* atomRelation = getAtomRelation(atom, program);
-
 
 #if 0
                 // only interested in atoms within the same SCC
                 if (!isInSameSCC(atomRelation)) {
                     continue;
                 }
-#endif 
+#endif
 
                 // modify the processed rule to use relDelta and write to relNew
                 std::unique_ptr<AstClause> r1(cl->clone());
@@ -1210,13 +1198,13 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                 for (size_t k = j + 1; k < atoms.size(); k++) {
 #if 0
                     if (isInSameSCC(getAtomRelation(atoms[k], program))) {
-#endif 
-                        AstAtom* cur = r1->getAtoms()[k]->clone();
-                        cur->setName(relDelta[getAtomRelation(atoms[k], program)]->get()->getName());
-                        r1->addToBody(std::make_unique<AstNegation>(std::unique_ptr<AstAtom>(cur)));
+#endif
+                    AstAtom* cur = r1->getAtoms()[k]->clone();
+                    cur->setName(relDelta[getAtomRelation(atoms[k], program)]->get()->getName());
+                    r1->addToBody(std::make_unique<AstNegation>(std::unique_ptr<AstAtom>(cur)));
 #if 0
                     }
-#endif 
+#endif
                 }
 
                 std::unique_ptr<RamStatement> rule =
@@ -1564,7 +1552,7 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
     // obtain the schedule of relations expired at each index of the topological order
     const auto& expirySchedule = translationUnit.getAnalysis<RelationSchedule>()->schedule();
 
-    // program 
+    // program
     const auto& program = translationUnit.getProgram();
 
     // start with an empty sequence of ram statements
@@ -1616,7 +1604,7 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
         rrel[rel] = translateRelation(rel);
         relDelta[rel] = translateDeltaRelation(rel);
         relNew[rel] = translateNewRelation(rel);
-    } 
+    }
 
     // iterate over each SCC according to the topological order
     for (const auto& scc : sccOrder.order()) {
@@ -1669,9 +1657,10 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
                 (!isRecursive) ? translateNonRecursiveRelation(
                                          *((const AstRelation*)*allInterns.begin()), recursiveClauses)
                                : translateRecursiveRelation(allInterns, recursiveClauses);
-#else                               
-        std::unique_ptr<RamStatement> bodyStatement = translateRecursiveRelation(allInterns, recursiveClauses, translationUnit, indexOfScc);
-#endif 
+#else
+        std::unique_ptr<RamStatement> bodyStatement =
+                translateRecursiveRelation(allInterns, recursiveClauses, translationUnit, indexOfScc);
+#endif
         appendStmt(current, std::move(bodyStatement));
         {
             // if a communication engine is enabled...
