@@ -40,7 +40,7 @@ public:
     ReadStreamKafka(const std::vector<bool>& symbolMask, SymbolTable& symbolTable,
             const IODirectives& ioDirectives, const size_t numberOfHeights = 0, const bool provenance = false)
             : ReadStream(symbolMask, symbolTable, provenance, numberOfHeights),
-              relationName_(ioDirectives.getRelationName()),
+              relationName_(ioDirectives.getRelationNameSuffix()),
               kafkaClient_(kafka::detail::KafkaClient::getInstance()), index_(0) {}
     virtual ~ReadStreamKafka() = default;
 

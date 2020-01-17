@@ -292,10 +292,15 @@ private:
     std::string getRelationName(const AstRelationIdentifier& id) {
         return toString(join(id.getNames(), "."));
     }
-
-    std::unique_ptr<RamStatement> makeRamLoad(const AstRelation* relation, IODirectives& ioDirective);
-
-    std::unique_ptr<RamStatement> makeRamStore(const AstRelation* relation, IODirectives& ioDirective);
+  // a function to load relations
+    void makeRamLoad(std::unique_ptr<RamStatement>& current, std::size_t indexOfScc, const AstRelation* relation,
+                                      const std::string& inputDirectory, const std::string& fileExtension,
+                                      const std::string& ioType);
+    // a function to store relations
+    void makeRamStore(std::unique_ptr<RamStatement>& current, std::size_t indexOfScc, const AstRelation* relation,
+                                       const std::string& outputDirectory, const std::string& fileExtension,
+                                       const std::string& engineDirectives,
+                                       const std::string& ioType);
 
     void makeIODirective(IODirectives& ioDirective, const AstRelation* rel);
 

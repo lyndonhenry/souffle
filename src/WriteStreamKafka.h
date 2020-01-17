@@ -38,7 +38,7 @@ public:
     WriteStreamKafka(const std::vector<bool>& symbolMask, const SymbolTable& symbolTable,
             const IODirectives& ioDirectives, const size_t numberOfHeights = 0, const bool provenance = false)
             : WriteStream(symbolMask, symbolTable, provenance, numberOfHeights),
-              relationName_(ioDirectives.getRelationName()),
+              relationName_(ioDirectives.getRelationNameSuffix()),
               kafkaClient_(kafka::detail::KafkaClient::getInstance()) {}
     virtual ~WriteStreamKafka() = default;
 
@@ -102,7 +102,6 @@ private:
     void endWriter() override {
         producePayload();
         pollProducerNonBlocking();
-        endProduction();
     }
 };
 class WriteStreamKafkaNullPayload : public WriteStreamKafka {
@@ -117,7 +116,6 @@ private:
         beginProduction();
     }
     void endWriter() override {
-        producePayload();
         produceNullPayload();
         pollProducerNonBlocking();
         endProduction();
@@ -128,15 +126,16 @@ public:
     std::unique_ptr<WriteStream> getWriter(const std::vector<bool>& symbolMask,
             const SymbolTable& symbolTable, const IODirectives& ioDirectives, const bool provenance,
             const size_t numberOfHeights) override {
-        if (ioDirectives.get("stratum") == "master") {
+                if (ioDirectives.get("kafka") == "default") {
             // if (fact-dir, .facts, master)
             return std::make_unique<WriteStreamKafkaDefault>(
                     symbolMask, symbolTable, ioDirectives, numberOfHeights, provenance);
-        } else if (ioDirectives.get("stratum") == "slave") {
+                } else if (ioDirectives.get("kafka") == "null-payload") {
+                    
             // if (output-dir, .facts, slave) or (output-dir, .csv, slave)
             return std::make_unique<WriteStreamKafkaNullPayload>(
                     symbolMask, symbolTable, ioDirectives, numberOfHeights, provenance);
-        } else {
+                } else {
             assert(false);
         }
     }

@@ -214,12 +214,10 @@ function ensure_souffle_program_is_built_for_kafka() {
     local BASENAME="$(basename ${FILE})"
     local NAME="${BASENAME%%.*}"
 
-    # @TODO (lh): ensure this works both with and without -a option, and with -efile also
     if [ ! -e "${DIRNAME}/${NAME}" ]
     then
         cd "${DIRNAME}"
         "${EXE}" \
-            -a \
             -ekafka \
             -D"${DIRNAME}" \
             -F"${DIRNAME}/facts" \
