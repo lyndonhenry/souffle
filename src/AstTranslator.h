@@ -75,6 +75,11 @@ private:
     /** RAM relations */
     std::map<std::string, std::unique_ptr<RamRelation>> ramRels;
 
+    /** Mappings for temporary relations. */
+    std::map<const AstRelation*, std::unique_ptr<RamRelationReference>> rrel;
+    std::map<const AstRelation*, std::unique_ptr<RamRelationReference>> relDelta;
+    std::map<const AstRelation*, std::unique_ptr<RamRelationReference>> relNew;
+
     /**
      * Concrete attribute
      */
@@ -385,7 +390,8 @@ private:
 
     /** translate RAM code for recursive relations in a strongly-connected component */
     std::unique_ptr<RamStatement> translateRecursiveRelation(
-            const std::set<const AstRelation*>& scc, const RecursiveClauses* recursiveClauses);
+            const std::set<const AstRelation*>& internalRelationOfScc, const RecursiveClauses* recursiveClauses,
+            const std::set<const AstRelation*>& externalPredecessorRelationsOfScc);
 
     /** translate RAM code for subroutine to get subproofs */
     std::unique_ptr<RamStatement> makeSubproofSubroutine(const AstClause& clause);

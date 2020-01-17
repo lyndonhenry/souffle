@@ -14,6 +14,10 @@
  *
  ***********************************************************************/
 
+// @@@TODO
+//#define USE_GENERAL
+#define USE_GENERAL
+
 #include "AstTranslator.h"
 #include "AstArgument.h"
 #include "AstAttribute.h"
@@ -1083,28 +1087,43 @@ void AstTranslator::nameUnnamedVariables(AstClause* clause) {
 
 /** generate RAM code for recursive relations in a strongly-connected component */
 std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
-        const std::set<const AstRelation*>& scc, const RecursiveClauses* recursiveClauses) {
+        const std::set<const AstRelation*>& internalRelationsOfScc, const RecursiveClauses* recursiveClauses,
+        const std::set<const AstRelation*>& externalPredecessorRelationsOfScc) {
     // initialize sections
-    std::unique_ptr<RamStatement> preamble;
+    std::unique_ptr<RamStatement> preamble(new RamSequence());
     std::unique_ptr<RamSequence> updateTable(new RamSequence());
-    std::unique_ptr<RamStatement> postamble;
+    std::unique_ptr<RamStatement> postamble(new RamSequence());
 
     // --- create preamble ---
 
-    // mappings for temporary relations
-    std::map<const AstRelation*, std::unique_ptr<RamRelationReference>> rrel;
-    std::map<const AstRelation*, std::unique_ptr<RamRelationReference>> relDelta;
-    std::map<const AstRelation*, std::unique_ptr<RamRelationReference>> relNew;
+    // clear mappings for temporary relations
+#ifndef USE_GENERAL
+    rrel.clear();
+    relDelta.clear();
+    relNew.clear();
+#endif
+
+#ifdef USE_GENERAL
+for (const AstRelation* relation : externalPredecessorRelationsOfScc) {
+        appendStmt(preamble,
+                std::make_unique<RamMerge>(
+                    std::unique_ptr<RamRelationReference>(relDelta[relation]->clone()),
+                        std::unique_ptr<RamRelationReference>(rrel[relation]->clone())
+                        ));
+}
+#endif
 
     /* Compute non-recursive clauses for relations in scc and push
        the results in their delta tables. */
-    for (const AstRelation* rel : scc) {
+    for (const AstRelation* rel : internalRelationsOfScc) {
         std::unique_ptr<RamStatement> updateRelTable;
 
+#ifndef USE_GENERAL
         /* create two temporary tables for relaxed semi-naive evaluation */
         rrel[rel] = translateRelation(rel);
         relDelta[rel] = translateDeltaRelation(rel);
         relNew[rel] = translateNewRelation(rel);
+#endif
 
         /* create update statements for fixpoint (even iteration) */
         appendStmt(updateRelTable,
@@ -1131,6 +1150,7 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                                       std::make_unique<RamClear>(
                                               std::unique_ptr<RamRelationReference>(relNew[rel]->clone()))));
 
+#ifndef USE_GENERAL
         /* Generate code for non-recursive part of relation */
         appendStmt(preamble, translateNonRecursiveRelation(*rel, recursiveClauses));
 
@@ -1138,10 +1158,34 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
         appendStmt(preamble,
                 std::make_unique<RamMerge>(std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()),
                         std::unique_ptr<RamRelationReference>(rrel[rel]->clone())));
+#endif
 
         /* Add update operations of relations to parallel statements */
         updateTable->add(std::move(updateRelTable));
     }
+
+#ifdef USE_GENERAL
+    for(const AstRelation *rel :  externalPredecessorRelationsOfScc)  {
+
+        std::unique_ptr<RamStatement> updateRelTable;
+
+        /* Generate merge operation for temp tables */
+        appendStmt(updateRelTable,
+                std::make_unique<RamSequence>(
+                        std::make_unique<RamMerge>(std::unique_ptr<RamRelationReference>(rrel[rel]->clone()),
+                                std::unique_ptr<RamRelationReference>(relNew[rel]->clone())),
+                        std::make_unique<RamSwap>(
+                                std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()),
+                                std::unique_ptr<RamRelationReference>(relNew[rel]->clone())),
+                        std::make_unique<RamClear>(
+                                std::unique_ptr<RamRelationReference>(relNew[rel]->clone()))));
+
+        /* Add update operations of relations to parallel statements */
+        updateTable->add(std::move(updateRelTable));
+
+    } 
+#endif
+
 
     // --- build main loop ---
 
@@ -1149,33 +1193,63 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
 
     // create a utility to check SCC membership
     auto isInSameSCC = [&](const AstRelation* rel) {
-        return std::find(scc.begin(), scc.end(), rel) != scc.end();
+        return std::find(internalRelationsOfScc.begin(), internalRelationsOfScc.end(), rel) != internalRelationsOfScc.end();
     };
+#ifdef USE_GENERAL
+    (void) isInSameSCC;
+#endif
 
     /* Compute temp for the current tables */
-    for (const AstRelation* rel : scc) {
+    for (const AstRelation* rel : internalRelationsOfScc) {
         std::unique_ptr<RamStatement> loopRelSeq;
 
         /* Find clauses for relation rel */
         for (size_t i = 0; i < rel->clauseSize(); i++) {
             AstClause* cl = rel->getClause(i);
 
+#ifndef USE_GENERAL
             // skip non-recursive clauses
             if (!recursiveClauses->recursive(cl)) {
                 continue;
             }
+#endif
 
             // each recursive rule results in several operations
             int version = 0;
             const auto& atoms = cl->getAtoms();
+
+#ifdef USE_GENERAL
+            if (atoms.size() == 0) { 
+                // modify the processed rule to use relDelta and write to relNew
+                std::unique_ptr<AstClause> r1(cl->clone());
+                r1->getHead()->setName(relNew[rel]->get()->getName());
+
+                if (r1->getHead()->getArity() > 0) {
+                    r1->addToBody(std::make_unique<AstNegation>(
+                        std::unique_ptr<AstAtom>(cl->getHead()->clone())));
+                }
+
+                std::unique_ptr<RamStatement> rule =
+                        ClauseTranslator(*this).translateClause(*r1, *cl, version);
+
+                // add to loop body
+                appendStmt(loopRelSeq, std::move(rule));
+
+                // @TODO (lh): handle logging, profiling, execution plans, and provenance, where possible
+
+            } 
+#endif
+
             for (size_t j = 0; j < atoms.size(); ++j) {
                 const AstAtom* atom = atoms[j];
                 const AstRelation* atomRelation = getAtomRelation(atom, program);
 
+#ifndef USE_GENERAL
                 // only interested in atoms within the same SCC
                 if (!isInSameSCC(atomRelation)) {
                     continue;
                 }
+#endif
 
                 // modify the processed rule to use relDelta and write to relNew
                 std::unique_ptr<AstClause> r1(cl->clone());
@@ -1185,9 +1259,10 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                     r1->addToBody(std::make_unique<AstProvenanceNegation>(
                             std::unique_ptr<AstAtom>(cl->getHead()->clone())));
                 } else {
-                    if (r1->getHead()->getArity() > 0)
+                    if (r1->getHead()->getArity() > 0) {
                         r1->addToBody(std::make_unique<AstNegation>(
                                 std::unique_ptr<AstAtom>(cl->getHead()->clone())));
+                    }
                 }
 
                 // replace wildcards with variables (reduces indices when wildcards are used in recursive
@@ -1196,11 +1271,15 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
 
                 // reduce R to P ...
                 for (size_t k = j + 1; k < atoms.size(); k++) {
+#ifndef USE_GENERAL
                     if (isInSameSCC(getAtomRelation(atoms[k], program))) {
+#endif
                         AstAtom* cur = r1->getAtoms()[k]->clone();
                         cur->setName(relDelta[getAtomRelation(atoms[k], program)]->get()->getName());
                         r1->addToBody(std::make_unique<AstNegation>(std::unique_ptr<AstAtom>(cur)));
+#ifndef USE_GENERAL
                     }
+#endif
                 }
 
                 std::unique_ptr<RamStatement> rule =
@@ -1261,7 +1340,7 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
     };
 
     std::unique_ptr<RamCondition> exitCond;
-    for (const AstRelation* rel : scc) {
+    for (const AstRelation* rel : internalRelationsOfScc) {
         addCondition(exitCond, std::make_unique<RamEmptinessCheck>(
                                        std::unique_ptr<RamRelationReference>(relNew[rel]->clone())));
     }
@@ -1550,6 +1629,14 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
     // obtain the schedule of relations expired at each index of the topological order
     const auto& expirySchedule = translationUnit.getAnalysis<RelationSchedule>()->schedule();
 
+#ifdef USE_GENERAL
+    for (const AstRelation* rel : translationUnit.getProgram()->getRelations()) {
+        rrel[rel] = translateRelation(rel);
+        relDelta[rel] = translateDeltaRelation(rel);
+        relNew[rel] = translateNewRelation(rel);
+    }
+#endif
+
     // start with an empty sequence of ram statements
     std::unique_ptr<RamStatement> res = std::make_unique<RamSequence>();
 
@@ -1656,14 +1743,31 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
         // make a new ram statement for the current SCC
         std::unique_ptr<RamStatement> current;
 
+
+        // @@@TODO: move this down to the conditional,
+        // then just use #ifdef USE_GENERAL for generalisation,
+        // and change cli option "async" to "append" for now,
+        // then get working with blocking kafka/file IO and 
+        // USE_GENERAL defined, then start with *production*
+        // (not *consumption*) of the new relations with 
+        // USE_GENERAL_WRITE/USE_GENERAL_PRODUCTION defined for both kafka and file
+        // (and file must have -a or maybe just remove -a for now
+        // and do USE_GENERAL_PRODUCTION instead
+        // then move on to CONSUMPTION
+
         // find out if the current SCC is recursive
-        const auto& isRecursive = sccGraph.isRecursive(scc);
+#ifndef USE_GENERAL
+        const auto isRecursive = sccGraph.isRecursive(scc);
+#else
+        const auto isRecursive = true;
+#endif
 
         // make variables for particular sets of relations contained within the current SCC, and,
         // predecessors and successor SCCs thereof
         const auto& allInterns = sccGraph.getInternalRelations(scc);
         const auto& internIns = sccGraph.getInternalInputRelations(scc);
         const auto& internOuts = sccGraph.getInternalOutputRelations(scc);
+        const auto& externPreds = sccGraph.getExternalPredecessorRelations(scc);
         const auto& externOutPreds = sccGraph.getExternalOutputPredecessorRelations(scc);
         const auto& externNonOutPreds = sccGraph.getExternalNonOutputPredecessorRelations(scc);
         const auto& externAggNegPreds = sccGraph.getAggregatedAndNegatedExternalPredecessorRelations(scc);
@@ -1713,7 +1817,7 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
         std::unique_ptr<RamStatement> bodyStatement =
                 (!isRecursive) ? translateNonRecursiveRelation(
                                          *((const AstRelation*)*allInterns.begin()), recursiveClauses)
-                               : translateRecursiveRelation(allInterns, recursiveClauses);
+                               : translateRecursiveRelation(allInterns, recursiveClauses, externPreds);
         appendStmt(current, std::move(bodyStatement));
         {
             // if a communication engine is enabled...

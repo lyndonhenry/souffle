@@ -1,0 +1,1944 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Souffle Debug Report</title>
+<style>
+ul { list-style-type: none; }
+ul > li.leaf { display: inline-block; padding: 0em 1em; }
+ul > li.nonleaf { padding: 0em 1em; }
+* { font-family: sans-serif; }
+pre { white-space: pre-wrap; font-family: monospace; }
+a:link { text-decoration: none; color: blue; }
+a:visited { text-decoration: none; color: blue; }
+div.headerdiv { background-color:lightgrey; margin:10px; padding-left:10px; padding-right:10px; padding-top:3px; padding-bottom:3px; border-radius:5px }
+.headerdiv h1 { display:inline; }
+.headerdiv a { float:right; }
+</style>
+<script type="text/javascript">
+function toggleVisibility(id) {
+  var element = document.getElementById(id);
+  if (element.style.display == 'none') {
+    element.style.display = 'block';
+  } else {
+    element.style.display = 'none';
+  }
+}
+</script>
+</head>
+<body>
+<div class='headerdiv'><h1>Souffle Debug Report</h1></div>
+<a href="#Parsing7">After Parsing (0.001211s)</a>
+<ul>
+<li class='leaf'><a href="#Parsing-dl0">Datalog</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#Parsing-ta1">Type Analysis</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#Parsing-tea2">Type Environment Analysis</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#Parsing-prec-graph3">Precedence Graph</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#Parsing-scc-graph4">SCC Graph</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#Parsing-topsort-scc-graph5">SCC Topological Sort Order</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#Parsing-aggregated-and-negated-relations6">Aggregated And Negated Relations</a>
+<ul>
+</ul>
+</li></ul>
+<a href="#AstComponentChecker8">After AstComponentChecker (0.000013s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#ComponentInstantiationTransformer16">After ComponentInstantiationTransformer (0.000010s)</a>
+<ul>
+<li class='leaf'><a href="#ComponentInstantiationTransformer-dl9">Datalog</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#ComponentInstantiationTransformer-ta10">Type Analysis</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#ComponentInstantiationTransformer-tea11">Type Environment Analysis</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#ComponentInstantiationTransformer-prec-graph12">Precedence Graph</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#ComponentInstantiationTransformer-scc-graph13">SCC Graph</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#ComponentInstantiationTransformer-topsort-scc-graph14">SCC Topological Sort Order</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#ComponentInstantiationTransformer-aggregated-and-negated-relations15">Aggregated And Negated Relations</a>
+<ul>
+</ul>
+</li></ul>
+<a href="#UniqueAggregationVariablesTransformer17">After UniqueAggregationVariablesTransformer (0.000006s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#AstSemanticChecker18">After AstSemanticChecker (0.000311s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#RemoveTypecastsTransformer19">After RemoveTypecastsTransformer (0.000005s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#RemoveBooleanConstraintsTransformer20">After RemoveBooleanConstraintsTransformer (0.000021s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#ResolveAliasesTransformer21">After ResolveAliasesTransformer (0.000063s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#MinimiseProgramTransformer22">After MinimiseProgramTransformer (0.000017s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#InlineRelationsTransformer23">After InlineRelationsTransformer (0.000009s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#ResolveAliasesTransformer24">After ResolveAliasesTransformer (0.000026s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#RemoveRedundantRelationsTransformer25">After RemoveRedundantRelationsTransformer (0.000004s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#RemoveRelationCopiesTransformer26">After RemoveRelationCopiesTransformer (0.000001s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#RemoveEmptyRelationsTransformer27">After RemoveEmptyRelationsTransformer (0.000001s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#ReplaceSingletonVariablesTransformer28">After ReplaceSingletonVariablesTransformer (0.000025s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#ReduceExistentialsTransformer29">After ReduceExistentialsTransformer (0.000037s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#RemoveRedundantRelationsTransformer30">After RemoveRedundantRelationsTransformer (0.000000s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#RemoveRelationCopiesTransformer31">After RemoveRelationCopiesTransformer (0.000000s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#NameUnnamedVariablesTransformer32">After NameUnnamedVariablesTransformer (0.000004s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#PartitionBodyLiteralsTransformer33">After PartitionBodyLiteralsTransformer (0.000032s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#ReplaceSingletonVariablesTransformer34">After ReplaceSingletonVariablesTransformer (0.000026s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#MinimiseProgramTransformer35">After MinimiseProgramTransformer (0.000014s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#RemoveRelationCopiesTransformer36">After RemoveRelationCopiesTransformer (0.000000s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#ReorderLiteralsTransformer37">After ReorderLiteralsTransformer (0.000011s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#ResolveAliasesTransformer38">After ResolveAliasesTransformer (0.000027s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#MaterializeAggregationQueriesTransformer39">After MaterializeAggregationQueriesTransformer (0.000007s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#RemoveRedundantSumsTransformer40">After RemoveRedundantSumsTransformer (0.000005s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#RemoveEmptyRelationsTransformer41">After RemoveEmptyRelationsTransformer (0.000001s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#ReorderLiteralsTransformer42">After ReorderLiteralsTransformer (0.000003s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#AstExecutionPlanChecker43">After AstExecutionPlanChecker (0.000008s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#ram-program44">RAM Program (0.000303s)</a>
+<ul>
+</ul>
+<a href="#ExpandFilterTransformer45">After ExpandFilterTransformer  (unchanged)</a>
+<ul>
+</ul>
+<a href="#HoistConditionsTransformer46">RAM Program after HoistConditionsTransformer</a>
+<ul>
+</ul>
+<a href="#MakeIndexTransformer47">RAM Program after MakeIndexTransformer</a>
+<ul>
+</ul>
+<a href="#RamTransformerSequence48">RAM Program after RamTransformerSequence</a>
+<ul>
+</ul>
+<a href="#ExpandFilterTransformer49">RAM Program after ExpandFilterTransformer</a>
+<ul>
+</ul>
+<a href="#HoistConditionsTransformer50">RAM Program after HoistConditionsTransformer</a>
+<ul>
+</ul>
+<a href="#MakeIndexTransformer51">After MakeIndexTransformer  (unchanged)</a>
+<ul>
+</ul>
+<a href="#RamTransformerSequence52">After RamTransformerSequence  (unchanged)</a>
+<ul>
+</ul>
+<a href="#RamLoopTransformer53">RAM Program after RamLoopTransformer</a>
+<ul>
+</ul>
+<a href="#IfConversionTransformer54">RAM Program after IfConversionTransformer</a>
+<ul>
+</ul>
+<a href="#ChoiceConversionTransformer55">After ChoiceConversionTransformer  (unchanged)</a>
+<ul>
+</ul>
+<a href="#CollapseFiltersTransformer56">RAM Program after CollapseFiltersTransformer</a>
+<ul>
+</ul>
+<a href="#TupleIdTransformer57">After TupleIdTransformer  (unchanged)</a>
+<ul>
+</ul>
+<a href="#HoistAggregateTransformer58">After HoistAggregateTransformer  (unchanged)</a>
+<ul>
+</ul>
+<a href="#TupleIdTransformer59">After TupleIdTransformer  (unchanged)</a>
+<ul>
+</ul>
+<a href="#RamTransformerSequence60">After RamTransformerSequence  (unchanged)</a>
+<ul>
+</ul>
+<a href="#RamLoopTransformer61">After RamLoopTransformer  (unchanged)</a>
+<ul>
+</ul>
+<a href="#ExpandFilterTransformer62">RAM Program after ExpandFilterTransformer</a>
+<ul>
+</ul>
+<a href="#HoistConditionsTransformer63">RAM Program after HoistConditionsTransformer</a>
+<ul>
+</ul>
+<a href="#CollapseFiltersTransformer64">After CollapseFiltersTransformer  (unchanged)</a>
+<ul>
+</ul>
+<a href="#EliminateDuplicatesTransformer65">After EliminateDuplicatesTransformer  (unchanged)</a>
+<ul>
+</ul>
+<a href="#ReorderConditionsTransformer66">After ReorderConditionsTransformer  (unchanged)</a>
+<ul>
+</ul>
+<a href="#ReorderFilterBreak67">After ReorderFilterBreak  (unchanged)</a>
+<ul>
+</ul>
+<a href="#RamLoopTransformer68">After RamLoopTransformer  (unchanged)</a>
+<ul>
+</ul>
+<a href="#RamConditionalTransformer69">After RamConditionalTransformer  (unchanged)</a>
+<ul>
+</ul>
+<a href="#ReportIndexTransfomer70">RAM Analysis index-analysis</a>
+<ul>
+</ul>
+<a href="#ReportIndexTransfomer71">After ReportIndexTransfomer  (unchanged)</a>
+<ul>
+</ul>
+<a href="#RamTransformerSequence72">After RamTransformerSequence  (unchanged)</a>
+<ul>
+</ul>
+<a id="Parsing7"></a>
+<div class='headerdiv'>
+<h1>After Parsing (0.001211s)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+<a id="Parsing-dl0"></a>
+<div class='headerdiv'>
+<h1>Datalog</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>// ----- Types -----
+
+// ----- Functors -----
+
+// ----- Relations -----
+
+
+// -- A --
+.decl A(x:number,y:number)  
+
+A(1,2).
+
+A(2,3).
+
+.input A
+
+
+
+// -- B --
+.decl B(x:number,y:number)  
+
+B(x,y) :- 
+   A(x,y).
+
+B(x,y) :- 
+   A(x,y),
+   B(x,y).
+
+.output B
+
+</pre>
+
+</div>
+<a id="Parsing-ta1"></a>
+<div class='headerdiv'>
+<h1>Type Analysis</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>-- Analysis logs --
+Clause: A(1,2).
+Problem:
+{
+	var(1) &lt;: number,
+	var(2) &lt;: number,
+	var(1) &lt;: number,
+	var(2) &lt;: number
+}
+Solution:
+{var(1)->{number},var(2)->{number}}
+Clause: A(2,3).
+Problem:
+{
+	var(2) &lt;: number,
+	var(3) &lt;: number,
+	var(2) &lt;: number,
+	var(3) &lt;: number
+}
+Solution:
+{var(3)->{number},var(2)->{number}}
+Clause: B(x,y) :- 
+   A(x,y).
+Problem:
+{
+	var(x) &lt;: number,
+	var(y) &lt;: number,
+	var(x) &lt;: number,
+	var(y) &lt;: number
+}
+Solution:
+{var(x)->{number},var(y)->{number}}
+Clause: B(x,y) :- 
+   A(x,y),
+   B(x,y).
+Problem:
+{
+	var(x) &lt;: number,
+	var(y) &lt;: number,
+	var(x) &lt;: number,
+	var(y) &lt;: number,
+	var(x) &lt;: number,
+	var(y) &lt;: number
+}
+Solution:
+{var(x)->{number},var(y)->{number}}
+
+-- Result --
+A(1,2).
+A(2,3).
+B(x&isin;{number},y&isin;{number}) :- 
+   A(x&isin;{number},y&isin;{number}).
+B(x&isin;{number},y&isin;{number}) :- 
+   A(x&isin;{number},y&isin;{number}),
+   B(x&isin;{number},y&isin;{number}).
+</pre>
+
+</div>
+<a id="Parsing-tea2"></a>
+<div class='headerdiv'>
+<h1>Type Environment Analysis</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>Types:
+	number
+	symbol
+</pre>
+
+</div>
+<a id="Parsing-prec-graph3"></a>
+<div class='headerdiv'>
+<h1>Precedence Graph</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<img alt='graph image' src='data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIKICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPgo8IS0tIEdlbmVyYXRlZCBieSBncmFwaHZpeiB2ZXJzaW9uIDIuNDAuMSAoMjAxNjEyMjUuMDMwNCkKIC0tPgo8IS0tIFRpdGxlOiAlMyBQYWdlczogMSAtLT4KPHN2ZyB3aWR0aD0iODBwdCIgaGVpZ2h0PSIxMTZwdCIKIHZpZXdCb3g9IjAuMDAgMC4wMCA4MC4wMCAxMTYuMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiPgo8ZyBpZD0iZ3JhcGgwIiBjbGFzcz0iZ3JhcGgiIHRyYW5zZm9ybT0ic2NhbGUoMSAxKSByb3RhdGUoMCkgdHJhbnNsYXRlKDQgMTEyKSI+Cjx0aXRsZT4lMzwvdGl0bGU+Cjxwb2x5Z29uIGZpbGw9IiNmZmZmZmYiIHN0cm9rZT0idHJhbnNwYXJlbnQiIHBvaW50cz0iLTQsNCAtNCwtMTEyIDc2LC0xMTIgNzYsNCAtNCw0Ii8+CjwhLS0gQSAtLT4KPGcgaWQ9Im5vZGUxIiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT5BPC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iMjciIGN5PSItOTAiIHJ4PSIyNyIgcnk9IjE4Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjI3IiB5PSItODYuMyIgZm9udC1mYW1pbHk9IlRpbWVzLHNlcmlmIiBmb250LXNpemU9IjE0LjAwIiBmaWxsPSIjMDAwMDAwIj5BPC90ZXh0Pgo8L2c+CjwhLS0gQiAtLT4KPGcgaWQ9Im5vZGUyIiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT5CPC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iMjciIGN5PSItMTgiIHJ4PSIyNyIgcnk9IjE4Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjI3IiB5PSItMTQuMyIgZm9udC1mYW1pbHk9IlRpbWVzLHNlcmlmIiBmb250LXNpemU9IjE0LjAwIiBmaWxsPSIjMDAwMDAwIj5CPC90ZXh0Pgo8L2c+CjwhLS0gQSYjNDU7Jmd0O0IgLS0+CjxnIGlkPSJlZGdlMSIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+QSYjNDU7Jmd0O0I8L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGQ9Ik0yNywtNzEuODMxNEMyNywtNjQuMTMxIDI3LC01NC45NzQzIDI3LC00Ni40MTY2Ii8+Cjxwb2x5Z29uIGZpbGw9IiMwMDAwMDAiIHN0cm9rZT0iIzAwMDAwMCIgcG9pbnRzPSIzMC41MDAxLC00Ni40MTMyIDI3LC0zNi40MTMzIDIzLjUwMDEsLTQ2LjQxMzMgMzAuNTAwMSwtNDYuNDEzMiIvPgo8L2c+CjwhLS0gQiYjNDU7Jmd0O0IgLS0+CjxnIGlkPSJlZGdlMiIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+QiYjNDU7Jmd0O0I8L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGQ9Ik00Ni44OTUsLTMwLjQzMjFDNTkuNjg4LC0zMy42NzUzIDcyLC0yOS41MzEzIDcyLC0xOCA3MiwtOS42MjE4IDY1LjUwMDYsLTUuMTQzMyA1Ny4wMzk1LC00LjU2NDQiLz4KPHBvbHlnb24gZmlsbD0iIzAwMDAwMCIgc3Ryb2tlPSIjMDAwMDAwIiBwb2ludHM9IjU2LjUwMTksLTEuMTAwNCA0Ni44OTUsLTUuNTY3OSA1Ny4xOTEsLTguMDY2NSA1Ni41MDE5LC0xLjEwMDQiLz4KPC9nPgo8L2c+Cjwvc3ZnPgo='><br/>
+<a href="javascript:toggleVisibility('Parsing-prec-graph-source')">(show dot source)</a>
+<div id='Parsing-prec-graph-source' style='display:none'>
+<pre>digraph {
+	"A" [label = "A"];
+	"B" [label = "B"];
+	"A" -> "B";
+	"B" -> "B";
+}
+</pre>
+</div>
+
+</div>
+<a id="Parsing-scc-graph4"></a>
+<div class='headerdiv'>
+<h1>SCC Graph</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<img alt='graph image' src='data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIKICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPgo8IS0tIEdlbmVyYXRlZCBieSBncmFwaHZpeiB2ZXJzaW9uIDIuNDAuMSAoMjAxNjEyMjUuMDMwNCkKIC0tPgo8IS0tIFRpdGxlOiAlMyBQYWdlczogMSAtLT4KPHN2ZyB3aWR0aD0iNjJwdCIgaGVpZ2h0PSIxMTZwdCIKIHZpZXdCb3g9IjAuMDAgMC4wMCA2Mi4wMCAxMTYuMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiPgo8ZyBpZD0iZ3JhcGgwIiBjbGFzcz0iZ3JhcGgiIHRyYW5zZm9ybT0ic2NhbGUoMSAxKSByb3RhdGUoMCkgdHJhbnNsYXRlKDQgMTEyKSI+Cjx0aXRsZT4lMzwvdGl0bGU+Cjxwb2x5Z29uIGZpbGw9IiNmZmZmZmYiIHN0cm9rZT0idHJhbnNwYXJlbnQiIHBvaW50cz0iLTQsNCAtNCwtMTEyIDU4LC0xMTIgNTgsNCAtNCw0Ii8+CjwhLS0gXzAgLS0+CjxnIGlkPSJub2RlMSIgY2xhc3M9Im5vZGUiPgo8dGl0bGU+XzA8L3RpdGxlPgo8ZWxsaXBzZSBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGN4PSIyNyIgY3k9Ii05MCIgcng9IjI3IiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iMjciIHk9Ii04Ni4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPkE8L3RleHQ+CjwvZz4KPCEtLSBfMSAtLT4KPGcgaWQ9Im5vZGUyIiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT5fMTwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjI3IiBjeT0iLTE4IiByeD0iMjciIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSIyNyIgeT0iLTE0LjMiIGZvbnQtZmFtaWx5PSJUaW1lcyxzZXJpZiIgZm9udC1zaXplPSIxNC4wMCIgZmlsbD0iIzAwMDAwMCI+QjwvdGV4dD4KPC9nPgo8IS0tIF8wJiM0NTsmZ3Q7XzEgLS0+CjxnIGlkPSJlZGdlMSIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+XzAmIzQ1OyZndDtfMTwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgZD0iTTI3LC03MS44MzE0QzI3LC02NC4xMzEgMjcsLTU0Ljk3NDMgMjcsLTQ2LjQxNjYiLz4KPHBvbHlnb24gZmlsbD0iIzAwMDAwMCIgc3Ryb2tlPSIjMDAwMDAwIiBwb2ludHM9IjMwLjUwMDEsLTQ2LjQxMzIgMjcsLTM2LjQxMzMgMjMuNTAwMSwtNDYuNDEzMyAzMC41MDAxLC00Ni40MTMyIi8+CjwvZz4KPC9nPgo8L3N2Zz4K'><br/>
+<a href="javascript:toggleVisibility('Parsing-scc-graph-source')">(show dot source)</a>
+<div id='Parsing-scc-graph-source' style='display:none'>
+<pre>digraph {
+	_0[label = "A" ];
+	_1[label = "B" ];
+	_0 -> _1;
+}</pre>
+</div>
+
+</div>
+<a id="Parsing-topsort-scc-graph5"></a>
+<div class='headerdiv'>
+<h1>SCC Topological Sort Order</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>--- partial order of strata as list of pairs ---
+0 1
+--- total order with relations of each strata ---
+0: [A]
+1: [B]
+
+--- statistics of topological order ---
+cost: 1
+</pre>
+
+</div>
+<a id="Parsing-aggregated-and-negated-relations6"></a>
+<div class='headerdiv'>
+<h1>Aggregated And Negated Relations</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>
+{
+    "A": [],
+    "B": []
+}
+</pre>
+
+</div>
+</div>
+<a id="AstComponentChecker8"></a>
+<div class='headerdiv'>
+<h1>After AstComponentChecker (0.000013s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="ComponentInstantiationTransformer16"></a>
+<div class='headerdiv'>
+<h1>After ComponentInstantiationTransformer (0.000010s)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+<a id="ComponentInstantiationTransformer-dl9"></a>
+<div class='headerdiv'>
+<h1>Datalog</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>// ----- Types -----
+
+// ----- Functors -----
+
+// ----- Relations -----
+
+
+// -- A --
+.decl A(x:number,y:number)  
+
+A(1,2).
+
+A(2,3).
+
+.input A
+
+
+
+// -- B --
+.decl B(x:number,y:number)  
+
+B(x,y) :- 
+   A(x,y).
+
+B(x,y) :- 
+   A(x,y),
+   B(x,y).
+
+.output B
+
+</pre>
+
+</div>
+<a id="ComponentInstantiationTransformer-ta10"></a>
+<div class='headerdiv'>
+<h1>Type Analysis</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>-- Analysis logs --
+Clause: A(1,2).
+Problem:
+{
+	var(1) &lt;: number,
+	var(2) &lt;: number,
+	var(1) &lt;: number,
+	var(2) &lt;: number
+}
+Solution:
+{var(1)->{number},var(2)->{number}}
+Clause: A(2,3).
+Problem:
+{
+	var(2) &lt;: number,
+	var(3) &lt;: number,
+	var(2) &lt;: number,
+	var(3) &lt;: number
+}
+Solution:
+{var(3)->{number},var(2)->{number}}
+Clause: B(x,y) :- 
+   A(x,y).
+Problem:
+{
+	var(x) &lt;: number,
+	var(y) &lt;: number,
+	var(x) &lt;: number,
+	var(y) &lt;: number
+}
+Solution:
+{var(x)->{number},var(y)->{number}}
+Clause: B(x,y) :- 
+   A(x,y),
+   B(x,y).
+Problem:
+{
+	var(x) &lt;: number,
+	var(y) &lt;: number,
+	var(x) &lt;: number,
+	var(y) &lt;: number,
+	var(x) &lt;: number,
+	var(y) &lt;: number
+}
+Solution:
+{var(x)->{number},var(y)->{number}}
+
+-- Result --
+A(1,2).
+A(2,3).
+B(x&isin;{number},y&isin;{number}) :- 
+   A(x&isin;{number},y&isin;{number}).
+B(x&isin;{number},y&isin;{number}) :- 
+   A(x&isin;{number},y&isin;{number}),
+   B(x&isin;{number},y&isin;{number}).
+</pre>
+
+</div>
+<a id="ComponentInstantiationTransformer-tea11"></a>
+<div class='headerdiv'>
+<h1>Type Environment Analysis</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>Types:
+	number
+	symbol
+</pre>
+
+</div>
+<a id="ComponentInstantiationTransformer-prec-graph12"></a>
+<div class='headerdiv'>
+<h1>Precedence Graph</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<img alt='graph image' src='data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIKICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPgo8IS0tIEdlbmVyYXRlZCBieSBncmFwaHZpeiB2ZXJzaW9uIDIuNDAuMSAoMjAxNjEyMjUuMDMwNCkKIC0tPgo8IS0tIFRpdGxlOiAlMyBQYWdlczogMSAtLT4KPHN2ZyB3aWR0aD0iODBwdCIgaGVpZ2h0PSIxMTZwdCIKIHZpZXdCb3g9IjAuMDAgMC4wMCA4MC4wMCAxMTYuMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiPgo8ZyBpZD0iZ3JhcGgwIiBjbGFzcz0iZ3JhcGgiIHRyYW5zZm9ybT0ic2NhbGUoMSAxKSByb3RhdGUoMCkgdHJhbnNsYXRlKDQgMTEyKSI+Cjx0aXRsZT4lMzwvdGl0bGU+Cjxwb2x5Z29uIGZpbGw9IiNmZmZmZmYiIHN0cm9rZT0idHJhbnNwYXJlbnQiIHBvaW50cz0iLTQsNCAtNCwtMTEyIDc2LC0xMTIgNzYsNCAtNCw0Ii8+CjwhLS0gQSAtLT4KPGcgaWQ9Im5vZGUxIiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT5BPC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iMjciIGN5PSItOTAiIHJ4PSIyNyIgcnk9IjE4Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjI3IiB5PSItODYuMyIgZm9udC1mYW1pbHk9IlRpbWVzLHNlcmlmIiBmb250LXNpemU9IjE0LjAwIiBmaWxsPSIjMDAwMDAwIj5BPC90ZXh0Pgo8L2c+CjwhLS0gQiAtLT4KPGcgaWQ9Im5vZGUyIiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT5CPC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iMjciIGN5PSItMTgiIHJ4PSIyNyIgcnk9IjE4Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjI3IiB5PSItMTQuMyIgZm9udC1mYW1pbHk9IlRpbWVzLHNlcmlmIiBmb250LXNpemU9IjE0LjAwIiBmaWxsPSIjMDAwMDAwIj5CPC90ZXh0Pgo8L2c+CjwhLS0gQSYjNDU7Jmd0O0IgLS0+CjxnIGlkPSJlZGdlMSIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+QSYjNDU7Jmd0O0I8L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGQ9Ik0yNywtNzEuODMxNEMyNywtNjQuMTMxIDI3LC01NC45NzQzIDI3LC00Ni40MTY2Ii8+Cjxwb2x5Z29uIGZpbGw9IiMwMDAwMDAiIHN0cm9rZT0iIzAwMDAwMCIgcG9pbnRzPSIzMC41MDAxLC00Ni40MTMyIDI3LC0zNi40MTMzIDIzLjUwMDEsLTQ2LjQxMzMgMzAuNTAwMSwtNDYuNDEzMiIvPgo8L2c+CjwhLS0gQiYjNDU7Jmd0O0IgLS0+CjxnIGlkPSJlZGdlMiIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+QiYjNDU7Jmd0O0I8L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGQ9Ik00Ni44OTUsLTMwLjQzMjFDNTkuNjg4LC0zMy42NzUzIDcyLC0yOS41MzEzIDcyLC0xOCA3MiwtOS42MjE4IDY1LjUwMDYsLTUuMTQzMyA1Ny4wMzk1LC00LjU2NDQiLz4KPHBvbHlnb24gZmlsbD0iIzAwMDAwMCIgc3Ryb2tlPSIjMDAwMDAwIiBwb2ludHM9IjU2LjUwMTksLTEuMTAwNCA0Ni44OTUsLTUuNTY3OSA1Ny4xOTEsLTguMDY2NSA1Ni41MDE5LC0xLjEwMDQiLz4KPC9nPgo8L2c+Cjwvc3ZnPgo='><br/>
+<a href="javascript:toggleVisibility('ComponentInstantiationTransformer-prec-graph-source')">(show dot source)</a>
+<div id='ComponentInstantiationTransformer-prec-graph-source' style='display:none'>
+<pre>digraph {
+	"A" [label = "A"];
+	"B" [label = "B"];
+	"A" -> "B";
+	"B" -> "B";
+}
+</pre>
+</div>
+
+</div>
+<a id="ComponentInstantiationTransformer-scc-graph13"></a>
+<div class='headerdiv'>
+<h1>SCC Graph</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<img alt='graph image' src='data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIKICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPgo8IS0tIEdlbmVyYXRlZCBieSBncmFwaHZpeiB2ZXJzaW9uIDIuNDAuMSAoMjAxNjEyMjUuMDMwNCkKIC0tPgo8IS0tIFRpdGxlOiAlMyBQYWdlczogMSAtLT4KPHN2ZyB3aWR0aD0iNjJwdCIgaGVpZ2h0PSIxMTZwdCIKIHZpZXdCb3g9IjAuMDAgMC4wMCA2Mi4wMCAxMTYuMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiPgo8ZyBpZD0iZ3JhcGgwIiBjbGFzcz0iZ3JhcGgiIHRyYW5zZm9ybT0ic2NhbGUoMSAxKSByb3RhdGUoMCkgdHJhbnNsYXRlKDQgMTEyKSI+Cjx0aXRsZT4lMzwvdGl0bGU+Cjxwb2x5Z29uIGZpbGw9IiNmZmZmZmYiIHN0cm9rZT0idHJhbnNwYXJlbnQiIHBvaW50cz0iLTQsNCAtNCwtMTEyIDU4LC0xMTIgNTgsNCAtNCw0Ii8+CjwhLS0gXzAgLS0+CjxnIGlkPSJub2RlMSIgY2xhc3M9Im5vZGUiPgo8dGl0bGU+XzA8L3RpdGxlPgo8ZWxsaXBzZSBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGN4PSIyNyIgY3k9Ii05MCIgcng9IjI3IiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iMjciIHk9Ii04Ni4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPkE8L3RleHQ+CjwvZz4KPCEtLSBfMSAtLT4KPGcgaWQ9Im5vZGUyIiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT5fMTwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjI3IiBjeT0iLTE4IiByeD0iMjciIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSIyNyIgeT0iLTE0LjMiIGZvbnQtZmFtaWx5PSJUaW1lcyxzZXJpZiIgZm9udC1zaXplPSIxNC4wMCIgZmlsbD0iIzAwMDAwMCI+QjwvdGV4dD4KPC9nPgo8IS0tIF8wJiM0NTsmZ3Q7XzEgLS0+CjxnIGlkPSJlZGdlMSIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+XzAmIzQ1OyZndDtfMTwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgZD0iTTI3LC03MS44MzE0QzI3LC02NC4xMzEgMjcsLTU0Ljk3NDMgMjcsLTQ2LjQxNjYiLz4KPHBvbHlnb24gZmlsbD0iIzAwMDAwMCIgc3Ryb2tlPSIjMDAwMDAwIiBwb2ludHM9IjMwLjUwMDEsLTQ2LjQxMzIgMjcsLTM2LjQxMzMgMjMuNTAwMSwtNDYuNDEzMyAzMC41MDAxLC00Ni40MTMyIi8+CjwvZz4KPC9nPgo8L3N2Zz4K'><br/>
+<a href="javascript:toggleVisibility('ComponentInstantiationTransformer-scc-graph-source')">(show dot source)</a>
+<div id='ComponentInstantiationTransformer-scc-graph-source' style='display:none'>
+<pre>digraph {
+	_0[label = "A" ];
+	_1[label = "B" ];
+	_0 -> _1;
+}</pre>
+</div>
+
+</div>
+<a id="ComponentInstantiationTransformer-topsort-scc-graph14"></a>
+<div class='headerdiv'>
+<h1>SCC Topological Sort Order</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>--- partial order of strata as list of pairs ---
+0 1
+--- total order with relations of each strata ---
+0: [A]
+1: [B]
+
+--- statistics of topological order ---
+cost: 1
+</pre>
+
+</div>
+<a id="ComponentInstantiationTransformer-aggregated-and-negated-relations15"></a>
+<div class='headerdiv'>
+<h1>Aggregated And Negated Relations</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>
+{
+    "A": [],
+    "B": []
+}
+</pre>
+
+</div>
+</div>
+<a id="UniqueAggregationVariablesTransformer17"></a>
+<div class='headerdiv'>
+<h1>After UniqueAggregationVariablesTransformer (0.000006s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="AstSemanticChecker18"></a>
+<div class='headerdiv'>
+<h1>After AstSemanticChecker (0.000311s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RemoveTypecastsTransformer19"></a>
+<div class='headerdiv'>
+<h1>After RemoveTypecastsTransformer (0.000005s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RemoveBooleanConstraintsTransformer20"></a>
+<div class='headerdiv'>
+<h1>After RemoveBooleanConstraintsTransformer (0.000021s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="ResolveAliasesTransformer21"></a>
+<div class='headerdiv'>
+<h1>After ResolveAliasesTransformer (0.000063s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="MinimiseProgramTransformer22"></a>
+<div class='headerdiv'>
+<h1>After MinimiseProgramTransformer (0.000017s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="InlineRelationsTransformer23"></a>
+<div class='headerdiv'>
+<h1>After InlineRelationsTransformer (0.000009s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="ResolveAliasesTransformer24"></a>
+<div class='headerdiv'>
+<h1>After ResolveAliasesTransformer (0.000026s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RemoveRedundantRelationsTransformer25"></a>
+<div class='headerdiv'>
+<h1>After RemoveRedundantRelationsTransformer (0.000004s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RemoveRelationCopiesTransformer26"></a>
+<div class='headerdiv'>
+<h1>After RemoveRelationCopiesTransformer (0.000001s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RemoveEmptyRelationsTransformer27"></a>
+<div class='headerdiv'>
+<h1>After RemoveEmptyRelationsTransformer (0.000001s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="ReplaceSingletonVariablesTransformer28"></a>
+<div class='headerdiv'>
+<h1>After ReplaceSingletonVariablesTransformer (0.000025s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="ReduceExistentialsTransformer29"></a>
+<div class='headerdiv'>
+<h1>After ReduceExistentialsTransformer (0.000037s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RemoveRedundantRelationsTransformer30"></a>
+<div class='headerdiv'>
+<h1>After RemoveRedundantRelationsTransformer (0.000000s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RemoveRelationCopiesTransformer31"></a>
+<div class='headerdiv'>
+<h1>After RemoveRelationCopiesTransformer (0.000000s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="NameUnnamedVariablesTransformer32"></a>
+<div class='headerdiv'>
+<h1>After NameUnnamedVariablesTransformer (0.000004s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="PartitionBodyLiteralsTransformer33"></a>
+<div class='headerdiv'>
+<h1>After PartitionBodyLiteralsTransformer (0.000032s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="ReplaceSingletonVariablesTransformer34"></a>
+<div class='headerdiv'>
+<h1>After ReplaceSingletonVariablesTransformer (0.000026s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="MinimiseProgramTransformer35"></a>
+<div class='headerdiv'>
+<h1>After MinimiseProgramTransformer (0.000014s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RemoveRelationCopiesTransformer36"></a>
+<div class='headerdiv'>
+<h1>After RemoveRelationCopiesTransformer (0.000000s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="ReorderLiteralsTransformer37"></a>
+<div class='headerdiv'>
+<h1>After ReorderLiteralsTransformer (0.000011s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="ResolveAliasesTransformer38"></a>
+<div class='headerdiv'>
+<h1>After ResolveAliasesTransformer (0.000027s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="MaterializeAggregationQueriesTransformer39"></a>
+<div class='headerdiv'>
+<h1>After MaterializeAggregationQueriesTransformer (0.000007s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RemoveRedundantSumsTransformer40"></a>
+<div class='headerdiv'>
+<h1>After RemoveRedundantSumsTransformer (0.000005s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RemoveEmptyRelationsTransformer41"></a>
+<div class='headerdiv'>
+<h1>After RemoveEmptyRelationsTransformer (0.000001s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="ReorderLiteralsTransformer42"></a>
+<div class='headerdiv'>
+<h1>After ReorderLiteralsTransformer (0.000003s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="AstExecutionPlanChecker43"></a>
+<div class='headerdiv'>
+<h1>After AstExecutionPlanChecker (0.000008s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="ram-program44"></a>
+<div class='headerdiv'>
+<h1>RAM Program (0.000303s)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>PROGRAM
+ DECLARATION
+  @delta_A(x:i:number,y:i:number) 
+  @delta_B(x:i:number,y:i:number) 
+  @new_A(x:i:number,y:i:number) 
+  @new_B(x:i:number,y:i:number) 
+  A(x:i:number,y:i:number) 
+  B(x:i:number,y:i:number) 
+ END DECLARATION
+ BEGIN MAIN
+  BEGIN_STRATUM 0
+   LOAD DATA FOR A FROM {{{"IO","file"},{"directory","."},{"extension",".facts"},{"filename","./A.facts"},{"location","fact-dir"},{"name","A"},{"stratum","slave"}}[{{"IO","file"},{"directory","."},{"extension",".facts"},{"filename","./A.facts"},{"location","fact-dir"},{"name","A"},{"stratum","slave"}}]}
+   LOOP
+    PARALLEL
+     QUERY
+      IF (NOT (number(1),number(2)) ∈ A)
+       PROJECT (number(1), number(2)) INTO @new_A
+     QUERY
+      IF (NOT (number(2),number(3)) ∈ A)
+       PROJECT (number(2), number(3)) INTO @new_A
+    END PARALLEL
+    EXIT (@new_A = ∅)
+    MERGE A WITH @new_A
+    SWAP (@delta_A, @new_A)
+    CLEAR @new_A
+   END LOOP
+   CLEAR @delta_A
+   CLEAR @new_A
+  END_STRATUM 0
+  BEGIN_STRATUM 1
+   MERGE @delta_A WITH A
+   LOOP
+    PARALLEL
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [9:1-9:20]"
+      QUERY
+       FOR t0 IN @delta_A
+        IF (NOT (@delta_A = ∅))
+         IF (NOT (t0.0,t0.1) ∈ B)
+          PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y),\n   B(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [10:1-10:29]"
+      QUERY
+       FOR t0 IN @delta_A
+        IF (NOT (@delta_A = ∅))
+         FOR t1 IN B
+          IF (NOT (B = ∅))
+           IF (NOT (t0.0,t0.1) ∈ @delta_B)
+            IF (NOT (t0.0,t0.1) ∈ B)
+             IF (t0.1 = t1.1)
+              IF (t0.0 = t1.0)
+               PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y),\n   B(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [10:1-10:29]"
+      QUERY
+       FOR t0 IN A
+        IF (NOT (A = ∅))
+         FOR t1 IN @delta_B
+          IF (NOT (@delta_B = ∅))
+           IF (NOT (t0.0,t0.1) ∈ B)
+            IF (t0.1 = t1.1)
+             IF (t0.0 = t1.0)
+              PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+    END PARALLEL
+    EXIT (@new_B = ∅)
+    MERGE B WITH @new_B
+    SWAP (@delta_B, @new_B)
+    CLEAR @new_B
+    MERGE A WITH @new_A
+    SWAP (@delta_A, @new_A)
+    CLEAR @new_A
+   END LOOP
+   CLEAR @delta_B
+   CLEAR @new_B
+   STORE DATA FOR B TO {{{"IO","file"},{"append","false"},{"attributeNames","x\ty"},{"directory","."},{"extension",".csv"},{"filename","./B.csv"},{"location","output-dir"},{"name","B"},{"stratum","slave"}}}
+   CLEAR A
+   CLEAR B
+  END_STRATUM 1
+ END MAIN
+END PROGRAM
+</pre>
+
+</div>
+<a id="ExpandFilterTransformer45"></a>
+<div class='headerdiv'>
+<h1>After ExpandFilterTransformer  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="HoistConditionsTransformer46"></a>
+<div class='headerdiv'>
+<h1>RAM Program after HoistConditionsTransformer</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>PROGRAM
+ DECLARATION
+  @delta_A(x:i:number,y:i:number) 
+  @delta_B(x:i:number,y:i:number) 
+  @new_A(x:i:number,y:i:number) 
+  @new_B(x:i:number,y:i:number) 
+  A(x:i:number,y:i:number) 
+  B(x:i:number,y:i:number) 
+ END DECLARATION
+ BEGIN MAIN
+  BEGIN_STRATUM 0
+   LOAD DATA FOR A FROM {{{"IO","file"},{"directory","."},{"extension",".facts"},{"filename","./A.facts"},{"location","fact-dir"},{"name","A"},{"stratum","slave"}}[{{"IO","file"},{"directory","."},{"extension",".facts"},{"filename","./A.facts"},{"location","fact-dir"},{"name","A"},{"stratum","slave"}}]}
+   LOOP
+    PARALLEL
+     QUERY
+      IF (NOT (number(1),number(2)) ∈ A)
+       PROJECT (number(1), number(2)) INTO @new_A
+     QUERY
+      IF (NOT (number(2),number(3)) ∈ A)
+       PROJECT (number(2), number(3)) INTO @new_A
+    END PARALLEL
+    EXIT (@new_A = ∅)
+    MERGE A WITH @new_A
+    SWAP (@delta_A, @new_A)
+    CLEAR @new_A
+   END LOOP
+   CLEAR @delta_A
+   CLEAR @new_A
+  END_STRATUM 0
+  BEGIN_STRATUM 1
+   MERGE @delta_A WITH A
+   LOOP
+    PARALLEL
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [9:1-9:20]"
+      QUERY
+       IF (NOT (@delta_A = ∅))
+        FOR t0 IN @delta_A
+         IF (NOT (t0.0,t0.1) ∈ B)
+          PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y),\n   B(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [10:1-10:29]"
+      QUERY
+       IF ((NOT (@delta_A = ∅)) AND (NOT (B = ∅)))
+        FOR t0 IN @delta_A
+         IF ((NOT (t0.0,t0.1) ∈ @delta_B) AND (NOT (t0.0,t0.1) ∈ B))
+          FOR t1 IN B
+           IF ((t0.1 = t1.1) AND (t0.0 = t1.0))
+            PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y),\n   B(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [10:1-10:29]"
+      QUERY
+       IF ((NOT (A = ∅)) AND (NOT (@delta_B = ∅)))
+        FOR t0 IN A
+         IF (NOT (t0.0,t0.1) ∈ B)
+          FOR t1 IN @delta_B
+           IF ((t0.1 = t1.1) AND (t0.0 = t1.0))
+            PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+    END PARALLEL
+    EXIT (@new_B = ∅)
+    MERGE B WITH @new_B
+    SWAP (@delta_B, @new_B)
+    CLEAR @new_B
+    MERGE A WITH @new_A
+    SWAP (@delta_A, @new_A)
+    CLEAR @new_A
+   END LOOP
+   CLEAR @delta_B
+   CLEAR @new_B
+   STORE DATA FOR B TO {{{"IO","file"},{"append","false"},{"attributeNames","x\ty"},{"directory","."},{"extension",".csv"},{"filename","./B.csv"},{"location","output-dir"},{"name","B"},{"stratum","slave"}}}
+   CLEAR A
+   CLEAR B
+  END_STRATUM 1
+ END MAIN
+END PROGRAM
+</pre>
+
+</div>
+<a id="MakeIndexTransformer47"></a>
+<div class='headerdiv'>
+<h1>RAM Program after MakeIndexTransformer</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>PROGRAM
+ DECLARATION
+  @delta_A(x:i:number,y:i:number) 
+  @delta_B(x:i:number,y:i:number) 
+  @new_A(x:i:number,y:i:number) 
+  @new_B(x:i:number,y:i:number) 
+  A(x:i:number,y:i:number) 
+  B(x:i:number,y:i:number) 
+ END DECLARATION
+ BEGIN MAIN
+  BEGIN_STRATUM 0
+   LOAD DATA FOR A FROM {{{"IO","file"},{"directory","."},{"extension",".facts"},{"filename","./A.facts"},{"location","fact-dir"},{"name","A"},{"stratum","slave"}}[{{"IO","file"},{"directory","."},{"extension",".facts"},{"filename","./A.facts"},{"location","fact-dir"},{"name","A"},{"stratum","slave"}}]}
+   LOOP
+    PARALLEL
+     QUERY
+      IF (NOT (number(1),number(2)) ∈ A)
+       PROJECT (number(1), number(2)) INTO @new_A
+     QUERY
+      IF (NOT (number(2),number(3)) ∈ A)
+       PROJECT (number(2), number(3)) INTO @new_A
+    END PARALLEL
+    EXIT (@new_A = ∅)
+    MERGE A WITH @new_A
+    SWAP (@delta_A, @new_A)
+    CLEAR @new_A
+   END LOOP
+   CLEAR @delta_A
+   CLEAR @new_A
+  END_STRATUM 0
+  BEGIN_STRATUM 1
+   MERGE @delta_A WITH A
+   LOOP
+    PARALLEL
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [9:1-9:20]"
+      QUERY
+       IF (NOT (@delta_A = ∅))
+        FOR t0 IN @delta_A
+         IF (NOT (t0.0,t0.1) ∈ B)
+          PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y),\n   B(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [10:1-10:29]"
+      QUERY
+       IF ((NOT (@delta_A = ∅)) AND (NOT (B = ∅)))
+        FOR t0 IN @delta_A
+         IF ((NOT (t0.0,t0.1) ∈ @delta_B) AND (NOT (t0.0,t0.1) ∈ B))
+          FOR t1 IN B ON INDEX t1.x = t0.0 AND t1.y = t0.1
+           PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y),\n   B(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [10:1-10:29]"
+      QUERY
+       IF ((NOT (A = ∅)) AND (NOT (@delta_B = ∅)))
+        FOR t0 IN A
+         IF (NOT (t0.0,t0.1) ∈ B)
+          FOR t1 IN @delta_B ON INDEX t1.x = t0.0 AND t1.y = t0.1
+           PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+    END PARALLEL
+    EXIT (@new_B = ∅)
+    MERGE B WITH @new_B
+    SWAP (@delta_B, @new_B)
+    CLEAR @new_B
+    MERGE A WITH @new_A
+    SWAP (@delta_A, @new_A)
+    CLEAR @new_A
+   END LOOP
+   CLEAR @delta_B
+   CLEAR @new_B
+   STORE DATA FOR B TO {{{"IO","file"},{"append","false"},{"attributeNames","x\ty"},{"directory","."},{"extension",".csv"},{"filename","./B.csv"},{"location","output-dir"},{"name","B"},{"stratum","slave"}}}
+   CLEAR A
+   CLEAR B
+  END_STRATUM 1
+ END MAIN
+END PROGRAM
+</pre>
+
+</div>
+<a id="RamTransformerSequence48"></a>
+<div class='headerdiv'>
+<h1>RAM Program after RamTransformerSequence</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>PROGRAM
+ DECLARATION
+  @delta_A(x:i:number,y:i:number) 
+  @delta_B(x:i:number,y:i:number) 
+  @new_A(x:i:number,y:i:number) 
+  @new_B(x:i:number,y:i:number) 
+  A(x:i:number,y:i:number) 
+  B(x:i:number,y:i:number) 
+ END DECLARATION
+ BEGIN MAIN
+  BEGIN_STRATUM 0
+   LOAD DATA FOR A FROM {{{"IO","file"},{"directory","."},{"extension",".facts"},{"filename","./A.facts"},{"location","fact-dir"},{"name","A"},{"stratum","slave"}}[{{"IO","file"},{"directory","."},{"extension",".facts"},{"filename","./A.facts"},{"location","fact-dir"},{"name","A"},{"stratum","slave"}}]}
+   LOOP
+    PARALLEL
+     QUERY
+      IF (NOT (number(1),number(2)) ∈ A)
+       PROJECT (number(1), number(2)) INTO @new_A
+     QUERY
+      IF (NOT (number(2),number(3)) ∈ A)
+       PROJECT (number(2), number(3)) INTO @new_A
+    END PARALLEL
+    EXIT (@new_A = ∅)
+    MERGE A WITH @new_A
+    SWAP (@delta_A, @new_A)
+    CLEAR @new_A
+   END LOOP
+   CLEAR @delta_A
+   CLEAR @new_A
+  END_STRATUM 0
+  BEGIN_STRATUM 1
+   MERGE @delta_A WITH A
+   LOOP
+    PARALLEL
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [9:1-9:20]"
+      QUERY
+       IF (NOT (@delta_A = ∅))
+        FOR t0 IN @delta_A
+         IF (NOT (t0.0,t0.1) ∈ B)
+          PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y),\n   B(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [10:1-10:29]"
+      QUERY
+       IF ((NOT (@delta_A = ∅)) AND (NOT (B = ∅)))
+        FOR t0 IN @delta_A
+         IF ((NOT (t0.0,t0.1) ∈ @delta_B) AND (NOT (t0.0,t0.1) ∈ B))
+          FOR t1 IN B ON INDEX t1.x = t0.0 AND t1.y = t0.1
+           PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y),\n   B(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [10:1-10:29]"
+      QUERY
+       IF ((NOT (A = ∅)) AND (NOT (@delta_B = ∅)))
+        FOR t0 IN A
+         IF (NOT (t0.0,t0.1) ∈ B)
+          FOR t1 IN @delta_B ON INDEX t1.x = t0.0 AND t1.y = t0.1
+           PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+    END PARALLEL
+    EXIT (@new_B = ∅)
+    MERGE B WITH @new_B
+    SWAP (@delta_B, @new_B)
+    CLEAR @new_B
+    MERGE A WITH @new_A
+    SWAP (@delta_A, @new_A)
+    CLEAR @new_A
+   END LOOP
+   CLEAR @delta_B
+   CLEAR @new_B
+   STORE DATA FOR B TO {{{"IO","file"},{"append","false"},{"attributeNames","x\ty"},{"directory","."},{"extension",".csv"},{"filename","./B.csv"},{"location","output-dir"},{"name","B"},{"stratum","slave"}}}
+   CLEAR A
+   CLEAR B
+  END_STRATUM 1
+ END MAIN
+END PROGRAM
+</pre>
+
+</div>
+<a id="ExpandFilterTransformer49"></a>
+<div class='headerdiv'>
+<h1>RAM Program after ExpandFilterTransformer</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>PROGRAM
+ DECLARATION
+  @delta_A(x:i:number,y:i:number) 
+  @delta_B(x:i:number,y:i:number) 
+  @new_A(x:i:number,y:i:number) 
+  @new_B(x:i:number,y:i:number) 
+  A(x:i:number,y:i:number) 
+  B(x:i:number,y:i:number) 
+ END DECLARATION
+ BEGIN MAIN
+  BEGIN_STRATUM 0
+   LOAD DATA FOR A FROM {{{"IO","file"},{"directory","."},{"extension",".facts"},{"filename","./A.facts"},{"location","fact-dir"},{"name","A"},{"stratum","slave"}}[{{"IO","file"},{"directory","."},{"extension",".facts"},{"filename","./A.facts"},{"location","fact-dir"},{"name","A"},{"stratum","slave"}}]}
+   LOOP
+    PARALLEL
+     QUERY
+      IF (NOT (number(1),number(2)) ∈ A)
+       PROJECT (number(1), number(2)) INTO @new_A
+     QUERY
+      IF (NOT (number(2),number(3)) ∈ A)
+       PROJECT (number(2), number(3)) INTO @new_A
+    END PARALLEL
+    EXIT (@new_A = ∅)
+    MERGE A WITH @new_A
+    SWAP (@delta_A, @new_A)
+    CLEAR @new_A
+   END LOOP
+   CLEAR @delta_A
+   CLEAR @new_A
+  END_STRATUM 0
+  BEGIN_STRATUM 1
+   MERGE @delta_A WITH A
+   LOOP
+    PARALLEL
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [9:1-9:20]"
+      QUERY
+       IF (NOT (@delta_A = ∅))
+        FOR t0 IN @delta_A
+         IF (NOT (t0.0,t0.1) ∈ B)
+          PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y),\n   B(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [10:1-10:29]"
+      QUERY
+       IF (NOT (B = ∅))
+        IF (NOT (@delta_A = ∅))
+         FOR t0 IN @delta_A
+          IF (NOT (t0.0,t0.1) ∈ B)
+           IF (NOT (t0.0,t0.1) ∈ @delta_B)
+            FOR t1 IN B ON INDEX t1.x = t0.0 AND t1.y = t0.1
+             PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y),\n   B(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [10:1-10:29]"
+      QUERY
+       IF (NOT (@delta_B = ∅))
+        IF (NOT (A = ∅))
+         FOR t0 IN A
+          IF (NOT (t0.0,t0.1) ∈ B)
+           FOR t1 IN @delta_B ON INDEX t1.x = t0.0 AND t1.y = t0.1
+            PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+    END PARALLEL
+    EXIT (@new_B = ∅)
+    MERGE B WITH @new_B
+    SWAP (@delta_B, @new_B)
+    CLEAR @new_B
+    MERGE A WITH @new_A
+    SWAP (@delta_A, @new_A)
+    CLEAR @new_A
+   END LOOP
+   CLEAR @delta_B
+   CLEAR @new_B
+   STORE DATA FOR B TO {{{"IO","file"},{"append","false"},{"attributeNames","x\ty"},{"directory","."},{"extension",".csv"},{"filename","./B.csv"},{"location","output-dir"},{"name","B"},{"stratum","slave"}}}
+   CLEAR A
+   CLEAR B
+  END_STRATUM 1
+ END MAIN
+END PROGRAM
+</pre>
+
+</div>
+<a id="HoistConditionsTransformer50"></a>
+<div class='headerdiv'>
+<h1>RAM Program after HoistConditionsTransformer</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>PROGRAM
+ DECLARATION
+  @delta_A(x:i:number,y:i:number) 
+  @delta_B(x:i:number,y:i:number) 
+  @new_A(x:i:number,y:i:number) 
+  @new_B(x:i:number,y:i:number) 
+  A(x:i:number,y:i:number) 
+  B(x:i:number,y:i:number) 
+ END DECLARATION
+ BEGIN MAIN
+  BEGIN_STRATUM 0
+   LOAD DATA FOR A FROM {{{"IO","file"},{"directory","."},{"extension",".facts"},{"filename","./A.facts"},{"location","fact-dir"},{"name","A"},{"stratum","slave"}}[{{"IO","file"},{"directory","."},{"extension",".facts"},{"filename","./A.facts"},{"location","fact-dir"},{"name","A"},{"stratum","slave"}}]}
+   LOOP
+    PARALLEL
+     QUERY
+      IF (NOT (number(1),number(2)) ∈ A)
+       PROJECT (number(1), number(2)) INTO @new_A
+     QUERY
+      IF (NOT (number(2),number(3)) ∈ A)
+       PROJECT (number(2), number(3)) INTO @new_A
+    END PARALLEL
+    EXIT (@new_A = ∅)
+    MERGE A WITH @new_A
+    SWAP (@delta_A, @new_A)
+    CLEAR @new_A
+   END LOOP
+   CLEAR @delta_A
+   CLEAR @new_A
+  END_STRATUM 0
+  BEGIN_STRATUM 1
+   MERGE @delta_A WITH A
+   LOOP
+    PARALLEL
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [9:1-9:20]"
+      QUERY
+       IF (NOT (@delta_A = ∅))
+        FOR t0 IN @delta_A
+         IF (NOT (t0.0,t0.1) ∈ B)
+          PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y),\n   B(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [10:1-10:29]"
+      QUERY
+       IF ((NOT (B = ∅)) AND (NOT (@delta_A = ∅)))
+        FOR t0 IN @delta_A
+         IF ((NOT (t0.0,t0.1) ∈ B) AND (NOT (t0.0,t0.1) ∈ @delta_B))
+          FOR t1 IN B ON INDEX t1.x = t0.0 AND t1.y = t0.1
+           PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y),\n   B(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [10:1-10:29]"
+      QUERY
+       IF ((NOT (@delta_B = ∅)) AND (NOT (A = ∅)))
+        FOR t0 IN A
+         IF (NOT (t0.0,t0.1) ∈ B)
+          FOR t1 IN @delta_B ON INDEX t1.x = t0.0 AND t1.y = t0.1
+           PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+    END PARALLEL
+    EXIT (@new_B = ∅)
+    MERGE B WITH @new_B
+    SWAP (@delta_B, @new_B)
+    CLEAR @new_B
+    MERGE A WITH @new_A
+    SWAP (@delta_A, @new_A)
+    CLEAR @new_A
+   END LOOP
+   CLEAR @delta_B
+   CLEAR @new_B
+   STORE DATA FOR B TO {{{"IO","file"},{"append","false"},{"attributeNames","x\ty"},{"directory","."},{"extension",".csv"},{"filename","./B.csv"},{"location","output-dir"},{"name","B"},{"stratum","slave"}}}
+   CLEAR A
+   CLEAR B
+  END_STRATUM 1
+ END MAIN
+END PROGRAM
+</pre>
+
+</div>
+<a id="MakeIndexTransformer51"></a>
+<div class='headerdiv'>
+<h1>After MakeIndexTransformer  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RamTransformerSequence52"></a>
+<div class='headerdiv'>
+<h1>After RamTransformerSequence  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RamLoopTransformer53"></a>
+<div class='headerdiv'>
+<h1>RAM Program after RamLoopTransformer</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>PROGRAM
+ DECLARATION
+  @delta_A(x:i:number,y:i:number) 
+  @delta_B(x:i:number,y:i:number) 
+  @new_A(x:i:number,y:i:number) 
+  @new_B(x:i:number,y:i:number) 
+  A(x:i:number,y:i:number) 
+  B(x:i:number,y:i:number) 
+ END DECLARATION
+ BEGIN MAIN
+  BEGIN_STRATUM 0
+   LOAD DATA FOR A FROM {{{"IO","file"},{"directory","."},{"extension",".facts"},{"filename","./A.facts"},{"location","fact-dir"},{"name","A"},{"stratum","slave"}}[{{"IO","file"},{"directory","."},{"extension",".facts"},{"filename","./A.facts"},{"location","fact-dir"},{"name","A"},{"stratum","slave"}}]}
+   LOOP
+    PARALLEL
+     QUERY
+      IF (NOT (number(1),number(2)) ∈ A)
+       PROJECT (number(1), number(2)) INTO @new_A
+     QUERY
+      IF (NOT (number(2),number(3)) ∈ A)
+       PROJECT (number(2), number(3)) INTO @new_A
+    END PARALLEL
+    EXIT (@new_A = ∅)
+    MERGE A WITH @new_A
+    SWAP (@delta_A, @new_A)
+    CLEAR @new_A
+   END LOOP
+   CLEAR @delta_A
+   CLEAR @new_A
+  END_STRATUM 0
+  BEGIN_STRATUM 1
+   MERGE @delta_A WITH A
+   LOOP
+    PARALLEL
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [9:1-9:20]"
+      QUERY
+       IF (NOT (@delta_A = ∅))
+        FOR t0 IN @delta_A
+         IF (NOT (t0.0,t0.1) ∈ B)
+          PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y),\n   B(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [10:1-10:29]"
+      QUERY
+       IF ((NOT (B = ∅)) AND (NOT (@delta_A = ∅)))
+        FOR t0 IN @delta_A
+         IF ((NOT (t0.0,t0.1) ∈ B) AND (NOT (t0.0,t0.1) ∈ @delta_B))
+          FOR t1 IN B ON INDEX t1.x = t0.0 AND t1.y = t0.1
+           PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y),\n   B(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [10:1-10:29]"
+      QUERY
+       IF ((NOT (@delta_B = ∅)) AND (NOT (A = ∅)))
+        FOR t0 IN A
+         IF (NOT (t0.0,t0.1) ∈ B)
+          FOR t1 IN @delta_B ON INDEX t1.x = t0.0 AND t1.y = t0.1
+           PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+    END PARALLEL
+    EXIT (@new_B = ∅)
+    MERGE B WITH @new_B
+    SWAP (@delta_B, @new_B)
+    CLEAR @new_B
+    MERGE A WITH @new_A
+    SWAP (@delta_A, @new_A)
+    CLEAR @new_A
+   END LOOP
+   CLEAR @delta_B
+   CLEAR @new_B
+   STORE DATA FOR B TO {{{"IO","file"},{"append","false"},{"attributeNames","x\ty"},{"directory","."},{"extension",".csv"},{"filename","./B.csv"},{"location","output-dir"},{"name","B"},{"stratum","slave"}}}
+   CLEAR A
+   CLEAR B
+  END_STRATUM 1
+ END MAIN
+END PROGRAM
+</pre>
+
+</div>
+<a id="IfConversionTransformer54"></a>
+<div class='headerdiv'>
+<h1>RAM Program after IfConversionTransformer</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>PROGRAM
+ DECLARATION
+  @delta_A(x:i:number,y:i:number) 
+  @delta_B(x:i:number,y:i:number) 
+  @new_A(x:i:number,y:i:number) 
+  @new_B(x:i:number,y:i:number) 
+  A(x:i:number,y:i:number) 
+  B(x:i:number,y:i:number) 
+ END DECLARATION
+ BEGIN MAIN
+  BEGIN_STRATUM 0
+   LOAD DATA FOR A FROM {{{"IO","file"},{"directory","."},{"extension",".facts"},{"filename","./A.facts"},{"location","fact-dir"},{"name","A"},{"stratum","slave"}}[{{"IO","file"},{"directory","."},{"extension",".facts"},{"filename","./A.facts"},{"location","fact-dir"},{"name","A"},{"stratum","slave"}}]}
+   LOOP
+    PARALLEL
+     QUERY
+      IF (NOT (number(1),number(2)) ∈ A)
+       PROJECT (number(1), number(2)) INTO @new_A
+     QUERY
+      IF (NOT (number(2),number(3)) ∈ A)
+       PROJECT (number(2), number(3)) INTO @new_A
+    END PARALLEL
+    EXIT (@new_A = ∅)
+    MERGE A WITH @new_A
+    SWAP (@delta_A, @new_A)
+    CLEAR @new_A
+   END LOOP
+   CLEAR @delta_A
+   CLEAR @new_A
+  END_STRATUM 0
+  BEGIN_STRATUM 1
+   MERGE @delta_A WITH A
+   LOOP
+    PARALLEL
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [9:1-9:20]"
+      QUERY
+       IF (NOT (@delta_A = ∅))
+        FOR t0 IN @delta_A
+         IF (NOT (t0.0,t0.1) ∈ B)
+          PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y),\n   B(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [10:1-10:29]"
+      QUERY
+       IF ((NOT (B = ∅)) AND (NOT (@delta_A = ∅)))
+        FOR t0 IN @delta_A
+         IF ((NOT (t0.0,t0.1) ∈ B) AND (NOT (t0.0,t0.1) ∈ @delta_B))
+          IF (t0.0,t0.1) ∈ B
+           PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y),\n   B(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [10:1-10:29]"
+      QUERY
+       IF ((NOT (@delta_B = ∅)) AND (NOT (A = ∅)))
+        FOR t0 IN A
+         IF (NOT (t0.0,t0.1) ∈ B)
+          IF (t0.0,t0.1) ∈ @delta_B
+           PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+    END PARALLEL
+    EXIT (@new_B = ∅)
+    MERGE B WITH @new_B
+    SWAP (@delta_B, @new_B)
+    CLEAR @new_B
+    MERGE A WITH @new_A
+    SWAP (@delta_A, @new_A)
+    CLEAR @new_A
+   END LOOP
+   CLEAR @delta_B
+   CLEAR @new_B
+   STORE DATA FOR B TO {{{"IO","file"},{"append","false"},{"attributeNames","x\ty"},{"directory","."},{"extension",".csv"},{"filename","./B.csv"},{"location","output-dir"},{"name","B"},{"stratum","slave"}}}
+   CLEAR A
+   CLEAR B
+  END_STRATUM 1
+ END MAIN
+END PROGRAM
+</pre>
+
+</div>
+<a id="ChoiceConversionTransformer55"></a>
+<div class='headerdiv'>
+<h1>After ChoiceConversionTransformer  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="CollapseFiltersTransformer56"></a>
+<div class='headerdiv'>
+<h1>RAM Program after CollapseFiltersTransformer</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>PROGRAM
+ DECLARATION
+  @delta_A(x:i:number,y:i:number) 
+  @delta_B(x:i:number,y:i:number) 
+  @new_A(x:i:number,y:i:number) 
+  @new_B(x:i:number,y:i:number) 
+  A(x:i:number,y:i:number) 
+  B(x:i:number,y:i:number) 
+ END DECLARATION
+ BEGIN MAIN
+  BEGIN_STRATUM 0
+   LOAD DATA FOR A FROM {{{"IO","file"},{"directory","."},{"extension",".facts"},{"filename","./A.facts"},{"location","fact-dir"},{"name","A"},{"stratum","slave"}}[{{"IO","file"},{"directory","."},{"extension",".facts"},{"filename","./A.facts"},{"location","fact-dir"},{"name","A"},{"stratum","slave"}}]}
+   LOOP
+    PARALLEL
+     QUERY
+      IF (NOT (number(1),number(2)) ∈ A)
+       PROJECT (number(1), number(2)) INTO @new_A
+     QUERY
+      IF (NOT (number(2),number(3)) ∈ A)
+       PROJECT (number(2), number(3)) INTO @new_A
+    END PARALLEL
+    EXIT (@new_A = ∅)
+    MERGE A WITH @new_A
+    SWAP (@delta_A, @new_A)
+    CLEAR @new_A
+   END LOOP
+   CLEAR @delta_A
+   CLEAR @new_A
+  END_STRATUM 0
+  BEGIN_STRATUM 1
+   MERGE @delta_A WITH A
+   LOOP
+    PARALLEL
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [9:1-9:20]"
+      QUERY
+       IF (NOT (@delta_A = ∅))
+        FOR t0 IN @delta_A
+         IF (NOT (t0.0,t0.1) ∈ B)
+          PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y),\n   B(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [10:1-10:29]"
+      QUERY
+       IF ((NOT (B = ∅)) AND (NOT (@delta_A = ∅)))
+        FOR t0 IN @delta_A
+         IF (((NOT (t0.0,t0.1) ∈ B) AND (NOT (t0.0,t0.1) ∈ @delta_B)) AND (t0.0,t0.1) ∈ B)
+          PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y),\n   B(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [10:1-10:29]"
+      QUERY
+       IF ((NOT (@delta_B = ∅)) AND (NOT (A = ∅)))
+        FOR t0 IN A
+         IF ((NOT (t0.0,t0.1) ∈ B) AND (t0.0,t0.1) ∈ @delta_B)
+          PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+    END PARALLEL
+    EXIT (@new_B = ∅)
+    MERGE B WITH @new_B
+    SWAP (@delta_B, @new_B)
+    CLEAR @new_B
+    MERGE A WITH @new_A
+    SWAP (@delta_A, @new_A)
+    CLEAR @new_A
+   END LOOP
+   CLEAR @delta_B
+   CLEAR @new_B
+   STORE DATA FOR B TO {{{"IO","file"},{"append","false"},{"attributeNames","x\ty"},{"directory","."},{"extension",".csv"},{"filename","./B.csv"},{"location","output-dir"},{"name","B"},{"stratum","slave"}}}
+   CLEAR A
+   CLEAR B
+  END_STRATUM 1
+ END MAIN
+END PROGRAM
+</pre>
+
+</div>
+<a id="TupleIdTransformer57"></a>
+<div class='headerdiv'>
+<h1>After TupleIdTransformer  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="HoistAggregateTransformer58"></a>
+<div class='headerdiv'>
+<h1>After HoistAggregateTransformer  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="TupleIdTransformer59"></a>
+<div class='headerdiv'>
+<h1>After TupleIdTransformer  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RamTransformerSequence60"></a>
+<div class='headerdiv'>
+<h1>After RamTransformerSequence  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RamLoopTransformer61"></a>
+<div class='headerdiv'>
+<h1>After RamLoopTransformer  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="ExpandFilterTransformer62"></a>
+<div class='headerdiv'>
+<h1>RAM Program after ExpandFilterTransformer</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>PROGRAM
+ DECLARATION
+  @delta_A(x:i:number,y:i:number) 
+  @delta_B(x:i:number,y:i:number) 
+  @new_A(x:i:number,y:i:number) 
+  @new_B(x:i:number,y:i:number) 
+  A(x:i:number,y:i:number) 
+  B(x:i:number,y:i:number) 
+ END DECLARATION
+ BEGIN MAIN
+  BEGIN_STRATUM 0
+   LOAD DATA FOR A FROM {{{"IO","file"},{"directory","."},{"extension",".facts"},{"filename","./A.facts"},{"location","fact-dir"},{"name","A"},{"stratum","slave"}}[{{"IO","file"},{"directory","."},{"extension",".facts"},{"filename","./A.facts"},{"location","fact-dir"},{"name","A"},{"stratum","slave"}}]}
+   LOOP
+    PARALLEL
+     QUERY
+      IF (NOT (number(1),number(2)) ∈ A)
+       PROJECT (number(1), number(2)) INTO @new_A
+     QUERY
+      IF (NOT (number(2),number(3)) ∈ A)
+       PROJECT (number(2), number(3)) INTO @new_A
+    END PARALLEL
+    EXIT (@new_A = ∅)
+    MERGE A WITH @new_A
+    SWAP (@delta_A, @new_A)
+    CLEAR @new_A
+   END LOOP
+   CLEAR @delta_A
+   CLEAR @new_A
+  END_STRATUM 0
+  BEGIN_STRATUM 1
+   MERGE @delta_A WITH A
+   LOOP
+    PARALLEL
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [9:1-9:20]"
+      QUERY
+       IF (NOT (@delta_A = ∅))
+        FOR t0 IN @delta_A
+         IF (NOT (t0.0,t0.1) ∈ B)
+          PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y),\n   B(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [10:1-10:29]"
+      QUERY
+       IF (NOT (@delta_A = ∅))
+        IF (NOT (B = ∅))
+         FOR t0 IN @delta_A
+          IF (NOT (t0.0,t0.1) ∈ @delta_B)
+           IF (NOT (t0.0,t0.1) ∈ B)
+            IF (t0.0,t0.1) ∈ B
+             PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y),\n   B(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [10:1-10:29]"
+      QUERY
+       IF (NOT (A = ∅))
+        IF (NOT (@delta_B = ∅))
+         FOR t0 IN A
+          IF (t0.0,t0.1) ∈ @delta_B
+           IF (NOT (t0.0,t0.1) ∈ B)
+            PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+    END PARALLEL
+    EXIT (@new_B = ∅)
+    MERGE B WITH @new_B
+    SWAP (@delta_B, @new_B)
+    CLEAR @new_B
+    MERGE A WITH @new_A
+    SWAP (@delta_A, @new_A)
+    CLEAR @new_A
+   END LOOP
+   CLEAR @delta_B
+   CLEAR @new_B
+   STORE DATA FOR B TO {{{"IO","file"},{"append","false"},{"attributeNames","x\ty"},{"directory","."},{"extension",".csv"},{"filename","./B.csv"},{"location","output-dir"},{"name","B"},{"stratum","slave"}}}
+   CLEAR A
+   CLEAR B
+  END_STRATUM 1
+ END MAIN
+END PROGRAM
+</pre>
+
+</div>
+<a id="HoistConditionsTransformer63"></a>
+<div class='headerdiv'>
+<h1>RAM Program after HoistConditionsTransformer</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>PROGRAM
+ DECLARATION
+  @delta_A(x:i:number,y:i:number) 
+  @delta_B(x:i:number,y:i:number) 
+  @new_A(x:i:number,y:i:number) 
+  @new_B(x:i:number,y:i:number) 
+  A(x:i:number,y:i:number) 
+  B(x:i:number,y:i:number) 
+ END DECLARATION
+ BEGIN MAIN
+  BEGIN_STRATUM 0
+   LOAD DATA FOR A FROM {{{"IO","file"},{"directory","."},{"extension",".facts"},{"filename","./A.facts"},{"location","fact-dir"},{"name","A"},{"stratum","slave"}}[{{"IO","file"},{"directory","."},{"extension",".facts"},{"filename","./A.facts"},{"location","fact-dir"},{"name","A"},{"stratum","slave"}}]}
+   LOOP
+    PARALLEL
+     QUERY
+      IF (NOT (number(1),number(2)) ∈ A)
+       PROJECT (number(1), number(2)) INTO @new_A
+     QUERY
+      IF (NOT (number(2),number(3)) ∈ A)
+       PROJECT (number(2), number(3)) INTO @new_A
+    END PARALLEL
+    EXIT (@new_A = ∅)
+    MERGE A WITH @new_A
+    SWAP (@delta_A, @new_A)
+    CLEAR @new_A
+   END LOOP
+   CLEAR @delta_A
+   CLEAR @new_A
+  END_STRATUM 0
+  BEGIN_STRATUM 1
+   MERGE @delta_A WITH A
+   LOOP
+    PARALLEL
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [9:1-9:20]"
+      QUERY
+       IF (NOT (@delta_A = ∅))
+        FOR t0 IN @delta_A
+         IF (NOT (t0.0,t0.1) ∈ B)
+          PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y),\n   B(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [10:1-10:29]"
+      QUERY
+       IF ((NOT (@delta_A = ∅)) AND (NOT (B = ∅)))
+        FOR t0 IN @delta_A
+         IF (((NOT (t0.0,t0.1) ∈ @delta_B) AND (NOT (t0.0,t0.1) ∈ B)) AND (t0.0,t0.1) ∈ B)
+          PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+     BEGIN_DEBUG "B(x,y) :- \n   A(x,y),\n   B(x,y).\nin file /home/lyndonhenry/souffle/src/test.dl [10:1-10:29]"
+      QUERY
+       IF ((NOT (A = ∅)) AND (NOT (@delta_B = ∅)))
+        FOR t0 IN A
+         IF ((t0.0,t0.1) ∈ @delta_B AND (NOT (t0.0,t0.1) ∈ B))
+          PROJECT (t0.0, t0.1) INTO @new_B
+     END_DEBUG
+    END PARALLEL
+    EXIT (@new_B = ∅)
+    MERGE B WITH @new_B
+    SWAP (@delta_B, @new_B)
+    CLEAR @new_B
+    MERGE A WITH @new_A
+    SWAP (@delta_A, @new_A)
+    CLEAR @new_A
+   END LOOP
+   CLEAR @delta_B
+   CLEAR @new_B
+   STORE DATA FOR B TO {{{"IO","file"},{"append","false"},{"attributeNames","x\ty"},{"directory","."},{"extension",".csv"},{"filename","./B.csv"},{"location","output-dir"},{"name","B"},{"stratum","slave"}}}
+   CLEAR A
+   CLEAR B
+  END_STRATUM 1
+ END MAIN
+END PROGRAM
+</pre>
+
+</div>
+<a id="CollapseFiltersTransformer64"></a>
+<div class='headerdiv'>
+<h1>After CollapseFiltersTransformer  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="EliminateDuplicatesTransformer65"></a>
+<div class='headerdiv'>
+<h1>After EliminateDuplicatesTransformer  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="ReorderConditionsTransformer66"></a>
+<div class='headerdiv'>
+<h1>After ReorderConditionsTransformer  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="ReorderFilterBreak67"></a>
+<div class='headerdiv'>
+<h1>After ReorderFilterBreak  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RamLoopTransformer68"></a>
+<div class='headerdiv'>
+<h1>After RamLoopTransformer  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RamConditionalTransformer69"></a>
+<div class='headerdiv'>
+<h1>After RamConditionalTransformer  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="ReportIndexTransfomer70"></a>
+<div class='headerdiv'>
+<h1>RAM Analysis index-analysis</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>Relation @new_A
+	Number of Primitive Searches: 1
+		x y 
+	Number of Indexes: 1
+		x y 
+Relation @delta_A
+	Number of Primitive Searches: 1
+		x y 
+	Number of Indexes: 1
+		x y 
+Relation @delta_B
+	Number of Primitive Searches: 1
+		x y 
+	Number of Indexes: 1
+		x y 
+Relation B
+	Number of Primitive Searches: 1
+		x y 
+	Number of Indexes: 1
+		x y 
+Relation A
+	Number of Primitive Searches: 1
+		x y 
+	Number of Indexes: 1
+		x y 
+Relation @new_B
+	Number of Primitive Searches: 1
+		x y 
+	Number of Indexes: 1
+		x y 
+</pre>
+
+</div>
+<a id="ReportIndexTransfomer71"></a>
+<div class='headerdiv'>
+<h1>After ReportIndexTransfomer  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RamTransformerSequence72"></a>
+<div class='headerdiv'>
+<h1>After RamTransformerSequence  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a href='#'>(return to top)</a>
+</body>
+</html>
