@@ -989,7 +989,10 @@ void AstTranslator::appendStmt(std::unique_ptr<RamStatement>& stmtList, std::uni
 
 /** generate RAM code for a non-recursive relation */
 std::unique_ptr<RamStatement> AstTranslator::translateNonRecursiveRelation(
-        const AstRelation& rel, const RecursiveClauses* recursiveClauses) {
+    const AstTranslationUnit& translationUnit, const AstRelation& rel) {
+
+    const auto* recursiveClauses = translationUnit.getAnalysis<RecursiveClauses>();
+
     /* start with an empty sequence */
     std::unique_ptr<RamStatement> res;
 
@@ -1087,8 +1090,17 @@ void AstTranslator::nameUnnamedVariables(AstClause* clause) {
 
 /** generate RAM code for recursive relations in a strongly-connected component */
 std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
-        const std::set<const AstRelation*>& internalRelationsOfScc, const RecursiveClauses* recursiveClauses,
-        const std::set<const AstRelation*>& externalPredecessorRelationsOfScc) {
+    const AstTranslationUnit& translationUnit, std::size_t indexOfScc) {
+
+    // @TODO (lh): make the sets computed here mutable, don't recompute always
+    const auto* sccGraph = translationUnit.getAnalysis<SCCGraph>();
+    const auto internalRelationsOfScc = sccGraph->getInternalRelations(indexOfScc);
+    const auto externalPredecessorRelationsOfScc = sccGraph->getExternalPredecessorRelations(indexOfScc);
+
+#ifndef USE_GENERAL
+    const auto* recursiveClauses = translationUnit.getAnalysis<RecursiveClauses>();
+#endif
+
     // initialize sections
     std::unique_ptr<RamStatement> preamble(new RamSequence());
     std::unique_ptr<RamSequence> updateTable(new RamSequence());
@@ -1152,7 +1164,7 @@ for (const AstRelation* relation : externalPredecessorRelationsOfScc) {
 
 #ifndef USE_GENERAL
         /* Generate code for non-recursive part of relation */
-        appendStmt(preamble, translateNonRecursiveRelation(*rel, recursiveClauses));
+        appendStmt(preamble, translateNonRecursiveRelation(translationUnit, *rel));
 
         /* Generate merge operation for temp tables */
         appendStmt(preamble,
@@ -1617,9 +1629,6 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
     // obtain type environment from analysis
     typeEnv = &translationUnit.getAnalysis<TypeEnvironmentAnalysis>()->getTypeEnvironment();
 
-    // obtain recursive clauses from analysis
-    const auto* recursiveClauses = translationUnit.getAnalysis<RecursiveClauses>();
-
     // obtain strongly connected component (SCC) graph from analysis
     const auto& sccGraph = *translationUnit.getAnalysis<SCCGraph>();
 
@@ -1706,7 +1715,7 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
                 makeRamLoad(current, inputRelation, "fact-dir", ".facts", "file");
             }
 
-            // make store statements for each input relation to produce with kafak
+            // make store statements for each input relation to produce with kafka
             for (const auto& inputRelation : inputRelations) {
                 makeRamStore(current, inputRelation, "fact-dir", ".facts");
             }
@@ -1815,9 +1824,8 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
 
         // compute the relations themselves
         std::unique_ptr<RamStatement> bodyStatement =
-                (!isRecursive) ? translateNonRecursiveRelation(
-                                         *((const AstRelation*)*allInterns.begin()), recursiveClauses)
-                               : translateRecursiveRelation(allInterns, recursiveClauses, externPreds);
+                (!isRecursive) ? translateNonRecursiveRelation(translationUnit, *((const AstRelation*)*allInterns.begin()))
+                               : translateRecursiveRelation(translationUnit, indexOfScc);
         appendStmt(current, std::move(bodyStatement));
         {
             // if a communication engine is enabled...
