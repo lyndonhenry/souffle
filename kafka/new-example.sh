@@ -207,9 +207,10 @@ function ensure_souffle_is_built_for_kafka() {
     ensure_autoconf_project_is_built "${CWD}" "--enable-kafka"
 }
 
-function ensure_souffle_program_is_built_for_kafka() {
+function ensure_souffle_program_is_built() {
     local EXE="${1}"
     local FILE="${2}"
+    local ARGS="${3}"
     local DIRNAME="$(dirname ${FILE})"
     local BASENAME="$(basename ${FILE})"
     local NAME="${BASENAME%%.*}"
@@ -218,11 +219,11 @@ function ensure_souffle_program_is_built_for_kafka() {
     then
         cd "${DIRNAME}"
         "${EXE}" \
-            -ekafka \
             -D"${DIRNAME}" \
             -F"${DIRNAME}/facts" \
             -o"${DIRNAME}/${NAME}" \
             -r"${DIRNAME}/${NAME}.html" \
+            ${ARGS} \
             "${FILE}"
         cd -
     fi
@@ -236,14 +237,15 @@ function ensure_kafka_depencencies_are_installed() {
     ensure_apache_kafka_is_installed "${CWD}"
 }
 
-function ensure_souffle_test_case_is_built_for_kafka() {
+function ensure_souffle_test_case_is_built() {
     local SOUFFLE_ROOT="${1}"
     local TEST_CASE="${2}"
+    local SOUFFLE_ARGS="${3:-}"
     local TESTSUITE_DIR="${SOUFFLE_ROOT}/tests/testsuite.dir"
     local TEST_CASE_FROM="${SOUFFLE_ROOT}/tests/${TEST_CASE}"
     local TEST_CASE_TO="${TESTSUITE_DIR}/${TEST_CASE}"
     ensure_file_is_copied "${TEST_CASE_FROM}" "${TEST_CASE_TO}"
-    ensure_souffle_program_is_built_for_kafka "${SOUFFLE_ROOT}/src/souffle" "${TEST_CASE_TO}/$(basename "${TEST_CASE_TO}").dl"
+    ensure_souffle_program_is_built "${SOUFFLE_ROOT}/src/souffle" "${TEST_CASE_TO}/$(basename "${TEST_CASE_TO}").dl" "${SOUFFLE_ARGS}"
 }
 
 function main() {
@@ -253,7 +255,6 @@ function main() {
 
     # ensure that the testsuite directory does does not exist yet
     local TESTSUITE_DIR="${PWD}/tests/testsuite.dir"
-    rm -rf "${TESTSUITE_DIR}"
 
     # @@@TODO: try with 'input_output_numbers_recursive'
     # set the test case used by this script
@@ -268,12 +269,48 @@ function main() {
     ensure_kafka_depencencies_are_installed "${PWD}/kafka/tmp"
     ensure_jq_is_installed "${PWD}/kafka/tmp"
 
-    # ensure that the test case is built with souffle 
+    # ensure that souffle is built for kafka
     ensure_souffle_is_built_for_kafka "${PWD}"
-    ensure_souffle_test_case_is_built_for_kafka "${PWD}" "${TEST_CASE}"
 
     # set the executable for the test case
     local EXE="${TESTSUITE_DIR}/${TEST_CASE}/$(basename ${TEST_CASE})"
+
+    # @@@TODO (lh): ensure that this works
+
+    # remove the testsuite directotry
+    rm -rf "${TESTSUITE_DIR}"
+    # ensute that test case is built
+    ensure_souffle_test_case_is_built "${PWD}" "${TEST_CASE}"
+    # show the line count of the expected output files
+    wc -l "${TESTSUITE_DIR}/${TEST_CASE}"/*.csv
+    # remove the expected output files, these are overridden by actual outputs on execution
+    rm -rf "${TESTSUITE_DIR}/${TEST_CASE}"/*.csv
+    # run the program
+    ${EXE}
+    # show the line count of the actual output files, the user should compare this to the expected produced above
+    wc -l "${TESTSUITE_DIR}/${TEST_CASE}"/*.csv
+    # prompt the user to continue with cleanup
+    read -p "Continue?"
+
+    # @@@TODO (lh): ensure that this also works
+
+    # remove the testsuite directotry
+    rm -rf "${TESTSUITE_DIR}"
+    # ensute that test case is built with -efile
+    ensure_souffle_test_case_is_built "${PWD}" "${TEST_CASE}" "-efile"
+    # show the line count of the expected output files
+    wc -l "${TESTSUITE_DIR}/${TEST_CASE}"/*.csv
+    # remove the expected output files, these are overridden by actual outputs on execution
+    rm -rf "${TESTSUITE_DIR}/${TEST_CASE}"/*.csv
+    # run the program
+    ${EXE}
+    # show the line count of the actual output files, the user should compare this to the expected produced above
+    wc -l "${TESTSUITE_DIR}/${TEST_CASE}"/*.csv
+    # prompt the user to continue with cleanup
+    read -p "Continue?"
+
+    # ensure that test case is built with -ekafka
+    ensure_souffle_test_case_is_built "${PWD}" "${TEST_CASE}" "-ekafka"
 
     # print program metadata in json format, schema is {"StratumNames": [...], "RelationNames": [...]}
     ${EXE} -i-2 | jq
