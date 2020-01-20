@@ -54,7 +54,7 @@ Next steps:
 // @@@TODO: see commit log for notes on this
 //#define USE_GENERAL
 #define USE_GENERAL
-#undef USE_GENERAL_PRODUCERS
+#define USE_GENERAL_PRODUCERS
 #undef USE_GENERAL_CONSUMERS
 
 #include "AstTranslator.h"
@@ -1239,10 +1239,10 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
         // @@@TODO (lh): this does not work as IO directives need ast relations, but delta and new are ram
         // relation references
         if (internalOutputRelations.count(rel)) {
-            makeRamStore(updateRelTable, scc, rel "output-dir", ".csv", "default", (Global::config().has("engine")) ? Global::config().get("engine") : "file", relDelta[rel]);
+            makeRamStore(updateRelTable, scc, rel, "output-dir", ".csv", "default", (Global::config().has("engine")) ? Global::config().get("engine") : "file", std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()));
         } else if (Global::config().has("engine") &&
                    internalNonOutputRelationsWithExternalSuccessors.count(rel)) {
-            makeRamStore(updateRelTable, scc, rel "output-dir", ".facts", "default", (Global::config().has("engine")) ? Global::config().get("engine") : "file", relDelta[rel]);
+            makeRamStore(updateRelTable, scc, rel, "output-dir", ".facts", "default", (Global::config().has("engine")) ? Global::config().get("engine") : "file", std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()));
         }
 #endif
 
