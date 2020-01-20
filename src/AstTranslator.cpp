@@ -55,7 +55,7 @@ Next steps:
 //#define USE_GENERAL
 #define USE_GENERAL
 #define USE_GENERAL_PRODUCERS
-#undef USE_GENERAL_CONSUMERS
+#define USE_GENERAL_CONSUMERS
 
 #include "AstTranslator.h"
 #include "AstArgument.h"
@@ -113,10 +113,8 @@ std::unique_ptr<RamTupleElement> AstTranslator::makeRamTupleElement(const Locati
 
 void AstTranslator::makeRamLoad(std::unique_ptr<RamStatement>& current, std::size_t scc,
         const AstRelation* relation, const std::string& inputDirectory, const std::string& fileExtension,
-        const std::string& ioType = Global::config().has("engine") ? Global::config().get("engine")
-                                                                   : "file",
-                                                                   std::unique_ptr<RamRelationReference> ramRelationReference = nullptr) {
-                                                                   
+        const std::string& ioType = Global::config().has("engine") ? Global::config().get("engine") : "file",
+        std::unique_ptr<RamRelationReference> ramRelationReference = nullptr) {
     IODirectives ioDirectives;
     ioDirectives.set("location", inputDirectory);
     ioDirectives.set("directory", Global::config().get(inputDirectory));
@@ -125,14 +123,12 @@ void AstTranslator::makeRamLoad(std::unique_ptr<RamStatement>& current, std::siz
     ioDirectives.set(Global::config().get("engine"), "");
     ioDirectives.set("stratum", (scc == (size_t)-1) ? "master" : "slave");
 
-    std::unique_ptr<RamStatement> statement =
-            std::make_unique<RamLoad>(
-                    (ramRelationReference == nullptr) 
-                    ? std::unique_ptr<RamRelationReference>(translateRelation(relation)) 
+    std::unique_ptr<RamStatement> statement = std::make_unique<RamLoad>(
+            (ramRelationReference == nullptr)
+                    ? std::unique_ptr<RamRelationReference>(translateRelation(relation))
                     : std::move(ramRelationReference),
-                getInputIODirectives(relation, ioDirectives)
-    );
- 
+            getInputIODirectives(relation, ioDirectives));
+
     if (Global::config().has("profile")) {
         const std::string logTimerStatement =
                 LogStatement::tRelationLoadTime(toString(relation->getName()), relation->getSrcLoc());
@@ -145,9 +141,8 @@ void AstTranslator::makeRamLoad(std::unique_ptr<RamStatement>& current, std::siz
 void AstTranslator::makeRamStore(std::unique_ptr<RamStatement>& current, std::size_t scc,
         const AstRelation* relation, const std::string& outputDirectory, const std::string& fileExtension,
         const std::string& engineDirectives = "default",
-        const std::string& ioType = Global::config().has("engine") ? Global::config().get("engine")
-                                                                   : "file",
-                                                                   std::unique_ptr<RamRelationReference> ramRelationReference = nullptr) {
+        const std::string& ioType = Global::config().has("engine") ? Global::config().get("engine") : "file",
+        std::unique_ptr<RamRelationReference> ramRelationReference = nullptr) {
     // @@@TODO (lh): HERE! THE NEXT STEP IS TO MAKE IT SO THAT THERE ARE SEPARATE HALT STATEMENTS FOR
     // PRODUCERS IN THE BLOCKING VARIANT, THEN MOVE TO THE NON-BLOCKING --
     IODirectives ioDirectives;
@@ -167,13 +162,11 @@ void AstTranslator::makeRamStore(std::unique_ptr<RamStatement>& current, std::si
     ioDirectives.set("append", "false");
 #endif
 
-    std::unique_ptr<RamStatement> statement =
-            std::make_unique<RamStore>(
-                    (ramRelationReference == nullptr) 
-                    ? std::unique_ptr<RamRelationReference>(translateRelation(relation)) 
+    std::unique_ptr<RamStatement> statement = std::make_unique<RamStore>(
+            (ramRelationReference == nullptr)
+                    ? std::unique_ptr<RamRelationReference>(translateRelation(relation))
                     : std::move(ramRelationReference),
-                getOutputIODirectives(relation, ioDirectives)
-    );
+            getOutputIODirectives(relation, ioDirectives));
 
     if (Global::config().has("profile")) {
         const std::string logTimerStatement =
@@ -1180,11 +1173,22 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
         const AstTranslationUnit& translationUnit, std::size_t scc) {
     // @TODO (lh): make the sets computed here mutable, don't recompute always
     const auto* sccGraph = translationUnit.getAnalysis<SCCGraph>();
-    const auto internalRelationsOfScc = sccGraph->getInternalRelations(scc);
-    const auto externalPredecessorRelationsOfScc = sccGraph->getExternalPredecessorRelations(scc);
-    const auto internalOutputRelations = sccGraph->getInternalOutputRelations(scc);
-    const auto internalNonOutputRelationsWithExternalSuccessors =
-            sccGraph->getInternalRelationsWithExternalSuccessors(scc);
+
+    const auto allInterns = sccGraph->getInternalRelations(scc);
+    const auto internIns = sccGraph->getInternalInputRelations(scc);
+    const auto internOuts = sccGraph->getInternalOutputRelations(scc);
+    const auto externPreds = sccGraph->getExternalPredecessorRelations(scc);
+    const auto externOutPreds = sccGraph->getExternalOutputPredecessorRelations(scc);
+    const auto externNonOutPreds = sccGraph->getExternalNonOutputPredecessorRelations(scc);
+    const auto externAggNegPreds = sccGraph->getAggregatedAndNegatedExternalPredecessorRelations(scc);
+    const auto internNonOutsWithExternSuccs =
+            sccGraph->getInternalNonOutputRelationsWithExternalSuccessors(scc);
+
+    // @TODO (lh): use the variables above, remove unused, don't reference
+    const auto& internalRelationsOfScc = allInterns;
+    const auto& externalPredecessorRelationsOfScc = externPreds;
+    const auto& internalOutputRelations = internOuts;
+    const auto& internalNonOutputRelationsWithExternalSuccessors = internNonOutsWithExternSuccs;
 
 #ifndef USE_GENERAL
     const auto* recursiveClauses = translationUnit.getAnalysis<RecursiveClauses>();
@@ -1205,11 +1209,31 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
 #endif
 
 #ifdef USE_GENERAL
+#ifndef USE_GENERAL_CONSUMERS
     for (const AstRelation* relation : externalPredecessorRelationsOfScc) {
         appendStmt(preamble,
                 std::make_unique<RamMerge>(std::unique_ptr<RamRelationReference>(relDelta[relation]->clone()),
                         std::unique_ptr<RamRelationReference>(rrel[relation]->clone())));
     }
+#else
+    // load all external output predecessor relations from the output dir with a .csv extension
+    for (const auto& relation : externOutPreds) {
+        if (!externAggNegPreds.count(relation)) {
+            makeRamLoad(preamble, scc, relation, "output-dir", ".csv",
+                    (Global::config().has("engine")) ? Global::config().get("engine") : "file",
+                    std::unique_ptr<RamRelationReference>(relDelta[relation]->clone()));
+        }
+    }
+    // load all external non-output predecessor relations from the output dir with a .facts
+    // extension
+    for (const auto& relation : externNonOutPreds) {
+        if (!externAggNegPreds.count(relation)) {
+            makeRamLoad(preamble, scc, relation, "output-dir", ".facts", 
+                    (Global::config().has("engine")) ? Global::config().get("engine") : "file",
+                    std::unique_ptr<RamRelationReference>(relDelta[relation]->clone()));
+        }
+    }
+#endif
 #endif
 
     /* Compute non-recursive clauses for relations in scc and push
@@ -1239,10 +1263,14 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
         // @@@TODO (lh): this does not work as IO directives need ast relations, but delta and new are ram
         // relation references
         if (internalOutputRelations.count(rel)) {
-            makeRamStore(updateRelTable, scc, rel, "output-dir", ".csv", "default", (Global::config().has("engine")) ? Global::config().get("engine") : "file", std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()));
+            makeRamStore(updateRelTable, scc, rel, "output-dir", ".csv", "default",
+                    (Global::config().has("engine")) ? Global::config().get("engine") : "file",
+                    std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()));
         } else if (Global::config().has("engine") &&
                    internalNonOutputRelationsWithExternalSuccessors.count(rel)) {
-            makeRamStore(updateRelTable, scc, rel, "output-dir", ".facts", "default", (Global::config().has("engine")) ? Global::config().get("engine") : "file", std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()));
+            makeRamStore(updateRelTable, scc, rel, "output-dir", ".facts", "default",
+                    (Global::config().has("engine")) ? Global::config().get("engine") : "file",
+                    std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()));
         }
 #endif
 
@@ -1753,7 +1781,6 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
     };
 
     if (Global::config().has("engine")) {
-
         // @@@TODO (lh): try with a ram parallel statement for kafka loads and stores
         std::size_t masterScc = -1;
 
@@ -1831,7 +1858,8 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
         const auto externOutPreds = sccGraph.getExternalOutputPredecessorRelations(scc);
         const auto externNonOutPreds = sccGraph.getExternalNonOutputPredecessorRelations(scc);
         const auto externAggNegPreds = sccGraph.getAggregatedAndNegatedExternalPredecessorRelations(scc);
-        const auto internNonOutsWithExternSuccs = sccGraph.getInternalNonOutputRelationsWithExternalSuccessors(scc);
+        const auto internNonOutsWithExternSuccs =
+                sccGraph.getInternalNonOutputRelationsWithExternalSuccessors(scc);
 
         // make a variable for all relations that are expired at the current SCC
         const auto& internExps = expirySchedule.at(scc).expired();
@@ -1854,6 +1882,7 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
                         makeRamLoad(current, scc, relation, "output-dir", ".facts");
                     }
                 }
+#ifndef USE_GENERAL_CONSUMERS
                 // load all external output predecessor relations from the output dir with a .csv
                 // extension
                 for (const auto& relation : externOutPreds) {
@@ -1868,6 +1897,7 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
                         makeRamLoad(current, scc, relation, "output-dir", ".facts");
                     }
                 }
+#endif
             }
         }
 
@@ -1934,8 +1964,7 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
 
         if (current) {
             // append the current SCC as a stratum to the sequence
-            appendStmt(
-                    res, std::make_unique<RamStratum>(std::move(current), scc));
+            appendStmt(res, std::make_unique<RamStratum>(std::move(current), scc));
         }
     }
 

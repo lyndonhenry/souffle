@@ -299,7 +299,8 @@ private:
     // a function to store relations
     void makeRamStore(std::unique_ptr<RamStatement>& current, std::size_t indexOfScc,
             const AstRelation* relation, const std::string& outputDirectory, const std::string& fileExtension,
-            const std::string& engineDirectives, const std::string& ioType, std::unique_ptr<RamRelationReference> ramRelationReference);
+            const std::string& engineDirectives, const std::string& ioType,
+            std::unique_ptr<RamRelationReference> ramRelationReference);
 
     void makeIODirective(IODirectives& ioDirective, const AstRelation* rel);
 
