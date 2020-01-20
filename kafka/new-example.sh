@@ -291,6 +291,7 @@ function main() {
     wc -l "${TESTSUITE_DIR}/${TEST_CASE}"/*.csv
 
     # prompt the user to continue with cleanup
+    # @TODO
     ## read -p "Continue?"
 
     # @@@TODO (lh): ensure that this also works
@@ -309,6 +310,7 @@ function main() {
     wc -l "${TESTSUITE_DIR}/${TEST_CASE}"/*.csv
 
     # prompt the user to continue with cleanup
+    # @TODO
     ##read -p "Continue?"
 
     # remove the testsuite directotry

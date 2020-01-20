@@ -114,7 +114,9 @@ std::unique_ptr<RamTupleElement> AstTranslator::makeRamTupleElement(const Locati
 void AstTranslator::makeRamLoad(std::unique_ptr<RamStatement>& current, std::size_t scc,
         const AstRelation* relation, const std::string& inputDirectory, const std::string& fileExtension,
         const std::string& ioType = Global::config().has("engine") ? Global::config().get("engine")
-                                                                   : "file") {
+                                                                   : "file",
+                                                                   std::unique_ptr<RamRelationReference> ramRelationReference = nullptr) {
+                                                                   
     IODirectives ioDirectives;
     ioDirectives.set("location", inputDirectory);
     ioDirectives.set("directory", Global::config().get(inputDirectory));
@@ -124,8 +126,13 @@ void AstTranslator::makeRamLoad(std::unique_ptr<RamStatement>& current, std::siz
     ioDirectives.set("stratum", (scc == (size_t)-1) ? "master" : "slave");
 
     std::unique_ptr<RamStatement> statement =
-            std::make_unique<RamLoad>(std::unique_ptr<RamRelationReference>(translateRelation(relation)),
-                    getInputIODirectives(relation, ioDirectives));
+            std::make_unique<RamLoad>(
+                    (ramRelationReference == nullptr) 
+                    ? std::unique_ptr<RamRelationReference>(translateRelation(relation)) 
+                    : std::move(ramRelationReference),
+                getInputIODirectives(relation, ioDirectives)
+    );
+ 
     if (Global::config().has("profile")) {
         const std::string logTimerStatement =
                 LogStatement::tRelationLoadTime(toString(relation->getName()), relation->getSrcLoc());
@@ -139,7 +146,8 @@ void AstTranslator::makeRamStore(std::unique_ptr<RamStatement>& current, std::si
         const AstRelation* relation, const std::string& outputDirectory, const std::string& fileExtension,
         const std::string& engineDirectives = "default",
         const std::string& ioType = Global::config().has("engine") ? Global::config().get("engine")
-                                                                   : "file") {
+                                                                   : "file",
+                                                                   std::unique_ptr<RamRelationReference> ramRelationReference = nullptr) {
     // @@@TODO (lh): HERE! THE NEXT STEP IS TO MAKE IT SO THAT THERE ARE SEPARATE HALT STATEMENTS FOR
     // PRODUCERS IN THE BLOCKING VARIANT, THEN MOVE TO THE NON-BLOCKING --
     IODirectives ioDirectives;
@@ -160,8 +168,12 @@ void AstTranslator::makeRamStore(std::unique_ptr<RamStatement>& current, std::si
 #endif
 
     std::unique_ptr<RamStatement> statement =
-            std::make_unique<RamStore>(std::unique_ptr<RamRelationReference>(translateRelation(relation)),
-                    getOutputIODirectives(relation, ioDirectives));
+            std::make_unique<RamStore>(
+                    (ramRelationReference == nullptr) 
+                    ? std::unique_ptr<RamRelationReference>(translateRelation(relation)) 
+                    : std::move(ramRelationReference),
+                getOutputIODirectives(relation, ioDirectives)
+    );
 
     if (Global::config().has("profile")) {
         const std::string logTimerStatement =
@@ -1227,10 +1239,10 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
         // @@@TODO (lh): this does not work as IO directives need ast relations, but delta and new are ram
         // relation references
         if (internalOutputRelations.count(rel)) {
-            makeRamStore(updateRelTable, scc, relDelta[rel], "output-dir", ".csv");
+            makeRamStore(updateRelTable, scc, rel "output-dir", ".csv", "default", (Global::config().has("engine")) ? Global::config().get("engine") : "file", relDelta[rel]);
         } else if (Global::config().has("engine") &&
                    internalNonOutputRelationsWithExternalSuccessors.count(rel)) {
-            makeRamStore(updateRelTable, scc, relDelta[rel], "output-dir", ".facts");
+            makeRamStore(updateRelTable, scc, rel "output-dir", ".facts", "default", (Global::config().has("engine")) ? Global::config().get("engine") : "file", relDelta[rel]);
         }
 #endif
 
