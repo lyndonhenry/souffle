@@ -289,8 +289,9 @@ function main() {
     ${EXE}
     # show the line count of the actual output files, the user should compare this to the expected produced above
     wc -l "${TESTSUITE_DIR}/${TEST_CASE}"/*.csv
+
     # prompt the user to continue with cleanup
-    read -p "Continue?"
+    ## read -p "Continue?"
 
     # @@@TODO (lh): ensure that this also works
 
@@ -306,8 +307,12 @@ function main() {
     ${EXE}
     # show the line count of the actual output files, the user should compare this to the expected produced above
     wc -l "${TESTSUITE_DIR}/${TEST_CASE}"/*.csv
+
     # prompt the user to continue with cleanup
-    read -p "Continue?"
+    ##read -p "Continue?"
+
+    # remove the testsuite directotry
+    rm -rf "${TESTSUITE_DIR}"
 
     # ensure that test case is built with -ekafka
     ensure_souffle_test_case_is_built "${PWD}" "${TEST_CASE}" "-ekafka"
