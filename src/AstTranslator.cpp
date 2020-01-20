@@ -1218,8 +1218,9 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
         }
     }
 #else
-
+    
     // @@@@@@@@@@@@@@@@@@@ HERE @@@@@@@@@@@@@@@@@@@@@@@@
+
     // @@@@@@@@@@@@@TODO
     // Ok, for halting with continuous consumption, need to do as follows:
     // - while (every @new_rel does not contain a halt)
@@ -1235,6 +1236,24 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
     // - otherwise
     // -- do seminaive again
     // Yay! Can also use exponential backoff for consumer timeouts...
+
+    /*
+        // @TODO: get this working, it is the next step
+        // so just after the delta and new have been swapped and the new is clear
+        LOOP
+        - forall @new_rel : 
+        - IF (@new_rel = ∅)
+        - -  LOAD DATA FOR @new_rel FROM {...}
+        - IF (NOT (@new_rel) = ∅)) 
+        - - IF (NOT ((number(-1)) ∈ @new_rel)
+        - - - MERGE @delta_rel WITH @new_rel
+        - - - EXIT ()
+        END LOOP
+        ...
+        // then in outer loop
+        EXIT ((forall @new_rel : (NOT ((number(-1)) ∈ @new_rel)) 
+            AND (forall @delta_rel : (@new_rel = ∅)))
+    */
     
 
     // load all external output predecessor relations from the output dir with a .csv extension
