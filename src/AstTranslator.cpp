@@ -1211,11 +1211,32 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
 #ifdef USE_GENERAL
 #ifndef USE_GENERAL_CONSUMERS
     for (const AstRelation* relation : externalPredecessorRelationsOfScc) {
-        appendStmt(preamble,
-                std::make_unique<RamMerge>(std::unique_ptr<RamRelationReference>(relDelta[relation]->clone()),
-                        std::unique_ptr<RamRelationReference>(rrel[relation]->clone())));
+        if (!externAggNegPreds.count(relation)) {
+            appendStmt(preamble,
+                    std::make_unique<RamMerge>(std::unique_ptr<RamRelationReference>(relDelta[relation]->clone()),
+                            std::unique_ptr<RamRelationReference>(rrel[relation]->clone())));
+        }
     }
 #else
+
+    // @@@@@@@@@@@@@@@@@@@ HERE @@@@@@@@@@@@@@@@@@@@@@@@
+    // @@@@@@@@@@@@@TODO
+    // Ok, for halting with continuous consumption, need to do as follows:
+    // - while (every @new_rel does not contain a halt)
+    // -- for each rel
+    // --- if @new_rel is empty (does not contain a halt, has not recvd)
+    // ---- recv to @new_myRel
+    // --- if @new_myRel does not contain halt AND @new_myRela is not empty
+    // ---- merge new_myRel with @delta_myRel
+    // ---- exit the loop
+    // - endwhile
+    // - if (every @new_rel does contain a halt) and (all the deltas are empty)
+    // -- exit the program
+    // - otherwise
+    // -- do seminaive again
+    // Yay! Can also use exponential backoff for consumer timeouts...
+    
+
     // load all external output predecessor relations from the output dir with a .csv extension
     for (const auto& relation : externOutPreds) {
         if (!externAggNegPreds.count(relation)) {
@@ -1304,21 +1325,23 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
 
 #ifdef USE_GENERAL
     for (const AstRelation* rel : externalPredecessorRelationsOfScc) {
-        std::unique_ptr<RamStatement> updateRelTable;
+        if (!externAggNegPreds.count(rel)) {
+                std::unique_ptr<RamStatement> updateRelTable;
 
-        /* Generate merge operation for temp tables */
-        appendStmt(updateRelTable,
-                std::make_unique<RamSequence>(
-                        std::make_unique<RamMerge>(std::unique_ptr<RamRelationReference>(rrel[rel]->clone()),
-                                std::unique_ptr<RamRelationReference>(relNew[rel]->clone())),
-                        std::make_unique<RamSwap>(
-                                std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()),
-                                std::unique_ptr<RamRelationReference>(relNew[rel]->clone())),
-                        std::make_unique<RamClear>(
-                                std::unique_ptr<RamRelationReference>(relNew[rel]->clone()))));
+            /* Generate merge operation for temp tables */
+            appendStmt(updateRelTable,
+                    std::make_unique<RamSequence>(
+                            std::make_unique<RamMerge>(std::unique_ptr<RamRelationReference>(rrel[rel]->clone()),
+                                    std::unique_ptr<RamRelationReference>(relNew[rel]->clone())),
+                            std::make_unique<RamSwap>(
+                                    std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()),
+                                    std::unique_ptr<RamRelationReference>(relNew[rel]->clone())),
+                            std::make_unique<RamClear>(
+                                    std::unique_ptr<RamRelationReference>(relNew[rel]->clone()))));
 
-        /* Add update operations of relations to parallel statements */
-        updateTable->add(std::move(updateRelTable));
+            /* Add update operations of relations to parallel statements */
+            updateTable->add(std::move(updateRelTable));
+        }
     }
 #endif
 
