@@ -47,7 +47,13 @@ cmake-build-debug/
 
 stamp-h1
 /CMakeLists.txt
+
 .vscode
 GTAGS
 GRTAGS
 GPATH
+
+/man/souffle-compile.1
+/man/souffle-config.1
+/man/souffle-profile.1
+/man/souffle.1

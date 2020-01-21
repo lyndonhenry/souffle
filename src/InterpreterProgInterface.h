@@ -181,7 +181,7 @@ private:
 class InterpreterProgInterface : public SouffleProgram {
 public:
     InterpreterProgInterface(InterpreterEngine& interp)
-            : prog(*interp.getTranslationUnit().getProgram()), exec(interp),
+            : prog(interp.getTranslationUnit().getProgram()), exec(interp),
               symTable(interp.getTranslationUnit().getSymbolTable()) {
         uint32_t id = 0;
 
@@ -190,26 +190,20 @@ public:
         visitDepthFirst(prog, [&](const RamRelation& rel) { map[rel.getName()] = &rel; });
 
         // Build wrapper relations for Souffle's interface
-        for (auto& relPtr : exec.getRelationMap()) {
-            if (relPtr == nullptr) {
+        for (auto& relHandler : exec.getRelationMap()) {
+            if (relHandler == nullptr) {
                 // Skip droped relation.
                 continue;
             }
-            auto& name = relPtr->getName();
-            auto& interpreterRel = *relPtr;
+            auto& interpreterRel = **relHandler;
+            auto& name = interpreterRel.getName();
             assert(map[name]);
             const RamRelation& rel = *map[name];
 
             // construct types and names vectors
-            std::vector<std::string> types;
-            std::vector<std::string> attrNames;
-            for (size_t i = 0; i < rel.getArity(); i++) {
-                std::string t = rel.getArgTypeQualifier(i);
-                types.push_back(t);
+            std::vector<std::string> types = rel.getAttributeTypes();
+            std::vector<std::string> attrNames = rel.getAttributeNames();
 
-                std::string n = rel.getArg(i);
-                attrNames.push_back(n);
-            }
             auto* interface = new InterpreterRelInterface(
                     interpreterRel, symTable, rel.getName(), types, attrNames, id);
             interfaces.push_back(interface);
