@@ -42,7 +42,6 @@ cmake-build-debug/
 *.tgz
 *-pak
 *.deb
-#macosx
 .DS_Store
 
 stamp-h1
