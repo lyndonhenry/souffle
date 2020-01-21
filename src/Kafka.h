@@ -378,6 +378,7 @@ public:
         if (!topic) {
             // can only return null payload if the consumer is a nullptr 
             payload = std::vector<T>({std::numeric_limits<T>::max()});
+            return;
         }
         KafkaHelper::consumeConsumer(consumer_, topic, payload, timeoutMs);
 #ifdef KAFKA_DEBUG
