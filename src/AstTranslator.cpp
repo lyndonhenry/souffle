@@ -55,7 +55,7 @@ Next steps:
 //#define USE_GENERAL
 #define USE_GENERAL
 #define USE_GENERAL_PRODUCERS
-//#define USE_GENERAL_CONSUMERS
+#define USE_GENERAL_CONSUMERS
 
 #include "AstTranslator.h"
 #include "AstArgument.h"
