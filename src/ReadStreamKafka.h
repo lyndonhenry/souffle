@@ -64,6 +64,7 @@ protected:
         kafkaClient_.endConsumption(relationName_);
     }
     bool consumePayload() {
+        // @TODO: now will return only the null payload after endConsumption is called
         std::vector<RamDomain> nextPayload;
         kafkaClient_.consume(relationName_, nextPayload);
         std::vector<RamDomain> nullPayload{std::numeric_limits<RamDomain>::max()};

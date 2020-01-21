@@ -202,43 +202,39 @@ public:
         pollHandle(consumer, 1000);
     }
     template <typename T>
-    static void consumeConsumer(RdKafka::Consumer* consumer, RdKafka::Topic* topic, std::vector<T>& payload) {
+    static void consumeConsumer(RdKafka::Consumer* consumer, RdKafka::Topic* topic, std::vector<T>& payload, const int timeout_ms = -1) {
         assert(consumer);
         assert(topic);
         const int32_t partition = 0;
-        // @@@TODO (lh): get the timeout right here, -1 just means it will wait forever
-        const int timeout_ms = -1;
-        while (true) {
-            RdKafka::Message* message = consumer->consume(topic, partition, timeout_ms);
-            pollHandle(consumer, 0);
-            switch (message->err()) {
-                case RdKafka::ERR__TIMED_OUT: {
-                    delete message;
-                    break;
-                }
-                case RdKafka::ERR__PARTITION_EOF: {
-                    throwFatalException(message->errstr());
-                    break;
-                }
-                case RdKafka::ERR__UNKNOWN_TOPIC: {
-                    throwFatalException(message->errstr());
-                    break;
-                }
-                case RdKafka::ERR__UNKNOWN_PARTITION: {
-                    throwFatalException(message->errstr());
-                    break;
-                }
-                case RdKafka::ERR_NO_ERROR: {
-                    const T* rawPayload = static_cast<T*>(message->payload());
-                    payload = std::vector<T>(rawPayload, rawPayload + (message->len() / sizeof(T)));
-                    pollHandle(consumer, 0);
-                    delete message;
-                    return;
-                }
-                default: {
-                    throwFatalException(message->errstr());
-                    break;
-                }
+        RdKafka::Message* message = consumer->consume(topic, partition, timeout_ms);
+        pollHandle(consumer, 0);
+        switch (message->err()) {
+            case RdKafka::ERR__TIMED_OUT: {
+                delete message;
+                break;
+            }
+            case RdKafka::ERR__PARTITION_EOF: {
+                throwFatalException(message->errstr());
+                break;
+            }
+            case RdKafka::ERR__UNKNOWN_TOPIC: {
+                throwFatalException(message->errstr());
+                break;
+            }
+            case RdKafka::ERR__UNKNOWN_PARTITION: {
+                throwFatalException(message->errstr());
+                break;
+            }
+            case RdKafka::ERR_NO_ERROR: {
+                const T* rawPayload = static_cast<T*>(message->payload());
+                payload = std::vector<T>(rawPayload, rawPayload + (message->len() / sizeof(T)));
+                pollHandle(consumer, 0);
+                delete message;
+                break;
+            }
+            default: {
+                throwFatalException(message->errstr());
+                break;
             }
         }
     }
@@ -365,6 +361,7 @@ public:
     template <typename T>
     void produce(const std::string& topicName, std::vector<T>& payload) {
         RdKafka::Topic* topic = producerTopics_.at(topicName);
+        assert(topic);
 #ifdef KAFKA_DEBUG
         {
             std::stringstream stringstream;
@@ -375,9 +372,14 @@ public:
         KafkaHelper::produceProducer(producer_, topic, payload);
     }
     template <typename T>
-    void consume(const std::string& topicName, std::vector<T>& payload) {
+    void consume(const std::string& topicName, std::vector<T>& payload, const int timeoutMs = -1) {
         RdKafka::Topic* topic = consumerTopics_.at(topicName);
-        KafkaHelper::consumeConsumer(consumer_, topic, payload);
+        // @TODO (lh): this is a quick hack, yet a very effective one I don't know how to do in another way
+        if (!topic) {
+            // can only return null payload if the consumer is a nullptr 
+            payload = std::vector<T>({std::numeric_limits<T>::max()});
+        }
+        KafkaHelper::consumeConsumer(consumer_, topic, payload, timeoutMs);
 #ifdef KAFKA_DEBUG
         {
             std::stringstream stringstream;
