@@ -330,28 +330,34 @@ public:
         KafkaHelper::produceProducer(producer_, debugTopic_, debugPayload);
     }
 #endif
+    bool hasProductionBegun(const std::string& topicName) const {
+        return producerTopics_.find(topicName) != producerTopics_.end();
+    }
+    bool hasProductionEnded(const std::string& topicName) const {
+        assert(hasProductionBegun(topicName));
+        return producerTopics_.at(topicName) == nullptr;
+    }
     void beginProduction(const std::string& topicName) {
-        {
-            auto iterator = producerTopics_.find(topicName);
-            if (iterator != producerTopics_.end() && iterator->second != nullptr) {
-                return;
-            }
+        if (!hasProductionBegun(topicName) || hasProductionEnded(topicName)) {
+            producerTopics_[topicName] = KafkaHelper::createTopic(topicConf_, producer_, topicName);
         }
-        producerTopics_[topicName] = KafkaHelper::createTopic(topicConf_, producer_, topicName);
     }
     void endProduction(const std::string& topicName) {
         delete producerTopics_[topicName];
         producerTopics_[topicName] = nullptr;
     }
+    bool hasConsumptionBegun(const std::string& topicName) const {
+        return consumerTopics_.find(topicName) != producerTopics_.end();
+    }
+    bool hasConsumptionEnded(const std::string& topicName) const {
+        assert(hasConsumptionBegun(topicName));
+        return consumerTopics_.at(topicName) == nullptr;
+    }
     void beginConsumption(const std::string& topicName) {
-        {
-            auto iterator = consumerTopics_.find(topicName);
-            if (iterator != consumerTopics_.end() && iterator->second != nullptr) {
-                return;
-            }
+        if (!hasConsumptionBegun(topicName) || hasConsumptionEnded(topicName)) {
+            consumerTopics_[topicName] = KafkaHelper::createTopic(topicConf_, consumer_, topicName);
+            KafkaHelper::startConsumer(consumer_, consumerTopics_.at(topicName));
         }
-        consumerTopics_[topicName] = KafkaHelper::createTopic(topicConf_, consumer_, topicName);
-        KafkaHelper::startConsumer(consumer_, consumerTopics_.at(topicName));
     }
     void endConsumption(const std::string& topicName) {
         KafkaHelper::stopConsumer(consumer_, consumerTopics_.at(topicName));
@@ -374,12 +380,7 @@ public:
     template <typename T>
     void consume(const std::string& topicName, std::vector<T>& payload, const int timeoutMs = -1) {
         RdKafka::Topic* topic = consumerTopics_.at(topicName);
-        // @TODO (lh): this is a quick hack, yet a very effective one I don't know how to do in another way
-        if (!topic) {
-            // can only return null payload if the consumer is a nullptr 
-            payload = std::vector<T>({std::numeric_limits<T>::max()});
-            return;
-        }
+        assert(topic);
         KafkaHelper::consumeConsumer(consumer_, topic, payload, timeoutMs);
 #ifdef KAFKA_DEBUG
         {

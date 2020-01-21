@@ -63,10 +63,12 @@ protected:
     void endConsumption() {
         kafkaClient_.endConsumption(relationName_);
     }
-    bool consumePayload() {
-        // @TODO: now will return only the null payload after endConsumption is called
+    bool consumePayload(const int timeoutMs = -1) {
         std::vector<RamDomain> nextPayload;
-        kafkaClient_.consume(relationName_, nextPayload);
+        kafkaClient_.consume(relationName_, nextPayload, timeoutMs);
+        if (nextPayload.empty()) {
+            return true;
+        }
         std::vector<RamDomain> nullPayload{std::numeric_limits<RamDomain>::max()};
         if (nextPayload == nullPayload) {
             return false;
@@ -77,6 +79,12 @@ protected:
     }
     void pollConsumer() {
         kafkaClient_.pollConsumer();
+    }
+    bool hasConsumptionBegun() const {
+        return kafkaClient_.hasConsumptionBegun(relationName_);
+    }
+    bool hasConsumptionEnded() const {
+        return kafkaClient_.hasConsumptionBegun(relationName_);
     }
 
 public:
@@ -123,6 +131,41 @@ private:
     }
     void endReader() override {
         endConsumption();
+    }
+};
+// @TODO (lh): name this and all other classes better
+class ReadStreamKafkaWithTimeout : public ReadStreamKafka {
+public:
+    ReadStreamKafkaWithTimeout(const std::vector<bool>& symbolMask, SymbolTable& symbolTable,
+            const IODirectives& ioDirectives, const size_t numberOfHeights = 0, const bool provenance = false)
+            : ReadStreamKafka(symbolMask, symbolTable, ioDirectives, numberOfHeights, provenance) {}
+    virtual ~ReadStreamKafkaWithTimeout() = default;
+
+private:
+    void beginReader() override {
+        /*
+        if (!hasConsumptionBegun()) {
+            beginConsumption();
+        }
+        if (hasConsumptionEnded()) {
+            payload_ = std::vector<RamDomain>({std::numeric_limits<RamDomain>::max()});
+            return;
+        }
+
+
+        // @@@TODO: this is really tricky...
+        // - if payload is not consumed in 10 ms, exit but don't end consumption, and update the timeout with backoff
+        // - otherwise, make another attempt to consume with the same timeout
+
+        // if a payload is not consumed, or the consumer does not time out...
+        if (!consumePayload(10)) {
+            // ...then the halt message must be received, and the consumer must end
+            endConsumption();
+            payload_ = std::vector<RamDomain>({std::numeric_limits<RamDomain>::max()});
+        }
+        */
+    }
+    void endReader() override {
     }
 };
 class ReadStreamKafkaFactory : public ReadStreamFactory {
