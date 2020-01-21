@@ -86,6 +86,12 @@ protected:
     bool hasConsumptionEnded() const {
         return kafkaClient_.hasConsumptionBegun(relationName_);
     }
+    void setPayload(const std::vector<RamDomain>& payload) {
+        payload_ = payload;
+    }
+    const std::vector<RamDomain>& getPayload() const {
+        return payload_;
+    }
 
 public:
     std::unique_ptr<RamDomain[]> readNextTuple() override {
@@ -143,27 +149,38 @@ public:
 
 private:
     void beginReader() override {
-        /*
+        // if the topic has not yet been created...
         if (!hasConsumptionBegun()) {
+            // ...create the topic
             beginConsumption();
         }
+        // if a null payload has already been received...
         if (hasConsumptionEnded()) {
-            payload_ = std::vector<RamDomain>({std::numeric_limits<RamDomain>::max()});
+            // ...set the payload to the null payload and return
+            setPayload(std::vector<RamDomain>({std::numeric_limits<RamDomain>::max()}));
             return;
         }
-
-
-        // @@@TODO: this is really tricky...
-        // - if payload is not consumed in 10 ms, exit but don't end consumption, and update the timeout with backoff
-        // - otherwise, make another attempt to consume with the same timeout
-
-        // if a payload is not consumed, or the consumer does not time out...
-        if (!consumePayload(10)) {
-            // ...then the halt message must be received, and the consumer must end
-            endConsumption();
-            payload_ = std::vector<RamDomain>({std::numeric_limits<RamDomain>::max()});
+        // @@@TODO (lh): either use an appropriate timeoutMs, or implement an exponential backoff here if possible
+        // set a timeout for the consumer
+        const int timeoutMs = 1;
+        while (true) {
+            const auto prevPayloadSize = getPayload().size();
+            // if payload is not the null message...
+            if (consumePayload(timeoutMs)) {
+                const auto nextPayloadSize = getPayload().size();
+                // if the consumer has timed out...
+                if (nextPayloadSize == prevPayloadSize) {
+                    // ...exit the reader
+                    return;
+                }
+                // otherwise, continue until the consumer does time out
+            } else {
+                // set the payload to the null message
+                setPayload(std::vector<RamDomain>({std::numeric_limits<RamDomain>::max()}));
+                // end the consumer
+                endConsumption();
+            }
         }
-        */
     }
     void endReader() override {
     }
