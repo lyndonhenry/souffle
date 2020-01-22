@@ -190,10 +190,17 @@ int main(int argc, char** argv) {
                 {"transformed-datalog", '\4', "", "", false, "Output dl after all transformations."},
                 {"transformed-ram", '\6', "", "", false, "Output ram program after all transformations."},
                 {"parse-errors", '\5', "", "", false, "Show parsing errors, if any, then exit."},
+                // @TODO (lh): remove this when possible
+                {"custom", '\7', "FLAGS", "", false, ""},
                 {"help", 'h', "", "", false, "Display this help message."}};
         Global::config().processArgs(argc, argv, header.str(), footer.str(), options);
 
         // ------ command line arguments -------------
+
+        // @TODO (lh): remove this when possible
+        for (const auto& flag : splitString(Global::config().get("custom"), ',')) {
+            Global::config().set(flag, "true");
+        }
 
         /* for the version option, if given print the version text then exit */
         if (Global::config().has("version")) {

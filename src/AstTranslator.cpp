@@ -14,49 +14,6 @@
  *
  ***********************************************************************/
 
-/// @@@TODO (lh): HERE!!!
-/*
-Tested and working:
-
-- undef USE_GENERAL, test.dl
-- -ekafka, undef USE_GENERAL, input_output_numbers.dl
-- define USE_GENERAL, test.dl
-
-Compiling but not working:
-
-- -ekafka, define USE_GENERAL, input_output_numbers.dl
-
-Not tested:
-
-- define USE_GENERAL, input_output_numbers.dl (i.e. no -e)
-- -efile, define/undef USE_GENERAL,
-  test.dl/input_output_numbers.dl
-
-Not compiling:
-
-- define USE_GENERAL_PRODUCERS,
--efile/kafka/no -e, (must always have USE_GENERAL)
-
-Not implemented:
-
-- define USE_GENERAL_CONSUMERS,
-define USE_GENERAL_PRODUCERS/undef USE_GENERAL_PRODUCERS, (must
-always have USE_GENERAL, -ekafka)
-
-Next steps:
-
-1. try first "Not tested"
-2. try first "Compiling, but not working"
-3. try second "Not tested"
-4. do "Not compiling"
-*/
-
-// @@@TODO: see commit log for notes on this
-//#define USE_GENERAL
-#define USE_GENERAL
-#define USE_GENERAL_PRODUCERS
-#define USE_GENERAL_CONSUMERS
-
 #include "AstTranslator.h"
 #include "AstArgument.h"
 #include "AstAttribute.h"
@@ -156,11 +113,11 @@ void AstTranslator::makeRamStore(std::unique_ptr<RamStatement>& current, std::si
 
     ioDirectives.set("stratum", (scc == (size_t)-1) ? "master" : "slave");
 // @TODO (lh): ensure that this is done correctly with -a/--async
-#ifdef USE_GENERAL
+if (Global::config().has("use-general")) {
     ioDirectives.set("append", "true");
-#else
+} else {
     ioDirectives.set("append", "false");
-#endif
+}
 
     std::unique_ptr<RamStatement> statement = std::make_unique<RamStore>(
             (ramRelationReference == nullptr)
@@ -1192,9 +1149,7 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
     const auto& internalOutputRelations = internOuts;
     const auto& internalNonOutputRelationsWithExternalSuccessors = internNonOutsWithExternSuccs;
 
-#ifndef USE_GENERAL
     const auto* recursiveClauses = translationUnit.getAnalysis<RecursiveClauses>();
-#endif
 
     // initialize sections
     std::unique_ptr<RamStatement> preamble(new RamSequence());
@@ -1204,14 +1159,14 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
     // --- create preamble ---
 
     // clear mappings for temporary relations
-#ifndef USE_GENERAL
+if (!Global::config().has("use-general")) {
     rrel.clear();
     relDelta.clear();
     relNew.clear();
-#endif
+}
 
-#ifdef USE_GENERAL
-#ifndef USE_GENERAL_CONSUMERS
+if (Global::config().has("use-general")) {
+if (!Global::config().has("engine")) { 
     for (const AstRelation* relation : externalPredecessorRelationsOfScc) {
         if (!externAggNegPreds.count(relation)) {
             appendStmt(preamble,
@@ -1219,7 +1174,7 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                             std::unique_ptr<RamRelationReference>(rrel[relation]->clone())));
         }
     }
-#else
+} else {
     
     // @@@@@@@@@@@@@@@@@@@ HERE @@@@@@@@@@@@@@@@@@@@@@@@
 
@@ -1275,20 +1230,20 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                     std::unique_ptr<RamRelationReference>(relDelta[relation]->clone()));
         }
     }
-#endif
-#endif
+}
+}
 
     /* Compute non-recursive clauses for relations in scc and push
        the results in their delta tables. */
     for (const AstRelation* rel : internalRelationsOfScc) {
         std::unique_ptr<RamStatement> updateRelTable;
 
-#ifndef USE_GENERAL
+if (!Global::config().has("use-general")) {
         /* create two temporary tables for relaxed semi-naive evaluation */
         rrel[rel] = translateRelation(rel);
         relDelta[rel] = translateDeltaRelation(rel);
         relNew[rel] = translateNewRelation(rel);
-#endif
+}
 
         /* create update statements for fixpoint (even iteration) */
         appendStmt(updateRelTable,
@@ -1301,7 +1256,7 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                         std::make_unique<RamClear>(
                                 std::unique_ptr<RamRelationReference>(relNew[rel]->clone()))));
 
-#ifdef USE_GENERAL_PRODUCERS
+if (Global::config().has("use-general-producers")) {
         // @@@TODO (lh): this does not work as IO directives need ast relations, but delta and new are ram
         // relation references
         if (internalOutputRelations.count(rel)) {
@@ -1314,7 +1269,7 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                     (Global::config().has("engine")) ? Global::config().get("engine") : "file",
                     std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()));
         }
-#endif
+}
 
         /* measure update time for each relation */
         if (Global::config().has("profile")) {
@@ -1330,7 +1285,7 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                                       std::make_unique<RamClear>(
                                               std::unique_ptr<RamRelationReference>(relNew[rel]->clone()))));
 
-#ifndef USE_GENERAL
+if (!Global::config().has("use-general")) {
         /* Generate code for non-recursive part of relation */
         appendStmt(preamble, translateNonRecursiveRelation(translationUnit, *rel));
 
@@ -1338,13 +1293,13 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
         appendStmt(preamble,
                 std::make_unique<RamMerge>(std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()),
                         std::unique_ptr<RamRelationReference>(rrel[rel]->clone())));
-#endif
+}
 
         /* Add update operations of relations to parallel statements */
         updateTable->add(std::move(updateRelTable));
     }
 
-#ifdef USE_GENERAL
+if (Global::config().has("use-general")) {
     for (const AstRelation* rel : externalPredecessorRelationsOfScc) {
         if (!externAggNegPreds.count(rel)) {
                 std::unique_ptr<RamStatement> updateRelTable;
@@ -1364,7 +1319,7 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
             updateTable->add(std::move(updateRelTable));
         }
     }
-#endif
+}
 
     // --- build main loop ---
 
@@ -1375,9 +1330,9 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
         return std::find(internalRelationsOfScc.begin(), internalRelationsOfScc.end(), rel) !=
                internalRelationsOfScc.end();
     };
-#ifdef USE_GENERAL
+if (Global::config().has("use-general")) {
     (void)isInSameSCC;
-#endif
+}
 
     /* Compute temp for the current tables */
     for (const AstRelation* rel : internalRelationsOfScc) {
@@ -1387,18 +1342,18 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
         for (size_t i = 0; i < rel->clauseSize(); i++) {
             AstClause* cl = rel->getClause(i);
 
-#ifndef USE_GENERAL
+if (!Global::config().has("use-general")) {
             // skip non-recursive clauses
             if (!recursiveClauses->recursive(cl)) {
                 continue;
             }
-#endif
+}
 
             // each recursive rule results in several operations
             int version = 0;
             const auto& atoms = cl->getAtoms();
 
-#ifdef USE_GENERAL
+if (Global::config().has("use-general")) {
             if (atoms.size() == 0) {
                 // modify the processed rule to use relDelta and write to relNew
                 std::unique_ptr<AstClause> r1(cl->clone());
@@ -1417,18 +1372,18 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
 
                 // @TODO (lh): handle logging, profiling, execution plans, and provenance, where possible
             }
-#endif
+}
 
             for (size_t j = 0; j < atoms.size(); ++j) {
                 const AstAtom* atom = atoms[j];
                 const AstRelation* atomRelation = getAtomRelation(atom, program);
 
-#ifndef USE_GENERAL
+if (!Global::config().has("use-general")) {
                 // only interested in atoms within the same SCC
                 if (!isInSameSCC(atomRelation)) {
                     continue;
                 }
-#endif
+}
 
                 // modify the processed rule to use relDelta and write to relNew
                 std::unique_ptr<AstClause> r1(cl->clone());
@@ -1450,15 +1405,15 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
 
                 // reduce R to P ...
                 for (size_t k = j + 1; k < atoms.size(); k++) {
-#ifndef USE_GENERAL
+if (!Global::config().has("use-general")) {
                     if (isInSameSCC(getAtomRelation(atoms[k], program))) {
-#endif
+}
                         AstAtom* cur = r1->getAtoms()[k]->clone();
                         cur->setName(relDelta[getAtomRelation(atoms[k], program)]->get()->getName());
                         r1->addToBody(std::make_unique<AstNegation>(std::unique_ptr<AstAtom>(cur)));
-#ifndef USE_GENERAL
+if (!Global::config().has("use-general")) {
                     }
-#endif
+}
                 }
 
                 std::unique_ptr<RamStatement> rule =
@@ -1809,13 +1764,13 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
     // obtain the schedule of relations expired at each index of the topological order
     const auto& expirySchedule = translationUnit.getAnalysis<RelationSchedule>()->schedule();
 
-#ifdef USE_GENERAL
+if (Global::config().has("use-general")) {
     for (const AstRelation* rel : translationUnit.getProgram()->getRelations()) {
         rrel[rel] = translateRelation(rel);
         relDelta[rel] = translateDeltaRelation(rel);
         relNew[rel] = translateNewRelation(rel);
     }
-#endif
+}
 
     // start with an empty sequence of ram statements
     std::unique_ptr<RamStatement> res = std::make_unique<RamSequence>();
@@ -1880,7 +1835,7 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
         std::unique_ptr<RamStatement> current;
 
         // @@@TODO: move this down to the conditional,
-        // then just use #ifdef USE_GENERAL for generalisation,
+        // then just use if (Global::config().has("use-general")) { for generalisation,
         // and change cli option "async" to "append" for now,
         // then get working with blocking kafka/file IO and
         // USE_GENERAL defined, then start with *production*
@@ -1891,11 +1846,7 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
         // then move on to CONSUMPTION
 
         // find out if the current SCC is recursive
-#ifndef USE_GENERAL
-        const auto isRecursive = sccGraph.isRecursive(scc);
-#else
-        const auto isRecursive = true;
-#endif
+const auto isRecursive =  (!Global::config().has("use-general")) ? sccGraph.isRecursive(scc): true;
 
         // make variables for particular sets of relations contained within the current SCC, and,
         // predecessors and successor SCCs thereof
@@ -1930,7 +1881,7 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
                         makeRamLoad(current, scc, relation, "output-dir", ".facts");
                     }
                 }
-#ifndef USE_GENERAL_CONSUMERS
+if (!Global::config().has("use-general")) {
                 // load all external output predecessor relations from the output dir with a .csv
                 // extension
                 for (const auto& relation : externOutPreds) {
@@ -1945,7 +1896,7 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
                         makeRamLoad(current, scc, relation, "output-dir", ".facts");
                     }
                 }
-#endif
+}
             }
         }
 
@@ -1955,7 +1906,7 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
                                          translationUnit, *((const AstRelation*)*allInterns.begin()))
                                : translateRecursiveRelation(translationUnit, scc);
         appendStmt(current, std::move(bodyStatement));
-#ifndef USE_GENERAL_PRODUCERS
+if (!Global::config().has("use-general-producers")) {
         {
             // if a communication engine is enabled...
             if (Global::config().has("engine")) {
@@ -1971,7 +1922,7 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
                 makeRamStore(current, scc, relation, "output-dir", ".csv");
             }
         }
-#endif
+}
         {
             // if a communication engine is enabled and is kafka...
             if (Global::config().get("engine") == "kafka") {

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -ouex
+set -oue pipefail
 
 function ensure_kafka_topic_created() {
     local KAFKA_HOST="${1}"
@@ -248,6 +248,133 @@ function ensure_souffle_test_case_is_built() {
     ensure_souffle_program_is_built "${SOUFFLE_ROOT}/src/souffle" "${TEST_CASE_TO}/$(basename "${TEST_CASE_TO}").dl" "${SOUFFLE_ARGS}"
 }
 
+function ensure_test_case_passes() {
+    local TEST_CASE="${1}"
+    local SOUFFLE_ARGS="${2:-}"
+    local EXE_ARGS="${3:-}"
+    local TESTSUITE_DIR="${PWD}/tests/testsuite.dir"
+    local TEST_CASE_ROOT="${TESTSUITE_DIR}/${TEST_CASE}"
+    local EXE="${TEST_CASE_ROOT}/$(basename ${TEST_CASE})"
+    # remove the testsuite directotry
+    rm -rf "${TESTSUITE_DIR}"
+    # ensute that test case is built
+    ensure_souffle_test_case_is_built "${PWD}" "${TEST_CASE}" "${SOUFFLE_ARGS}"
+    # show the line count of the expected output files
+    wc -l "${TEST_CASE_ROOT}"/*.csv > "${TEST_CASE_ROOT}"/expected.txt 
+    # remove the expected output files, these are overridden by actual outputs on execution
+    rm -rf "${TEST_CASE_ROOT}"/*.csv
+    # run the program
+    ${EXE} "${3:-}"
+    # show the line count of the actual output files, the user should compare this to the expected produced above
+    wc -l "${TEST_CASE_ROOT}"/*.csv > "${TEST_CASE_ROOT}"/actual.txt 
+    # diff the actual vs expected output
+    if [ "$(diff "${TEST_CASE_ROOT}"/actual.txt "${TEST_CASE_ROOT}"/expected.txt)" ]
+    then
+        echo
+        echo "ERROR"
+        echo " TEST_CASE='${TEST_CASE}'"
+        echo " SOUFFLE_ARGS='${SOUFFLE_ARGS}'"
+        echo " EXE_ARGS='${EXE_ARGS}'"
+        echo " ACTUAL='"
+        cat "${TEST_CASE_ROOT}"/actual.txt
+        echo " '"
+        echo " EXPECTED='"
+        cat "${TEST_CASE_ROOT}"/expected.txt
+        echo " '"
+        echo " DIFF='"
+        diff "${TEST_CASE_ROOT}"/actual.txt "${TEST_CASE_ROOT}"/expected.txt
+        echo " '"
+        echo
+        read -p "Continue?"
+    else
+        echo
+        echo "SUCCESS"
+        echo " TEST_CASE='${TEST_CASE}'"
+        echo " SOUFFLE_ARGS='${SOUFFLE_ARGS}'"
+        echo " EXE_ARGS='${EXE_ARGS}'"
+        echo " ACTUAL='"
+        cat "${TEST_CASE_ROOT}"/actual.txt
+        echo " '"
+        echo " EXPECTED='"
+        cat "${TEST_CASE_ROOT}"/expected.txt
+        echo " '"
+        echo " DIFF='"
+        diff "${TEST_CASE_ROOT}"/actual.txt "${TEST_CASE_ROOT}"/expected.txt
+        echo " '"
+        echo
+    fi
+}
+
+function ensure_kafka_test_case_passes() {
+    local KAFKA_HOST="${1}"
+    local TEST_CASE="${2}"
+    local SOUFFLE_ARGS="${3:-}"
+    local EXE_ARGS="${4:-}"
+    local TESTSUITE_DIR="${PWD}/tests/testsuite.dir"
+    local TEST_CASE_ROOT="${TESTSUITE_DIR}/${TEST_CASE}"
+    local EXE="${TEST_CASE_ROOT}/$(basename ${TEST_CASE})"
+    # remove the testsuite directotry
+    rm -rf "${TESTSUITE_DIR}"
+    # ensute that test case is built
+    ensure_souffle_test_case_is_built "${PWD}" "${TEST_CASE}" "${SOUFFLE_ARGS}"
+    # show the line count of the expected output files
+    wc -l "${TEST_CASE_ROOT}"/*.csv > "${TEST_CASE_ROOT}"/expected.txt 
+    # remove the expected output files, these are overridden by actual outputs on execution
+    rm -rf "${TEST_CASE_ROOT}"/*.csv
+    # extract stratum names and relation names from json metadata
+    local JSON_DATA=$(${EXE} -i-2)
+    local RELATION_NAMES="$(echo ${JSON_DATA} | jq -r '.RelationNames | .[]')"
+    local STRATUM_NAMES="$(echo ${JSON_DATA} | jq -r '.StratumNames | .[]')"
+    # ensure that all program specific topics are initially empty by deleting them
+    for_each_async "ensure_kafka_topic_deleted ${KAFKA_HOST}" ${RELATION_NAMES}
+    wait
+    sleep 1s
+    # ensure that all program specific topics exist
+    for_each_async "ensure_kafka_topic_created ${KAFKA_HOST}" ${RELATION_NAMES}
+    wait
+    # run all program strata as subprograms
+    for_each_async "${EXE} -Xmetadata.broker.list=${KAFKA_HOST} -i" -1 ${STRATUM_NAMES}
+    wait
+    # show the line count of the actual output files, the user should compare this to the expected produced above
+    wc -l "${TEST_CASE_ROOT}"/*.csv > "${TEST_CASE_ROOT}"/actual.txt 
+    # diff the actual vs expected output
+    if [ "$(diff "${TEST_CASE_ROOT}"/actual.txt "${TEST_CASE_ROOT}"/expected.txt)" ]
+    then
+        echo
+        echo "ERROR"
+        echo " TEST_CASE='${TEST_CASE}'"
+        echo " SOUFFLE_ARGS='${SOUFFLE_ARGS}'"
+        echo " EXE_ARGS='${EXE_ARGS}'"
+        echo " ACTUAL='"
+        cat "${TEST_CASE_ROOT}"/actual.txt
+        echo " '"
+        echo " EXPECTED='"
+        cat "${TEST_CASE_ROOT}"/expected.txt
+        echo " '"
+        echo " DIFF='"
+        diff "${TEST_CASE_ROOT}"/actual.txt "${TEST_CASE_ROOT}"/expected.txt
+        echo " '"
+        echo
+        read -p "Continue?"
+    else
+        echo
+        echo "SUCCESS"
+        echo " TEST_CASE='${TEST_CASE}'"
+        echo " SOUFFLE_ARGS='${SOUFFLE_ARGS}'"
+        echo " EXE_ARGS='${EXE_ARGS}'"
+        echo " ACTUAL='"
+        cat "${TEST_CASE_ROOT}"/actual.txt
+        echo " '"
+        echo " EXPECTED='"
+        cat "${TEST_CASE_ROOT}"/expected.txt
+        echo " '"
+        echo " DIFF='"
+        diff "${TEST_CASE_ROOT}"/actual.txt "${TEST_CASE_ROOT}"/expected.txt
+        echo " '"
+        echo
+    fi
+}
+
 function main() {
 
     # ensure that we are in the root directory of the souffle project
@@ -257,6 +384,7 @@ function main() {
     local TESTSUITE_DIR="${PWD}/tests/testsuite.dir"
 
     # @@@TODO: try with 'input_output_numbers_recursive'
+
     # set the test case used by this script
     local TEST_CASE="example/input_output_numbers"
 
@@ -272,94 +400,36 @@ function main() {
     # ensure that souffle is built for kafka
     ensure_souffle_is_built_for_kafka "${PWD}"
 
-    # set the executable for the test case
-    local EXE="${TESTSUITE_DIR}/${TEST_CASE}/$(basename ${TEST_CASE})"
-
-    # @@@TODO (lh): ensure that this works
-
-    # remove the testsuite directotry
-    rm -rf "${TESTSUITE_DIR}"
-    # ensute that test case is built
-    ensure_souffle_test_case_is_built "${PWD}" "${TEST_CASE}"
-    # show the line count of the expected output files
-    wc -l "${TESTSUITE_DIR}/${TEST_CASE}"/*.csv
-    # remove the expected output files, these are overridden by actual outputs on execution
-    rm -rf "${TESTSUITE_DIR}/${TEST_CASE}"/*.csv
-    # run the program
-    ${EXE}
-    # show the line count of the actual output files, the user should compare this to the expected produced above
-    wc -l "${TESTSUITE_DIR}/${TEST_CASE}"/*.csv
-
-    # prompt the user to continue with cleanup
-    # @TODO
-    ## read -p "Continue?"
-
-    # @@@TODO (lh): ensure that this also works
-
-    # remove the testsuite directotry
-    rm -rf "${TESTSUITE_DIR}"
-    # ensute that test case is built with -efile
-    ensure_souffle_test_case_is_built "${PWD}" "${TEST_CASE}" "-efile"
-    # show the line count of the expected output files
-    wc -l "${TESTSUITE_DIR}/${TEST_CASE}"/*.csv
-    # remove the expected output files, these are overridden by actual outputs on execution
-    rm -rf "${TESTSUITE_DIR}/${TEST_CASE}"/*.csv
-    # run the program
-    ${EXE}
-    # show the line count of the actual output files, the user should compare this to the expected produced above
-    wc -l "${TESTSUITE_DIR}/${TEST_CASE}"/*.csv
-
-    # prompt the user to continue with cleanup
-    # @TODO
-    ##read -p "Continue?"
-
-    # remove the testsuite directotry
-    rm -rf "${TESTSUITE_DIR}"
-
-    # ensure that test case is built with -ekafka
-    ensure_souffle_test_case_is_built "${PWD}" "${TEST_CASE}" "-ekafka"
-
-    # print program metadata in json format, schema is {"StratumNames": [...], "RelationNames": [...]}
-    ${EXE} -i-2 | jq
-
-    # extract stratum names and relation names from json metadata
-    local JSON_DATA=$(${EXE} -i-2)
-    local RELATION_NAMES="$(echo ${JSON_DATA} | jq -r '.RelationNames | .[]')"
-    local STRATUM_NAMES="$(echo ${JSON_DATA} | jq -r '.StratumNames | .[]')"
-
     # start the kafka broker
     ensure_docker_compose_is_up "${KAFKA_DOCKER_PATH}"
 
     # ensure that the debugging topic exists
     ensure_kafka_topic_created ${KAFKA_HOST} _DEBUG_
 
-    # ensure that all program specific topics are initially empty by deleting them
-    for_each_async "ensure_kafka_topic_deleted ${KAFKA_HOST}" ${RELATION_NAMES}
-    wait
 
-    sleep 1s
+    # set the executable for the test case
+    local EXE="${TESTSUITE_DIR}/${TEST_CASE}/$(basename ${TEST_CASE})"
 
-    # ensure that all program specific topics exist
-    for_each_async "ensure_kafka_topic_created ${KAFKA_HOST}" ${RELATION_NAMES}
-    wait
+    # @@@TODO (lh): GET ALL TEST CASES PASSING!!!
 
-    # show the line count of the expected output files
-    wc -l "${TESTSUITE_DIR}/${TEST_CASE}"/*.csv
+    # @TODO (lh): get working, update comment
 
-    # remove the expected output files, these are overridden by actual outputs on execution
-    rm -rf "${TESTSUITE_DIR}/${TEST_CASE}"/*.csv
+    # run tests for no -e
+    ensure_test_case_passes "${TEST_CASE}"
+    ensure_test_case_passes "${TEST_CASE}" --custom=use-general
+    #ensure_test_case_passes "${TEST_CASE}" --custom=use-general,use-general-producers
 
-    # run all program strata as subprograms
-    # the master stratum at index -1 reads input .facts from the fact-dir, 
-    # produces input relations to topics, consumes output relations to topics, 
-    # and writes output .csv to the output-dir
-    # the slave strata at all other indices will consume input and intermediate 
-    # relations and produce output and intermediate relations on kafka topics
-    for_each_async "${EXE} -Xmetadata.broker.list=${KAFKA_HOST} -i" -1 ${STRATUM_NAMES}
-    wait
+    # run tests for -efile
+    ensure_test_case_passes "${TEST_CASE}" "-efile"
+    ensure_test_case_passes "${TEST_CASE}" "-efile --custom=use-general"
+    #ensure_test_case_passes "${TEST_CASE}" "-efile --custom=use-general,use-general-producers"
 
-    # show the line count of the actual output files, the user should compare this to the expected produced above
-    wc -l "${TESTSUITE_DIR}/${TEST_CASE}"/*.csv
+    # run tests for -ekafka, tested and working
+    ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka" 
+    ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka --custom=use-general"
+    ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka --custom=use-general,use-general-producers"
+    # @@@TODO: do this last test case only for kafka, do streaming consumers, also remove use-general-producers when working
+    ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka --custom=use-general,use-general-producers,use-general-consumers"
 
     # prompt the user to continue with cleanup
     read -p "Continue?"
