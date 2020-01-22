@@ -410,8 +410,6 @@ function main() {
     # set the executable for the test case
     local EXE="${TESTSUITE_DIR}/${TEST_CASE}/$(basename ${TEST_CASE})"
 
-    # @@@TODO (lh): ensure that all this works
-
     # run tests for no -e
     ensure_test_case_passes "${TEST_CASE}"
     ensure_test_case_passes "${TEST_CASE}" --custom=use-general
@@ -420,8 +418,7 @@ function main() {
     # run tests for -efile
     ensure_test_case_passes "${TEST_CASE}" "-efile"
     ensure_test_case_passes "${TEST_CASE}" "-efile --custom=use-general"
-    # @@@TODO: why is this one not working?
-    #ensure_test_case_passes "${TEST_CASE}" "-efile --custom=use-general,use-general-producers"
+    ensure_test_case_passes "${TEST_CASE}" "-efile --custom=use-general,use-general-producers"
 
     # run tests for -ekafka, tested and working
     ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka" 

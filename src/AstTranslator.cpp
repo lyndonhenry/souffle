@@ -1186,13 +1186,21 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
         } else {
 
             // @@@TODO: this is ugly, see if you can clean it up using the above
-            if (Global::config().get("engine") == "file") {
+            if (Global::config().get("engine") == "file" && Global::config().has("use-general-producers")) {
                 for (const AstRelation* relation : internIns) {
+                    if (internOuts.count(relation)) {
+                        makeRamStore(preamble, scc, relation, "output-dir", ".csv");
+                    } else {
+                        makeRamStore(preamble, scc, relation, "output-dir", ".facts");
+                    }
+                    /*
+                    // @TODO: old version
                     // need this merge to populate initial news with inputs so deltas are written
                     appendStmt(preamble,
                             std::make_unique<RamMerge>(
                                     std::unique_ptr<RamRelationReference>(relNew[relation]->clone()),
                                     std::unique_ptr<RamRelationReference>(rrel[relation]->clone())));
+                    */
                 }
             }
 
