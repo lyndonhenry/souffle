@@ -1948,7 +1948,8 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
         if (hasAtLeastOneStrata) {
             os << "switch (stratumIndex) {\n";
             {
-                // otherwise use stratum 0 if index is -2
+                // @TODO (lh): the conditional here is an ugly hack to make things work with -efile
+                // otherwise use stratum -1 if index is -2
                 os << "case (size_t) -2:\ngoto STRATUM_0;\nbreak;\n";
             }
             os << ss.str();

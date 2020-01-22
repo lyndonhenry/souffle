@@ -112,12 +112,12 @@ void AstTranslator::makeRamStore(std::unique_ptr<RamStatement>& current, std::si
     ioDirectives.set(Global::config().get("engine"), engineDirectives);
 
     ioDirectives.set("stratum", (scc == (size_t)-1) ? "master" : "slave");
-// @TODO (lh): ensure that this is done correctly with -a/--async
-if (Global::config().has("use-general")) {
-    ioDirectives.set("append", "true");
-} else {
-    ioDirectives.set("append", "false");
-}
+    // @TODO (lh): ensure that this is done correctly with -a/--async
+    if (Global::config().has("use-general")) {
+        ioDirectives.set("append", "true");
+    } else {
+        ioDirectives.set("append", "false");
+    }
 
     std::unique_ptr<RamStatement> statement = std::make_unique<RamStore>(
             (ramRelationReference == nullptr)
@@ -1159,91 +1159,110 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
     // --- create preamble ---
 
     // clear mappings for temporary relations
-if (!Global::config().has("use-general")) {
-    rrel.clear();
-    relDelta.clear();
-    relNew.clear();
-}
+    if (!Global::config().has("use-general")) {
+        rrel.clear();
+        relDelta.clear();
+        relNew.clear();
+    }
 
-if (Global::config().has("use-general")) {
-if (!Global::config().has("engine")) { 
-    for (const AstRelation* relation : externalPredecessorRelationsOfScc) {
-        if (!externAggNegPreds.count(relation)) {
-            appendStmt(preamble,
-                    std::make_unique<RamMerge>(std::unique_ptr<RamRelationReference>(relDelta[relation]->clone()),
-                            std::unique_ptr<RamRelationReference>(rrel[relation]->clone())));
+    if (Global::config().has("use-general")) {
+        if (!Global::config().has("engine")) {
+            for (const AstRelation* relation : externalPredecessorRelationsOfScc) {
+                if (!externAggNegPreds.count(relation)) {
+                    appendStmt(preamble,
+                            std::make_unique<RamMerge>(
+                                    std::unique_ptr<RamRelationReference>(relDelta[relation]->clone()),
+                                    std::unique_ptr<RamRelationReference>(rrel[relation]->clone())));
+                }
+            }
+            if (Global::config().has("use-general-producers")) {
+                for (const AstRelation* relation : internIns) {
+                    appendStmt(preamble,
+                            std::make_unique<RamMerge>(
+                                    std::unique_ptr<RamRelationReference>(relNew[relation]->clone()),
+                                    std::unique_ptr<RamRelationReference>(rrel[relation]->clone())));
+                }
+            }
+        } else {
+
+            // @@@TODO: this is ugly, see if you can clean it up using the above
+            if (Global::config().get("engine") == "file") {
+                for (const AstRelation* relation : internIns) {
+                    // need this merge to populate initial news with inputs so deltas are written
+                    appendStmt(preamble,
+                            std::make_unique<RamMerge>(
+                                    std::unique_ptr<RamRelationReference>(relNew[relation]->clone()),
+                                    std::unique_ptr<RamRelationReference>(rrel[relation]->clone())));
+                }
+            }
+
+            // @@@@@@@@@@@@@@@@@@@ HERE @@@@@@@@@@@@@@@@@@@@@@@@
+
+            // @@@@@@@@@@@@@TODO
+            // Ok, for halting with continuous consumption, need to do as follows:
+            // - while (every @new_rel does not contain a halt)
+            // -- for each rel
+            // --- if @new_rel is empty (does not contain a halt, has not recvd)
+            // ---- recv to @new_myRel
+            // --- if @new_myRel does not contain halt AND @new_myRela is not empty
+            // ---- merge new_myRel with @delta_myRel
+            // ---- exit the loop
+            // - endwhile
+            // - if (every @new_rel does contain a halt) and (all the deltas are empty)
+            // -- exit the program
+            // - otherwise
+            // -- do seminaive again
+            // Yay! Can also use exponential backoff for consumer timeouts...
+
+            /*
+                // @TODO: get this working, it is the next step
+                // so just after the delta and new have been swapped and the new is clear
+                LOOP
+                - forall @new_rel :
+                - IF (@new_rel = ∅)
+                - -  LOAD DATA FOR @new_rel FROM {...}
+                - IF (NOT (@new_rel) = ∅))
+                - - IF (NOT ((number(-1)) ∈ @new_rel)
+                - - - MERGE @delta_rel WITH @new_rel
+                - - - EXIT ()
+                END LOOP
+                ...
+                // then in outer loop
+                EXIT ((forall @new_rel : (NOT ((number(-1)) ∈ @new_rel))
+                    AND (forall @delta_rel : (@new_rel = ∅)))
+            */
+
+            // load all external output predecessor relations from the output dir with a .csv extension
+            for (const auto& relation : externOutPreds) {
+                if (!externAggNegPreds.count(relation)) {
+                    makeRamLoad(preamble, scc, relation, "output-dir", ".csv",
+                            (Global::config().has("engine")) ? Global::config().get("engine") : "file",
+                            std::unique_ptr<RamRelationReference>(relDelta[relation]->clone()));
+                }
+            }
+            // load all external non-output predecessor relations from the output dir with a .facts
+            // extension
+            for (const auto& relation : externNonOutPreds) {
+                if (!externAggNegPreds.count(relation)) {
+                    makeRamLoad(preamble, scc, relation, "output-dir", ".facts",
+                            (Global::config().has("engine")) ? Global::config().get("engine") : "file",
+                            std::unique_ptr<RamRelationReference>(relDelta[relation]->clone()));
+                }
+            }
         }
     }
-} else {
-    
-    // @@@@@@@@@@@@@@@@@@@ HERE @@@@@@@@@@@@@@@@@@@@@@@@
-
-    // @@@@@@@@@@@@@TODO
-    // Ok, for halting with continuous consumption, need to do as follows:
-    // - while (every @new_rel does not contain a halt)
-    // -- for each rel
-    // --- if @new_rel is empty (does not contain a halt, has not recvd)
-    // ---- recv to @new_myRel
-    // --- if @new_myRel does not contain halt AND @new_myRela is not empty
-    // ---- merge new_myRel with @delta_myRel
-    // ---- exit the loop
-    // - endwhile
-    // - if (every @new_rel does contain a halt) and (all the deltas are empty)
-    // -- exit the program
-    // - otherwise
-    // -- do seminaive again
-    // Yay! Can also use exponential backoff for consumer timeouts...
-
-    /*
-        // @TODO: get this working, it is the next step
-        // so just after the delta and new have been swapped and the new is clear
-        LOOP
-        - forall @new_rel : 
-        - IF (@new_rel = ∅)
-        - -  LOAD DATA FOR @new_rel FROM {...}
-        - IF (NOT (@new_rel) = ∅)) 
-        - - IF (NOT ((number(-1)) ∈ @new_rel)
-        - - - MERGE @delta_rel WITH @new_rel
-        - - - EXIT ()
-        END LOOP
-        ...
-        // then in outer loop
-        EXIT ((forall @new_rel : (NOT ((number(-1)) ∈ @new_rel)) 
-            AND (forall @delta_rel : (@new_rel = ∅)))
-    */
-    
-
-    // load all external output predecessor relations from the output dir with a .csv extension
-    for (const auto& relation : externOutPreds) {
-        if (!externAggNegPreds.count(relation)) {
-            makeRamLoad(preamble, scc, relation, "output-dir", ".csv",
-                    (Global::config().has("engine")) ? Global::config().get("engine") : "file",
-                    std::unique_ptr<RamRelationReference>(relDelta[relation]->clone()));
-        }
-    }
-    // load all external non-output predecessor relations from the output dir with a .facts
-    // extension
-    for (const auto& relation : externNonOutPreds) {
-        if (!externAggNegPreds.count(relation)) {
-            makeRamLoad(preamble, scc, relation, "output-dir", ".facts", 
-                    (Global::config().has("engine")) ? Global::config().get("engine") : "file",
-                    std::unique_ptr<RamRelationReference>(relDelta[relation]->clone()));
-        }
-    }
-}
-}
 
     /* Compute non-recursive clauses for relations in scc and push
        the results in their delta tables. */
     for (const AstRelation* rel : internalRelationsOfScc) {
         std::unique_ptr<RamStatement> updateRelTable;
 
-if (!Global::config().has("use-general")) {
-        /* create two temporary tables for relaxed semi-naive evaluation */
-        rrel[rel] = translateRelation(rel);
-        relDelta[rel] = translateDeltaRelation(rel);
-        relNew[rel] = translateNewRelation(rel);
-}
+        if (!Global::config().has("use-general")) {
+            /* create two temporary tables for relaxed semi-naive evaluation */
+            rrel[rel] = translateRelation(rel);
+            relDelta[rel] = translateDeltaRelation(rel);
+            relNew[rel] = translateNewRelation(rel);
+        }
 
         /* create update statements for fixpoint (even iteration) */
         appendStmt(updateRelTable,
@@ -1256,20 +1275,20 @@ if (!Global::config().has("use-general")) {
                         std::make_unique<RamClear>(
                                 std::unique_ptr<RamRelationReference>(relNew[rel]->clone()))));
 
-if (Global::config().has("use-general-producers")) {
-        // @@@TODO (lh): this does not work as IO directives need ast relations, but delta and new are ram
-        // relation references
-        if (internalOutputRelations.count(rel)) {
-            makeRamStore(updateRelTable, scc, rel, "output-dir", ".csv", "default",
-                    (Global::config().has("engine")) ? Global::config().get("engine") : "file",
-                    std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()));
-        } else if (Global::config().has("engine") &&
-                   internalNonOutputRelationsWithExternalSuccessors.count(rel)) {
-            makeRamStore(updateRelTable, scc, rel, "output-dir", ".facts", "default",
-                    (Global::config().has("engine")) ? Global::config().get("engine") : "file",
-                    std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()));
+        if (Global::config().has("use-general-producers")) {
+            // @@@TODO (lh): this does not work as IO directives need ast relations, but delta and new are ram
+            // relation references
+            if (internalOutputRelations.count(rel)) {
+                makeRamStore(updateRelTable, scc, rel, "output-dir", ".csv", "default",
+                        (Global::config().has("engine")) ? Global::config().get("engine") : "file",
+                        std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()));
+            } else if (Global::config().has("engine") &&
+                       internalNonOutputRelationsWithExternalSuccessors.count(rel)) {
+                makeRamStore(updateRelTable, scc, rel, "output-dir", ".facts", "default",
+                        (Global::config().has("engine")) ? Global::config().get("engine") : "file",
+                        std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()));
+            }
         }
-}
 
         /* measure update time for each relation */
         if (Global::config().has("profile")) {
@@ -1285,41 +1304,42 @@ if (Global::config().has("use-general-producers")) {
                                       std::make_unique<RamClear>(
                                               std::unique_ptr<RamRelationReference>(relNew[rel]->clone()))));
 
-if (!Global::config().has("use-general")) {
-        /* Generate code for non-recursive part of relation */
-        appendStmt(preamble, translateNonRecursiveRelation(translationUnit, *rel));
+        if (!Global::config().has("use-general")) {
+            /* Generate code for non-recursive part of relation */
+            appendStmt(preamble, translateNonRecursiveRelation(translationUnit, *rel));
 
-        /* Generate merge operation for temp tables */
-        appendStmt(preamble,
-                std::make_unique<RamMerge>(std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()),
-                        std::unique_ptr<RamRelationReference>(rrel[rel]->clone())));
-}
+            /* Generate merge operation for temp tables */
+            appendStmt(preamble,
+                    std::make_unique<RamMerge>(std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()),
+                            std::unique_ptr<RamRelationReference>(rrel[rel]->clone())));
+        }
 
         /* Add update operations of relations to parallel statements */
         updateTable->add(std::move(updateRelTable));
     }
 
-if (Global::config().has("use-general")) {
-    for (const AstRelation* rel : externalPredecessorRelationsOfScc) {
-        if (!externAggNegPreds.count(rel)) {
+    if (Global::config().has("use-general")) {
+        for (const AstRelation* rel : externalPredecessorRelationsOfScc) {
+            if (!externAggNegPreds.count(rel)) {
                 std::unique_ptr<RamStatement> updateRelTable;
 
-            /* Generate merge operation for temp tables */
-            appendStmt(updateRelTable,
-                    std::make_unique<RamSequence>(
-                            std::make_unique<RamMerge>(std::unique_ptr<RamRelationReference>(rrel[rel]->clone()),
-                                    std::unique_ptr<RamRelationReference>(relNew[rel]->clone())),
-                            std::make_unique<RamSwap>(
-                                    std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()),
-                                    std::unique_ptr<RamRelationReference>(relNew[rel]->clone())),
-                            std::make_unique<RamClear>(
-                                    std::unique_ptr<RamRelationReference>(relNew[rel]->clone()))));
+                /* Generate merge operation for temp tables */
+                appendStmt(updateRelTable,
+                        std::make_unique<RamSequence>(
+                                std::make_unique<RamMerge>(
+                                        std::unique_ptr<RamRelationReference>(rrel[rel]->clone()),
+                                        std::unique_ptr<RamRelationReference>(relNew[rel]->clone())),
+                                std::make_unique<RamSwap>(
+                                        std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()),
+                                        std::unique_ptr<RamRelationReference>(relNew[rel]->clone())),
+                                std::make_unique<RamClear>(
+                                        std::unique_ptr<RamRelationReference>(relNew[rel]->clone()))));
 
-            /* Add update operations of relations to parallel statements */
-            updateTable->add(std::move(updateRelTable));
+                /* Add update operations of relations to parallel statements */
+                updateTable->add(std::move(updateRelTable));
+            }
         }
     }
-}
 
     // --- build main loop ---
 
@@ -1330,9 +1350,9 @@ if (Global::config().has("use-general")) {
         return std::find(internalRelationsOfScc.begin(), internalRelationsOfScc.end(), rel) !=
                internalRelationsOfScc.end();
     };
-if (Global::config().has("use-general")) {
-    (void)isInSameSCC;
-}
+    if (Global::config().has("use-general")) {
+        (void)isInSameSCC;
+    }
 
     /* Compute temp for the current tables */
     for (const AstRelation* rel : internalRelationsOfScc) {
@@ -1342,48 +1362,48 @@ if (Global::config().has("use-general")) {
         for (size_t i = 0; i < rel->clauseSize(); i++) {
             AstClause* cl = rel->getClause(i);
 
-if (!Global::config().has("use-general")) {
-            // skip non-recursive clauses
-            if (!recursiveClauses->recursive(cl)) {
-                continue;
+            if (!Global::config().has("use-general")) {
+                // skip non-recursive clauses
+                if (!recursiveClauses->recursive(cl)) {
+                    continue;
+                }
             }
-}
 
             // each recursive rule results in several operations
             int version = 0;
             const auto& atoms = cl->getAtoms();
 
-if (Global::config().has("use-general")) {
-            if (atoms.size() == 0) {
-                // modify the processed rule to use relDelta and write to relNew
-                std::unique_ptr<AstClause> r1(cl->clone());
-                r1->getHead()->setName(relNew[rel]->get()->getName());
+            if (Global::config().has("use-general")) {
+                if (atoms.size() == 0) {
+                    // modify the processed rule to use relDelta and write to relNew
+                    std::unique_ptr<AstClause> r1(cl->clone());
+                    r1->getHead()->setName(relNew[rel]->get()->getName());
 
-                if (r1->getHead()->getArity() > 0) {
-                    r1->addToBody(
-                            std::make_unique<AstNegation>(std::unique_ptr<AstAtom>(cl->getHead()->clone())));
+                    if (r1->getHead()->getArity() > 0) {
+                        r1->addToBody(std::make_unique<AstNegation>(
+                                std::unique_ptr<AstAtom>(cl->getHead()->clone())));
+                    }
+
+                    std::unique_ptr<RamStatement> rule =
+                            ClauseTranslator(*this).translateClause(*r1, *cl, version);
+
+                    // add to loop body
+                    appendStmt(loopRelSeq, std::move(rule));
+
+                    // @TODO (lh): handle logging, profiling, execution plans, and provenance, where possible
                 }
-
-                std::unique_ptr<RamStatement> rule =
-                        ClauseTranslator(*this).translateClause(*r1, *cl, version);
-
-                // add to loop body
-                appendStmt(loopRelSeq, std::move(rule));
-
-                // @TODO (lh): handle logging, profiling, execution plans, and provenance, where possible
             }
-}
 
             for (size_t j = 0; j < atoms.size(); ++j) {
                 const AstAtom* atom = atoms[j];
                 const AstRelation* atomRelation = getAtomRelation(atom, program);
 
-if (!Global::config().has("use-general")) {
-                // only interested in atoms within the same SCC
-                if (!isInSameSCC(atomRelation)) {
-                    continue;
+                if (!Global::config().has("use-general")) {
+                    // only interested in atoms within the same SCC
+                    if (!isInSameSCC(atomRelation)) {
+                        continue;
+                    }
                 }
-}
 
                 // modify the processed rule to use relDelta and write to relNew
                 std::unique_ptr<AstClause> r1(cl->clone());
@@ -1405,15 +1425,12 @@ if (!Global::config().has("use-general")) {
 
                 // reduce R to P ...
                 for (size_t k = j + 1; k < atoms.size(); k++) {
-if (!Global::config().has("use-general")) {
-                    if (isInSameSCC(getAtomRelation(atoms[k], program))) {
-}
+                    if (Global::config().has("use-general") ||
+                            isInSameSCC(getAtomRelation(atoms[k], program))) {
                         AstAtom* cur = r1->getAtoms()[k]->clone();
                         cur->setName(relDelta[getAtomRelation(atoms[k], program)]->get()->getName());
                         r1->addToBody(std::make_unique<AstNegation>(std::unique_ptr<AstAtom>(cur)));
-if (!Global::config().has("use-general")) {
                     }
-}
                 }
 
                 std::unique_ptr<RamStatement> rule =
@@ -1764,13 +1781,13 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
     // obtain the schedule of relations expired at each index of the topological order
     const auto& expirySchedule = translationUnit.getAnalysis<RelationSchedule>()->schedule();
 
-if (Global::config().has("use-general")) {
-    for (const AstRelation* rel : translationUnit.getProgram()->getRelations()) {
-        rrel[rel] = translateRelation(rel);
-        relDelta[rel] = translateDeltaRelation(rel);
-        relNew[rel] = translateNewRelation(rel);
+    if (Global::config().has("use-general")) {
+        for (const AstRelation* rel : translationUnit.getProgram()->getRelations()) {
+            rrel[rel] = translateRelation(rel);
+            relDelta[rel] = translateDeltaRelation(rel);
+            relNew[rel] = translateNewRelation(rel);
+        }
     }
-}
 
     // start with an empty sequence of ram statements
     std::unique_ptr<RamStatement> res = std::make_unique<RamSequence>();
@@ -1800,7 +1817,7 @@ if (Global::config().has("use-general")) {
                 makeRamLoad(current, masterScc, inputRelation, "fact-dir", ".facts", "file");
             }
 
-            // make store statements for each input relation to produce with kafka
+            // make store statements for each input relation
             for (const auto& inputRelation : inputRelations) {
                 makeRamStore(current, masterScc, inputRelation, "fact-dir", ".facts");
             }
@@ -1846,7 +1863,7 @@ if (Global::config().has("use-general")) {
         // then move on to CONSUMPTION
 
         // find out if the current SCC is recursive
-const auto isRecursive =  (!Global::config().has("use-general")) ? sccGraph.isRecursive(scc): true;
+        const auto isRecursive = (!Global::config().has("use-general")) ? sccGraph.isRecursive(scc) : true;
 
         // make variables for particular sets of relations contained within the current SCC, and,
         // predecessors and successor SCCs thereof
@@ -1881,22 +1898,22 @@ const auto isRecursive =  (!Global::config().has("use-general")) ? sccGraph.isRe
                         makeRamLoad(current, scc, relation, "output-dir", ".facts");
                     }
                 }
-if (!Global::config().has("use-general")) {
-                // load all external output predecessor relations from the output dir with a .csv
-                // extension
-                for (const auto& relation : externOutPreds) {
-                    if (!externAggNegPreds.count(relation)) {
-                        makeRamLoad(current, scc, relation, "output-dir", ".csv");
+                if (!Global::config().has("use-general")) {
+                    // load all external output predecessor relations from the output dir with a .csv
+                    // extension
+                    for (const auto& relation : externOutPreds) {
+                        if (!externAggNegPreds.count(relation)) {
+                            makeRamLoad(current, scc, relation, "output-dir", ".csv");
+                        }
+                    }
+                    // load all external non-output predecessor relations from the output dir with a .facts
+                    // extension
+                    for (const auto& relation : externNonOutPreds) {
+                        if (!externAggNegPreds.count(relation)) {
+                            makeRamLoad(current, scc, relation, "output-dir", ".facts");
+                        }
                     }
                 }
-                // load all external non-output predecessor relations from the output dir with a .facts
-                // extension
-                for (const auto& relation : externNonOutPreds) {
-                    if (!externAggNegPreds.count(relation)) {
-                        makeRamLoad(current, scc, relation, "output-dir", ".facts");
-                    }
-                }
-}
             }
         }
 
@@ -1906,23 +1923,23 @@ if (!Global::config().has("use-general")) {
                                          translationUnit, *((const AstRelation*)*allInterns.begin()))
                                : translateRecursiveRelation(translationUnit, scc);
         appendStmt(current, std::move(bodyStatement));
-if (!Global::config().has("use-general-producers")) {
-        {
-            // if a communication engine is enabled...
-            if (Global::config().has("engine")) {
-                // store all internal non-output relations with external successors to the output dir with
-                // a .facts extension
-                for (const auto& relation : internNonOutsWithExternSuccs) {
-                    makeRamStore(current, scc, relation, "output-dir", ".facts");
+        if (!Global::config().has("use-general-producers")) {
+            {
+                // if a communication engine is enabled...
+                if (Global::config().has("engine")) {
+                    // store all internal non-output relations with external successors to the output dir with
+                    // a .facts extension
+                    for (const auto& relation : internNonOutsWithExternSuccs) {
+                        makeRamStore(current, scc, relation, "output-dir", ".facts");
+                    }
+                }
+
+                // store all internal output relations to the output dir with a .csv extension
+                for (const auto& relation : internOuts) {
+                    makeRamStore(current, scc, relation, "output-dir", ".csv");
                 }
             }
-
-            // store all internal output relations to the output dir with a .csv extension
-            for (const auto& relation : internOuts) {
-                makeRamStore(current, scc, relation, "output-dir", ".csv");
-            }
         }
-}
         {
             // if a communication engine is enabled and is kafka...
             if (Global::config().get("engine") == "kafka") {

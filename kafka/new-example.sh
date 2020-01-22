@@ -410,18 +410,17 @@ function main() {
     # set the executable for the test case
     local EXE="${TESTSUITE_DIR}/${TEST_CASE}/$(basename ${TEST_CASE})"
 
-    # @@@TODO (lh): GET ALL TEST CASES PASSING!!!
-
-    # @TODO (lh): get working, update comment
+    # @@@TODO (lh): ensure that all this works
 
     # run tests for no -e
     ensure_test_case_passes "${TEST_CASE}"
     ensure_test_case_passes "${TEST_CASE}" --custom=use-general
-    #ensure_test_case_passes "${TEST_CASE}" --custom=use-general,use-general-producers
+    ensure_test_case_passes "${TEST_CASE}" --custom=use-general,use-general-producers
 
     # run tests for -efile
     ensure_test_case_passes "${TEST_CASE}" "-efile"
     ensure_test_case_passes "${TEST_CASE}" "-efile --custom=use-general"
+    # @@@TODO: why is this one not working?
     #ensure_test_case_passes "${TEST_CASE}" "-efile --custom=use-general,use-general-producers"
 
     # run tests for -ekafka, tested and working
@@ -429,7 +428,7 @@ function main() {
     ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka --custom=use-general"
     ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka --custom=use-general,use-general-producers"
     # @@@TODO: do this last test case only for kafka, do streaming consumers, also remove use-general-producers when working
-    ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka --custom=use-general,use-general-producers,use-general-consumers"
+    #ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka --custom=use-general,use-general-producers,use-general-consumers"
 
     # prompt the user to continue with cleanup
     read -p "Continue?"
