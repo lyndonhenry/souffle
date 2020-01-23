@@ -1240,10 +1240,10 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                 - END LOOP
                 ...
                 // then in outer loop
-                EXIT ((forall @delta_rel : (NOT ((number(-1)) ∈ @delta_rel))
+                EXIT ((forall @delta_rel : (((number(-1)) ∈ @delta_rel))
                     AND (forall @new_rel : (@new_rel = ∅)))
             */
-
+            if (!Global::config().has("use-general-consumers")) {
             // load all external output predecessor relations from the output dir with a .csv extension
             for (const auto& relation : externOutPreds) {
                 if (!externAggNegPreds.count(relation)) {
@@ -1261,6 +1261,7 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                             std::unique_ptr<RamRelationReference>(relDelta[relation]->clone()));
                 }
             }
+            }
         }
     }
 
@@ -1275,6 +1276,22 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
             relDelta[rel] = translateDeltaRelation(rel);
             relNew[rel] = translateNewRelation(rel);
         }
+
+        // @@@TODO HERE?
+
+        - forall @delta_rel :
+                - - CLEAR @delta_rel
+                - endforall
+                - LOOP
+                - - forall @delta_rel :
+                - - - IF (NOT ((number(-1)) ∈ @delta_rel)
+                - - - -  LOAD DATA FOR @delta_rel FROM {...}
+                - - - IF (NOT (@delta_rel = ∅)) AND (NOT ((number(-1)) ∈ @delta_rel))
+                - - - - MERGE @new_rel WITH @delta_rel
+                - - - - EXIT ()
+                - - endforall
+                - - EXIT (forall @delta_rel : (((number(-1)) ∈ @delta_rel) endforall)
+                - END LOOP
 
         /* create update statements for fixpoint (even iteration) */
         appendStmt(updateRelTable,
@@ -1506,6 +1523,24 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
         for (const AstRelation* rel : internalRelationsOfScc) {
             addCondition(exitCond, std::make_unique<RamEmptinessCheck>(
                                         std::unique_ptr<RamRelationReference>(relNew[rel]->clone())));
+        }
+        if (Global::config().has("use-general-consumers")) {
+            /* add exit condition for streaming, exit condition now becomes
+            EXIT ((forall @delta_rel : (((number(-1)) ∈ @delta_rel))
+                AND (forall @new_rel : (@new_rel = ∅)))
+            note that deltas are here either cleared or contain only the null value (i.e. RamDomain::max())
+            */
+            std::vector<std::unique_ptr<RamExpression>> values;
+            values.push_back(std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
+            for (const AstRelation* rel : internalRelationsOfScc) {
+                addCondition(exitCond, 
+                    std::make_unique<RamExistenceCheck>(
+                        std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()),
+                        std::move(values)
+                    )
+                );
+            }
+
         }
     }
 
