@@ -65,7 +65,7 @@ protected:
         kafkaClient_.produce(relationName_, payload_);
     }
     void produceNullPayload() {
-        std::vector<RamDomain> nullPayload{std::numeric_limits<RamDomain>::max()};
+        std::vector<RamDomain> nullPayload(arity ? arity : 1, std::numeric_limits<RamDomain>::max());
         kafkaClient_.produce(relationName_, nullPayload);
     }
     void pollProducer() {

@@ -202,7 +202,8 @@ public:
         pollHandle(consumer, 1000);
     }
     template <typename T>
-    static void consumeConsumer(RdKafka::Consumer* consumer, RdKafka::Topic* topic, std::vector<T>& payload, const int timeout_ms = -1) {
+    static void consumeConsumer(RdKafka::Consumer* consumer, RdKafka::Topic* topic, std::vector<T>& payload,
+            const int timeout_ms = -1) {
         assert(consumer);
         assert(topic);
         const int32_t partition = 0;
@@ -347,7 +348,7 @@ public:
         producerTopics_[topicName] = nullptr;
     }
     bool hasConsumptionBegun(const std::string& topicName) const {
-        return consumerTopics_.find(topicName) != producerTopics_.end();
+        return consumerTopics_.find(topicName) != consumerTopics_.end();
     }
     bool hasConsumptionEnded(const std::string& topicName) const {
         assert(hasConsumptionBegun(topicName));

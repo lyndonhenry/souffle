@@ -409,9 +409,6 @@ function main() {
     # set the executable for the test case
     local EXE="${TESTSUITE_DIR}/${TEST_CASE}/$(basename ${TEST_CASE})"
 
-    ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka --custom=use-general,use-general-producers,use-general-consumers"
-    exit 0
-
     # run tests for no -e
     ensure_test_case_passes "${TEST_CASE}"
     ensure_test_case_passes "${TEST_CASE}" --custom=use-general

@@ -158,7 +158,7 @@ public:
             : ReadStreamCSV(fileHandle, symbolMask, symbolTable, ioDirectives, numberOfHeights, provenance),
               baseName(souffle::baseName(getFileName(ioDirectives))),
               fileHandle(getFileName(ioDirectives), std::ios::in | std::ios::binary) {
-                  // @TODO (lh): why only if has intermediate?
+        // @TODO (lh): why only if has intermediate?
         if (!ioDirectives.has("intermediate")) {
             if (!fileHandle.is_open()) {
                 throw std::invalid_argument("Cannot open fact file " + baseName + "\n");

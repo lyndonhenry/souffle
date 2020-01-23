@@ -69,7 +69,7 @@ protected:
         if (nextPayload.empty()) {
             return true;
         }
-        std::vector<RamDomain> nullPayload{std::numeric_limits<RamDomain>::max()};
+        std::vector<RamDomain> nullPayload(arity ? arity : 1, std::numeric_limits<RamDomain>::max());
         if (nextPayload == nullPayload) {
             return false;
         } else {
@@ -84,7 +84,7 @@ protected:
         return kafkaClient_.hasConsumptionBegun(relationName_);
     }
     bool hasConsumptionEnded() const {
-        return kafkaClient_.hasConsumptionBegun(relationName_);
+        return kafkaClient_.hasConsumptionEnded(relationName_);
     }
     void setPayload(const std::vector<RamDomain>& payload) {
         payload_ = payload;
@@ -157,12 +157,13 @@ private:
         // if a null payload has already been received...
         if (hasConsumptionEnded()) {
             // ...set the payload to the null payload and return
-            setPayload(std::vector<RamDomain>({std::numeric_limits<RamDomain>::max()}));
+            std::vector<RamDomain> nullPayload(arity ? arity : 1, std::numeric_limits<RamDomain>::max());
+            setPayload(nullPayload);
             return;
         }
-        // @@@TODO (lh): either use an appropriate timeoutMs, or implement an exponential backoff here if possible
-        // set a timeout for the consumer
-        const int timeoutMs = 1;
+        // @@@TODO (lh): either use an appropriate timeoutMs, or implement an exponential backoff here if
+        // possible set a timeout for the consumer
+        const int timeoutMs = 10;
         while (true) {
             const auto prevPayloadSize = getPayload().size();
             // if payload is not the null message...
@@ -175,15 +176,19 @@ private:
                 }
                 // otherwise, continue until the consumer does time out
             } else {
-                // set the payload to the null message
-                setPayload(std::vector<RamDomain>({std::numeric_limits<RamDomain>::max()}));
+                if (getPayload().empty()) {
+                    // set the payload to the null message
+                    std::vector<RamDomain> nullPayload(
+                            arity ? arity : 1, std::numeric_limits<RamDomain>::max());
+                    setPayload(nullPayload);
+                }
                 // end the consumer
                 endConsumption();
+                return;
             }
         }
     }
-    void endReader() override {
-    }
+    void endReader() override {}
 };
 class ReadStreamKafkaFactory : public ReadStreamFactory {
 public:

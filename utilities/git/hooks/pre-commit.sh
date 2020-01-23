@@ -2,9 +2,9 @@
 
 set -oue pipefail
 
-if [ $(which clang-format) ]
+if [ $(which clang-format-7) ]
 then
-    clang-format \
+    clang-format-7 \
             -i \
             -style=file \
             src/*.h \

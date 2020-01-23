@@ -1242,30 +1242,34 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
 
         for (const AstRelation* rel : externPreds) {
             if (!externAggNegPreds.count(rel)) {
-            /*
+                /*
 
 
 
-            Ok, how to actually decide if we continue the loop.
-            Current exit condition waits for some relation to receive data,
-            or all relations to receive a null payload.
-            This may take a long time, and there may be non-empty new relations
-            that can produce new values if we run the loop again.
-            It might be good to actually exit the loop if we see that one of the new
-            internal relations is not empty, after trying to receive a message from all consumers.
-            Also, it might be good to receive as much data as possible, and not just exit once
-            we reach a relation that is non-empty.
+                Ok, how to actually decide if we continue the loop.
+                Current exit condition waits for some relation to receive data,
+                or all relations to receive a null payload.
+                This may take a long time, and there may be non-empty new relations
+                that can produce new values if we run the loop again.
+                It might be good to actually exit the loop if we see that one of the new
+                internal relations is not empty, after trying to receive a message from all consumers.
+                Also, it might be good to receive as much data as possible, and not just exit once
+                we reach a relation that is non-empty.
 
 
 
 
 
 
-            */
+                */
                 // create the inner loop for the current relation
                 {
                     std::vector<std::unique_ptr<RamExpression>> nullPayload;
                     nullPayload.push_back(std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
+                    for (std::size_t i = 1; i < rel->getArity(); ++i) {
+                        nullPayload.push_back(
+                                std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
+                    }
                     appendStmt(loopBody,
                             std::make_unique<RamLoop>(
                                     std::make_unique<RamExit>(std::make_unique<RamExistenceCheck>(
@@ -1288,15 +1292,10 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
         }
         // exit if any interns have new facts
         for (const AstRelation* rel : allInterns) {
-                appendStmt(loopBody,
-                    std::make_unique<RamExit>(
-                        std::make_unique<RamNegation>(
-                            std::make_unique<RamEmptinessCheck>(
-                                std::unique_ptr<RamRelationReference>(relNew[rel]->clone())
-                            )
-                        )
-                    )
-                );
+            appendStmt(
+                    loopBody, std::make_unique<RamExit>(
+                                      std::make_unique<RamNegation>(std::make_unique<RamEmptinessCheck>(
+                                              std::unique_ptr<RamRelationReference>(relNew[rel]->clone())))));
         }
         // exit if any extern preds have new facts
         for (const AstRelation* rel : externPreds) {
@@ -1305,6 +1304,10 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                 {
                     std::vector<std::unique_ptr<RamExpression>> nullPayload;
                     nullPayload.push_back(std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
+                    for (std::size_t i = 1; i < rel->getArity(); ++i) {
+                        nullPayload.push_back(
+                                std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
+                    }
                     appendStmt(loopBody,
                             std::make_unique<RamExit>(std::make_unique<RamConjunction>(
                                     std::make_unique<RamNegation>(std::make_unique<RamExistenceCheck>(
@@ -1326,12 +1329,18 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                 };
                 for (const AstRelation* rel : externPreds) {
                     if (!externAggNegPreds.count(rel)) {
-                        std::vector<std::unique_ptr<RamExpression>> values;
-                        values.push_back(std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
+                        std::vector<std::unique_ptr<RamExpression>> nullPayload;
+                        nullPayload.push_back(
+                                std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
+                        for (std::size_t i = 1; i < rel->getArity(); ++i) {
+                            nullPayload.push_back(
+                                    std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
+                        }
+
                         addCondition(exitCondition,
                                 std::make_unique<RamExistenceCheck>(
                                         std::unique_ptr<RamRelationReference>(relNew[rel]->clone()),
-                                        std::move(values)));
+                                        std::move(nullPayload)));
                     }
                 }
                 if (exitCondition) {
@@ -1368,14 +1377,35 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
         if (Global::config().has("use-general-producers")) {
             // @@@TODO (lh): this does not work as IO directives need ast relations, but delta and new are
             // ram relation references
-            if (internOuts.count(rel)) {
-                makeRamStore(updateRelTable, scc, rel, "output-dir", ".csv", "default",
-                        (Global::config().has("engine")) ? Global::config().get("engine") : "file",
-                        std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()));
-            } else if (Global::config().has("engine") && internNonOutsWithExternSuccs.count(rel)) {
-                makeRamStore(updateRelTable, scc, rel, "output-dir", ".facts", "default",
-                        (Global::config().has("engine")) ? Global::config().get("engine") : "file",
-                        std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()));
+            if (Global::config().has("use-general-consumers")) {
+                if (internOuts.count(rel) || internNonOutsWithExternSuccs.count(rel)) {
+                    appendStmt(updateRelTable,
+                            std::make_unique<RamLoop>(
+                                    std::make_unique<RamExit>(std::make_unique<RamEmptinessCheck>(
+                                            std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()))),
+                                    ([&]() {
+                                        std::unique_ptr<RamStatement> tmp;
+                                        makeRamStore(tmp, scc, rel, "output-dir",
+                                                (internOuts.count(rel)) ? ".csv" : ".facts", "default",
+                                                (Global::config().has("engine"))
+                                                        ? Global::config().get("engine")
+                                                        : "file",
+                                                std::unique_ptr<RamRelationReference>(
+                                                        relDelta[rel]->clone()));
+                                        return tmp;
+                                    })(),
+                                    std::make_unique<RamExit>(std::make_unique<RamTrue>())));
+                }
+            } else {
+                if (internOuts.count(rel)) {
+                    makeRamStore(updateRelTable, scc, rel, "output-dir", ".csv", "default",
+                            (Global::config().has("engine")) ? Global::config().get("engine") : "file",
+                            std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()));
+                } else if (Global::config().has("engine") && internNonOutsWithExternSuccs.count(rel)) {
+                    makeRamStore(updateRelTable, scc, rel, "output-dir", ".facts", "default",
+                            (Global::config().has("engine")) ? Global::config().get("engine") : "file",
+                            std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()));
+                }
             }
         }
 
@@ -1419,13 +1449,17 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                     // there)
                     // @@@TODO: maybe just use an exit cond in a loop evaluated once, ugly hack but does
                     // the job...
-                    std::vector<std::unique_ptr<RamExpression>> values;
-                    values.push_back(std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
+                    std::vector<std::unique_ptr<RamExpression>> nullPayload;
+                    nullPayload.push_back(std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
+                    for (std::size_t i = 1; i < rel->getArity(); ++i) {
+                        nullPayload.push_back(
+                                std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
+                    }
                     appendStmt(updateRelTable,
                             std::make_unique<RamLoop>(
                                     std::make_unique<RamExit>(std::make_unique<RamExistenceCheck>(
                                             std::unique_ptr<RamRelationReference>(relNew[rel]->clone()),
-                                            std::move(values))),
+                                            std::move(nullPayload))),
                                     std::make_unique<RamMerge>(
                                             std::unique_ptr<RamRelationReference>(rrel[rel]->clone()),
                                             std::unique_ptr<RamRelationReference>(relNew[rel]->clone())),
@@ -1615,12 +1649,16 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
             // @TODO (lh): fix this, see ram algorithm above, add comments
             for (const AstRelation* rel : externPreds) {
                 if (!externAggNegPreds.count(rel)) {
-                    std::vector<std::unique_ptr<RamExpression>> values;
-                    values.push_back(std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
+                    std::vector<std::unique_ptr<RamExpression>> nullPayload;
+                    nullPayload.push_back(std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
+                    for (std::size_t i = 1; i < rel->getArity(); ++i) {
+                        nullPayload.push_back(
+                                std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
+                    }
                     addCondition(
                             exitCond, std::make_unique<RamExistenceCheck>(
                                               std::unique_ptr<RamRelationReference>(relNew[rel]->clone()),
-                                              std::move(values)));
+                                              std::move(nullPayload)));
                 }
             }
         }
