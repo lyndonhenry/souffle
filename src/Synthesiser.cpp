@@ -446,9 +446,30 @@ void Synthesiser::emitCode(std::ostream& out, const RamStatement& stmt) {
 
         void visitExit(const RamExit& exit, std::ostream& out) override {
             PRINT_BEGIN_COMMENT(out);
-            out << "if(";
-            visit(exit.getCondition(), out);
-            out << ") break;\n";
+            // @@@TODO (lh): see if you can avoid doing this, or maybe just always use
+            if (Global::config().has("use-general-consumers")) {
+                // create operation contexts for this operation
+                // @TODO: see "getReferencedRelations"
+                std::set<const RamRelation*> referencedRelations;
+                visitDepthFirst(exit.getCondition(), [&](const RamNode& node) {
+                    if (auto exists = dynamic_cast<const RamExistenceCheck*>(&node)) {
+                        referencedRelations.insert(&exists->getRelation());
+                    }
+                });
+                out << "if ([&]() {";
+                for (const RamRelation* rel : referencedRelations) {
+                    out << "CREATE_OP_CONTEXT(" << synthesiser.getOpContextName(*rel);
+                    out << "," << synthesiser.getRelationName(*rel);
+                    out << "->createContext());\n";
+                }
+                out << "return (";
+                visit(exit.getCondition(), out);
+                out << "); }()) break;\n";
+            } else {
+                out << "if(";
+                visit(exit.getCondition(), out);
+                out << ") break;\n";
+            }
             PRINT_END_COMMENT(out);
         }
 

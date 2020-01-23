@@ -426,8 +426,7 @@ function main() {
     ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka" 
     ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka --custom=use-general"
     ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka --custom=use-general,use-general-producers"
-    # @@@TODO: do this last test case only for kafka, do streaming consumers, also remove use-general-producers when working
-    #ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka --custom=use-general,use-general-producers,use-general-consumers"
+    ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka --custom=use-general,use-general-producers,use-general-consumers"
 
     # prompt the user to continue with cleanup
     read -p "Continue?"

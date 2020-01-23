@@ -295,6 +295,7 @@ private:
     // a function to load relations
     void makeRamLoad(std::unique_ptr<RamStatement>& current, std::size_t indexOfScc,
             const AstRelation* relation, const std::string& inputDirectory, const std::string& fileExtension,
+            const std::string& engineDirectives,
             const std::string& ioType, std::unique_ptr<RamRelationReference> ramRelationReference);
     // a function to store relations
     void makeRamStore(std::unique_ptr<RamStatement>& current, std::size_t indexOfScc,

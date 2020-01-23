@@ -189,13 +189,17 @@ class ReadStreamKafkaFactory : public ReadStreamFactory {
 public:
     std::unique_ptr<ReadStream> getReader(const std::vector<bool>& symbolMask, SymbolTable& symbolTable,
             const IODirectives& ioDirectives, const bool provenance, const size_t numberOfHeights) override {
-        if (ioDirectives.get("location") == "fact-dir") {
+        if (ioDirectives.get("kafka") == "default") {
             // if (fact-dir, .facts, slave)
             return std::make_unique<ReadStreamKafkaDefault>(
                     symbolMask, symbolTable, ioDirectives, numberOfHeights, provenance);
-        } else if (ioDirectives.get("location") == "output-dir") {
+        } else if (ioDirectives.get("kafka") == "null-payload") {
             // if (output-dir, .facts, slave) or (output-dir, .csv, slave) or (output-dir, .csv, master)
             return std::make_unique<ReadStreamKafkaNullPayload>(
+                    symbolMask, symbolTable, ioDirectives, numberOfHeights, provenance);
+        } else if (ioDirectives.get("kafka") == "with-timeout") {
+            // if using non-blocking consumers in fixpoint loop
+            return std::make_unique<ReadStreamKafkaWithTimeout>(
                     symbolMask, symbolTable, ioDirectives, numberOfHeights, provenance);
         } else {
             assert(false);
