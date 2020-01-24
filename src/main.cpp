@@ -20,6 +20,7 @@
 #include "AstTransforms.h"
 #include "AstTranslationUnit.h"
 #include "AstTranslator.h"
+#include "AstTypeAnalysis.h"
 #include "ComponentModel.h"
 #include "DebugReport.h"
 #include "ErrorReport.h"
@@ -28,6 +29,7 @@
 #include "InterpreterEngine.h"
 #include "InterpreterProgInterface.h"
 #include "ParserDriver.h"
+#include "PrecedenceGraph.h"
 #include "RamIndexAnalysis.h"
 #include "RamLevelAnalysis.h"
 #include "RamProgram.h"
@@ -187,8 +189,10 @@ int main(int argc, char** argv) {
                 {"engine", 'e', "[ file ]", "", false, "Alternative evaluation strategies."},
                 {"verbose", 'v', "", "", false, "Verbose output."},
                 {"version", '\3', "", "", false, "Version."},
-                {"transformed-datalog", '\4', "", "", false, "Output dl after all transformations."},
-                {"transformed-ram", '\6', "", "", false, "Output ram program after all transformations."},
+                {"show", '\4',
+                        "[ parse-errors | precedence-graph | scc-graph | transformed-datalog | "
+                        "transformed-ram | type-analysis ]",
+                        "", false, "Print selected program information."},
                 {"parse-errors", '\5', "", "", false, "Show parsing errors, if any, then exit."},
                 // @TODO (lh): remove this when possible
                 {"custom", '\7', "FLAGS", "", false, ""},
@@ -204,7 +208,9 @@ int main(int argc, char** argv) {
 
         /* for the version option, if given print the version text then exit */
         if (Global::config().has("version")) {
-            std::cout << "Souffle: " << PACKAGE_VERSION << "" << std::endl;
+            std::cout << "Souffle: " << PACKAGE_VERSION;
+            std::cout << "(" << RAM_DOMAIN_SIZE << "bit Domains)";
+            std::cout << std::endl;
             std::cout << "Copyright (c) 2016-19 The Souffle Developers." << std::endl;
             std::cout << "Copyright (c) 2013-16 Oracle and/or its affiliates." << std::endl;
             return 0;
@@ -377,7 +383,7 @@ int main(int argc, char** argv) {
                   << "sec\n";
     }
 
-    if (Global::config().has("parse-errors")) {
+    if (Global::config().get("show") == "parse-errors") {
         std::cout << astTranslationUnit->getErrorReport();
         return astTranslationUnit->getErrorReport().getNumErrors();
     }
@@ -473,11 +479,35 @@ int main(int argc, char** argv) {
     // Apply all the transformations
     pipeline->apply(*astTranslationUnit);
 
-    // Output the transformed datalog and return
-    if (Global::config().has("transformed-datalog")) {
-        std::cout << *astTranslationUnit->getProgram() << std::endl;
-        return 0;
+    if (Global::config().has("show")) {
+        // Output the transformed datalog and return
+        if (Global::config().get("show") == "transformed-datalog") {
+            std::cout << *astTranslationUnit->getProgram() << std::endl;
+            return 0;
+        }
+
+        // Output the precedence graph in graphviz dot format and return
+        if (Global::config().get("show") == "precedence-graph") {
+            astTranslationUnit->getAnalysis<PrecedenceGraph>()->print(std::cout);
+            std::cout << std::endl;
+            return 0;
+        }
+
+        // Output the scc graph in graphviz dot format and return
+        if (Global::config().get("show") == "scc-graph") {
+            astTranslationUnit->getAnalysis<SCCGraph>()->print(std::cout);
+            std::cout << std::endl;
+            return 0;
+        }
+
+        // Output the type analysis
+        if (Global::config().get("show") == "type-analysis") {
+            astTranslationUnit->getAnalysis<TypeAnalysis>()->print(std::cout);
+            std::cout << std::endl;
+            return 0;
+        }
     }
+
     // ------- execution -------------
 
     /* translate AST to RAM */
@@ -510,7 +540,7 @@ int main(int argc, char** argv) {
     }
 
     // Output the transformed RAM program and return
-    if (Global::config().has("transformed-ram")) {
+    if (Global::config().get("show") == "transformed-ram") {
         std::cout << ramTranslationUnit->getProgram();
         return 0;
     }

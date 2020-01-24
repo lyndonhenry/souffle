@@ -1,4 +1,4 @@
-.TH SOUFFLE 1 2020-01-23
+.TH SOUFFLE 1 2020-01-24
 
 .SH NAME
 .B souffle
@@ -85,11 +85,8 @@ Generate SWIG interface for the specified language. Possible values for \fI<LANG
 .B -t\fI<none|explain|explore|subtreeHeights>\fP, --provenance=\fI<none|explain|explore|subtreeHeights>\fP
 Enable provenance instrumentation and interaction
 .TP
-.B --transformed-datalog
-Output datalog after all transformations
-.TP
-.B --transformed-ram
-Output ram program after all transformations
+.B --show=\fI<parse-errors|precedence-graph|scc-graph|transformed-datalog|transformed-ram|type-analysis>\fP
+Print selected program information.
 .TP
 .B -u\fI<FILE>\fP, --profile-use=\fI<FILE>\fP
 Use profile log-file \fI<FILE>\fP for profile-guided optimisation
@@ -112,7 +109,7 @@ souffle program.dl
 souffle -c program.dl -Ffacts -D- -j20
 
 .SH VERSION
-1.7.1-164-g3d192577
+1.6.2-769-g03cd3ea7
 
 .SH LICENSE
 Copyright (c) 2016 Oracle and/or its affiliates. All Rights reserved.

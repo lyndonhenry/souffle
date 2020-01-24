@@ -16,6 +16,7 @@
 
 #include "souffle/SouffleInterface.h"
 #include <array>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -29,7 +30,7 @@ void error(std::string txt) {
     exit(1);
 }
 
-void printSource2sink(SouffleProgram* prog) {
+void printSource2sink(std::unique_ptr<SouffleProgram>& prog) {
     Relation* source2sink = prog->getRelation("source2sink");
     for (tuple tuple : *source2sink) {
         std::string field, field2;
@@ -42,7 +43,7 @@ void printSource2sink(SouffleProgram* prog) {
  * Main program
  */
 int main(int argc, char** argv) {
-    SouffleProgram* prog = ProgramFactory::newInstance("repeat_analysis");
+    std::unique_ptr<SouffleProgram> prog(ProgramFactory::newInstance("repeat_analysis"));
     if (prog == nullptr) {
         error("failed to create souffle program");
     }
@@ -90,6 +91,4 @@ int main(int argc, char** argv) {
     prog->run();
     std::cout << "source2sink - run 3" << std::endl;
     printSource2sink(prog);
-
-    delete prog;
 }

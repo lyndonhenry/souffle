@@ -1151,15 +1151,33 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
     std::unique_ptr<RamSequence> updateTable(new RamSequence());
     std::unique_ptr<RamStatement> postamble(new RamSequence());
 
-    // --- create preamble ---
-
-    const auto genMerge = [&](RamRelationReference* first, RamRelationReference* second ){
-        return std::make_unique<RamMerge>(
-            std::unique_ptr<RamRelationReference>(
-            first->clone()),
-            std::unique_ptr<RamRelationReference>(
-             second->clone()));
+    auto genMerge = [](const RamRelationReference* dest,
+                            const RamRelationReference* src) -> std::unique_ptr<RamStatement> {
+        std::vector<std::unique_ptr<RamExpression>> values;
+        if (src->get()->getArity() == 0) {
+            return std::make_unique<RamQuery>(std::make_unique<RamFilter>(
+                    std::make_unique<RamNegation>(std::make_unique<RamEmptinessCheck>(
+                            std::unique_ptr<RamRelationReference>(src->clone()))),
+                    std::make_unique<RamProject>(
+                            std::unique_ptr<RamRelationReference>(dest->clone()), std::move(values))));
+        }
+        for (std::size_t i = 0; i < dest->get()->getArity(); i++) {
+            values.push_back(std::make_unique<RamTupleElement>(0, i));
+        }
+        std::unique_ptr<RamStatement> stmt = std::make_unique<RamQuery>(
+                std::make_unique<RamScan>(std::unique_ptr<RamRelationReference>(src->clone()), 0,
+                        std::make_unique<RamProject>(
+                                std::unique_ptr<RamRelationReference>(dest->clone()), std::move(values))));
+        if (dest->get()->getRepresentation() == RelationRepresentation::EQREL) {
+            stmt = std::make_unique<RamSequence>(
+                    std::make_unique<RamExtend>(std::unique_ptr<RamRelationReference>(dest->clone()),
+                            std::unique_ptr<RamRelationReference>(src->clone())),
+                    std::move(stmt));
+        }
+        return stmt;
     };
+
+    // --- create preamble ---
 
     // clear mappings for temporary relations
     if (!Global::config().has("use-general")) {
@@ -1172,14 +1190,12 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
         if (!Global::config().has("engine")) {
             for (const AstRelation* relation : externPreds) {
                 if (!externAggNegPreds.count(relation)) {
-                    appendStmt(preamble,
-                    genMerge(relDelta[relation].get(),rrel[relation].get()));
+                    appendStmt(preamble, genMerge(relDelta[relation].get(), rrel[relation].get()));
                 }
             }
             if (Global::config().has("use-general-producers")) {
                 for (const AstRelation* relation : internIns) {
-                    appendStmt(preamble,
-                    genMerge(relNew[relation].get(),rrel[relation].get()));
+                    appendStmt(preamble, genMerge(relNew[relation].get(), rrel[relation].get()));
                 }
             }
         } else {
@@ -1369,8 +1385,7 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
 
         /* create update statements for fixpoint (even iteration) */
         appendStmt(updateRelTable,
-                std::make_unique<RamSequence>(
-                        genMerge(rrel[rel].get(),relNew[rel].get()),
+                std::make_unique<RamSequence>(genMerge(rrel[rel].get(), relNew[rel].get()),
                         std::make_unique<RamSwap>(
                                 std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()),
                                 std::unique_ptr<RamRelationReference>(relNew[rel]->clone())),
@@ -1431,8 +1446,7 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
             appendStmt(preamble, translateNonRecursiveRelation(translationUnit, *rel));
 
             /* Generate merge operation for temp tables */
-            appendStmt(preamble,
-            genMerge(relDelta[rel].get(), rrel[rel].get()));
+            appendStmt(preamble, genMerge(relDelta[rel].get(), rrel[rel].get()));
         }
 
         /* Add update operations of relations to parallel statements */
@@ -1462,7 +1476,7 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                                     std::make_unique<RamExit>(std::make_unique<RamExistenceCheck>(
                                             std::unique_ptr<RamRelationReference>(relNew[rel]->clone()),
                                             std::move(nullPayload))),
-                                        genMerge(rrel[rel].get(), relNew[rel].get()),
+                                    genMerge(rrel[rel].get(), relNew[rel].get()),
                                     std::make_unique<RamSwap>(
                                             std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()),
                                             std::unique_ptr<RamRelationReference>(relNew[rel]->clone())),
@@ -1472,8 +1486,7 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                 } else {
                     /* Generate merge operation for temp tables */
                     appendStmt(updateRelTable,
-                            std::make_unique<RamSequence>(
-                                genMerge(rrel[rel].get(), relNew[rel].get()),
+                            std::make_unique<RamSequence>(genMerge(rrel[rel].get(), relNew[rel].get()),
                                     std::make_unique<RamSwap>(
                                             std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()),
                                             std::unique_ptr<RamRelationReference>(relNew[rel]->clone())),
