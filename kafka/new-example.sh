@@ -322,8 +322,8 @@ function ensure_kafka_test_case_passes() {
     # remove the expected output files, these are overridden by actual outputs on execution
     rm -rf "${TEST_CASE_ROOT}"/*.csv
     # extract stratum names and relation names from json metadata
-    local JSON_DATA=$(${EXE} -i-2)
-    local RELATION_NAMES="$(echo ${JSON_DATA} | jq -r '.RelationNames | .[]')"
+    local JSON_DATA="$(${PWD}/src/souffle ${EXE}.dl --show=topsort-info)"
+    local RELATION_NAMES="$(echo ${JSON_DATA} | jq -r '.RelationNames | .[]')" 
     local STRATUM_NAMES="$(echo ${JSON_DATA} | jq -r '.StratumNames | .[]')"
     # ensure that all program specific topics are initially empty by deleting them
     for_each_async "ensure_kafka_topic_deleted ${KAFKA_HOST}" ${RELATION_NAMES}

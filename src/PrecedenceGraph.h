@@ -376,45 +376,6 @@ public:
         return indices;
     }
 
-    void printMetadata(std::ostream& os) const {
-        constexpr auto ONE_TAB = "    ";
-        constexpr auto TWO_TABS = "        ";
-
-        os << "{" << std::endl;
-
-        /**
-         * Print the stratum names.
-         */
-        {
-            os << ONE_TAB << "\"StratumNames\": [" << std::endl
-               << join(sccOrder, ",\n",
-                          [](std::ostream& out, const std::size_t scc) {
-                              out << TWO_TABS << "\"" << scc << "\"";
-                          })
-               << std::endl
-               << ONE_TAB << "]," << std::endl;
-        }
-
-        /*
-         * Print the relation names.
-         */
-        {
-            os << ONE_TAB << "\"RelationNames\": [" << std::endl;
-            for (std::size_t i = 0; i < sccOrder.size(); ++i) {
-                os << join(sccGraph->getInternalRelations(sccOrder.at(i)), ",\n",
-                        [](std::ostream& out, const AstRelation* rel) {
-                            out << TWO_TABS << "\"" << rel->getName() << "\"";
-                        });
-                if (i != sccOrder.size() - 1) {
-                    os << ",\n";
-                }
-            }
-            os << "\n" << ONE_TAB << "]" << std::endl;
-        }
-
-        os << "}";
-    }
-
     /** Output topologically sorted strongly connected component graph in text format */
     void print(std::ostream& os) const override;
 };

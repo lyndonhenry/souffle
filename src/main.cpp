@@ -190,7 +190,7 @@ int main(int argc, char** argv) {
                 {"verbose", 'v', "", "", false, "Verbose output."},
                 {"version", '\3', "", "", false, "Version."},
                 {"show", '\4',
-                        "[ parse-errors | precedence-graph | scc-graph | transformed-datalog | "
+                        "[ parse-errors | precedence-graph | scc-graph | topsort-info | transformed-datalog | "
                         "transformed-ram | type-analysis ]",
                         "", false, "Print selected program information."},
                 {"parse-errors", '\5', "", "", false, "Show parsing errors, if any, then exit."},
@@ -496,6 +496,13 @@ int main(int argc, char** argv) {
         // Output the scc graph in graphviz dot format and return
         if (Global::config().get("show") == "scc-graph") {
             astTranslationUnit->getAnalysis<SCCGraph>()->print(std::cout);
+            std::cout << std::endl;
+            return 0;
+        }
+
+        // Output the topsort info in json format and return
+        if (Global::config().get("show") == "topsort-info") {
+            astTranslationUnit->getAnalysis<TopologicallySortedSCCGraph>()->print(std::cout);
             std::cout << std::endl;
             return 0;
         }

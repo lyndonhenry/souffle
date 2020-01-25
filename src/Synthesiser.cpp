@@ -2268,9 +2268,19 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
     }
 
     if (Global::config().get("engine") == "kafka") {
+        // @TODO (lh)
+            /**
+             * Note that the `globalConf` parameter sets the global configuration properties for Kafka.
+             * It is passed to the program with the -X option, using the format key=value.
+             * For example, running with -Xmetadata.broker.list=localhost:9092 sets the Kafka broker.
+             * See https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
+             * for a full list of availble options.
+             */
         os << "{" << std::endl;
-        os << R"(souffle::kafka::Kafka().run(opt.getExtraOptions(), opt.getInputFileDir(), opt.getOutputFileDir(), &obj, opt.getStratumIndex(), R"()"
-           << Global::config().get("_metadata") << ")\");" << std::endl;
+            os << "auto& kafkaClient = souffle::kafka::detail::KafkaClient::getInstance();" << std::endl;
+            os << "kafkaClient.beginClient(opt.getExtraOptions());" << std::endl;
+            os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), opt.getStratumIndex());" << std::endl;
+            os << "kafkaClient.endClient();" << std::endl;
         os << "}" << std::endl;
     } else {
         os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), opt.getStratumIndex());\n";

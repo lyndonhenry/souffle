@@ -405,35 +405,10 @@ public:
 }  // namespace kafka
 }  // namespace souffle
 
-#include "SouffleInterface.h"
-#include <fstream>
-
 namespace souffle {
 namespace kafka {
 class Kafka {
-    // @TODO (lh): document use of the kafka communication engine
-public:
-    explicit Kafka() {}
-    void run(const std::unordered_map<std::string, std::string>& globalConf,
-            const std::string& inputDirectory, const std::string& outputDirectory,
-            souffle::SouffleProgram* souffleProgram, std::size_t stratumIndex,
-            const std::string& metadataString) const {
-        if (stratumIndex == static_cast<std::size_t>(-2)) {
-            std::cout << metadataString << std::endl;
-        } else {
-            /**
-             * Note that the `globalConf` parameter sets the global configuration properties for Kafka.
-             * It is passed to the program with the -X option, using the format key=value.
-             * For example, running with -Xmetadata.broker.list=localhost:9092 sets the Kafka broker.
-             * See https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
-             * for a full list of availble options.
-             */
-            auto& kafkaClient = detail::KafkaClient::getInstance();
-            kafkaClient.beginClient(globalConf);
-            souffleProgram->runAll(inputDirectory, outputDirectory, stratumIndex);
-            kafkaClient.endClient();
-        }
-    }
+    // @TODO (lh): move main kafka class here
 };
 }  // namespace kafka
 }  // namespace souffle
