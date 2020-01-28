@@ -1784,7 +1784,7 @@ std::unique_ptr<RamStatement> AstTranslator::makeNegationSubproofSubroutine(cons
     std::unique_ptr<RamSequence> searchSequence = std::make_unique<RamSequence>();
 
     // make a copy so that when we mutate clause, pointers to objects in newClause are not affected
-    auto newClause = std::unique_ptr<AstClause>(clauseReplacedAggregates->clone());
+    auto newClause = std::unique_ptr<AstClause>(causeReplacedAggregates->clone());
 
     // go through each body atom and create a return
     size_t litNumber = 0;
@@ -1948,6 +1948,8 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
             for (const auto& inputRelation : inputRelations) {
                 makeRamStore(current, masterScc, inputRelation, "fact-dir", ".facts");
             }
+
+            // @TODO (lh): send halts for all input relations that have no facts and do not occur as a head, also skip their strata
         }
 
         // iterate over each scc and store all output relations
