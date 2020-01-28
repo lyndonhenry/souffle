@@ -1032,7 +1032,6 @@ void AstTranslator::appendStmt(std::unique_ptr<RamStatement>& stmtList, std::uni
 /** generate RAM code for a non-recursive relation */
 std::unique_ptr<RamStatement> AstTranslator::translateNonRecursiveRelation(
         const AstTranslationUnit& translationUnit, const AstRelation& rel) {
-
     // @TODO (lh): refactor this function and add comments
     const auto* recursiveClauses = translationUnit.getAnalysis<RecursiveClauses>();
 
@@ -1134,7 +1133,6 @@ void AstTranslator::nameUnnamedVariables(AstClause* clause) {
 /** generate RAM code for recursive relations in a strongly-connected component */
 std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
         const AstTranslationUnit& translationUnit, std::size_t scc) {
-
     // @TODO (lh): refactor this function and add comments
     const auto* sccGraph = translationUnit.getAnalysis<SCCGraph>();
 
@@ -1415,7 +1413,8 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
             if (!externAggNegPreds.count(rel)) {
                 std::unique_ptr<RamStatement> updateRelTable;
 
-                // @TODO (lh): see if it's possible to just clear the deltas here if not using general consumers as the new's are not even used
+                // @TODO (lh): see if it's possible to just clear the deltas here if not using general
+                // consumers as the new's are not even used
                 if (Global::config().has("use-general-consumers")) {
                     std::vector<std::unique_ptr<RamExpression>> nullPayload;
                     nullPayload.push_back(std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
@@ -1784,7 +1783,7 @@ std::unique_ptr<RamStatement> AstTranslator::makeNegationSubproofSubroutine(cons
     std::unique_ptr<RamSequence> searchSequence = std::make_unique<RamSequence>();
 
     // make a copy so that when we mutate clause, pointers to objects in newClause are not affected
-    auto newClause = std::unique_ptr<AstClause>(causeReplacedAggregates->clone());
+    auto newClause = std::unique_ptr<AstClause>(clauseReplacedAggregates->clone());
 
     // go through each body atom and create a return
     size_t litNumber = 0;
@@ -1894,7 +1893,6 @@ std::unique_ptr<RamStatement> AstTranslator::makeNegationSubproofSubroutine(cons
 
 /** translates the given datalog program into an equivalent RAM program  */
 void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) {
-
     // @TODO (lh): refactor this function and add comments
 
     // obtain type environment from analysis
@@ -1949,7 +1947,8 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
                 makeRamStore(current, masterScc, inputRelation, "fact-dir", ".facts");
             }
 
-            // @TODO (lh): send halts for all input relations that have no facts and do not occur as a head, also skip their strata
+            // @TODO (lh): send halts for all input relations that have no facts and do not occur as a head,
+            // also skip their strata
         }
 
         // iterate over each scc and store all output relations

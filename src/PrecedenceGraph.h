@@ -206,7 +206,8 @@ public:
 
     /** Get all external output predecessor relations of a given SCC. */
     const std::set<const AstRelation*> getExternalOutputPredecessorRelations(const size_t scc) const {
-        // TODO (lyndonhenry): use a mutable cache to avoid recomputation of relation sets for this method and others like it of this class
+        // TODO (lyndonhenry): use a mutable cache to avoid recomputation of relation sets for this method and
+        // others like it of this class
         std::set<const AstRelation*> externOutPreds;
         for (const auto& relation : getInternalRelations(scc)) {
             for (const auto& predecessor : precedenceGraph->graph().predecessors(relation)) {

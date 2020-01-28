@@ -2,26 +2,27 @@
 
 set -oue pipefail
 
+function error() {
+    local MESSAGE="${1:-}"
+    if [ "${MESSAGE}" ]
+    then
+        echo "Error: ${MESSAGE}" >&2
+    fi
+    exit 1
+}
+
 function clang_format_hook() {
-    local EXE="clang-format"
+    local COMMAND="clang-format"
     local VERSION="7"
-    if [ ! $(which ${EXE}) ]
+    if [ ! $(which "${COMMAND}") ]
     then
-        EXE="${EXE}-${VERSION}"
-        if [ ! $(which ${EXE}) ]
-        then
-            echo "Error: program '${EXE}' not found!"
-            exit 1
-        fi
+        error "'${COMMAND}' is not installed!"
     fi
-
-    if [ "$(${EXE} --version | sed 's/.*version //;s/\..*//')" -lt "${VERSION}" ]
+    if [ "$(${COMMAND} --version | sed 's/.*version //;s/\..*//')" -lt "${VERSION}" ]
     then
-        echo "Error: program '${EXE}' must be version ${VERSION} or later!"
-        exit 1
+        error "'${COMMAND}' is not of version '${VERSION}' or later!"
     fi
-
-    ${EXE} \
+    ${COMMAND} \
         -i \
         -style=file \
         src/*.h \

@@ -2267,14 +2267,14 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
     os << "{" << std::endl;
 
     if (Global::config().get("engine") == "kafka") {
-            os << "auto& kafka = souffle::kafka::Kafka::getInstance();" << std::endl;
-            os << "kafka.beginClient(opt.getExtraOptions());" << std::endl;
+        os << "auto& kafka = souffle::kafka::Kafka::getInstance();" << std::endl;
+        os << "kafka.beginClient(opt.getExtraOptions());" << std::endl;
     }
-    
+
     os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), opt.getStratumIndex());" << std::endl;
 
     if (Global::config().get("engine") == "kafka") {
-            os << "kafka.endClient();" << std::endl;
+        os << "kafka.endClient();" << std::endl;
     }
     os << "}" << std::endl;
 

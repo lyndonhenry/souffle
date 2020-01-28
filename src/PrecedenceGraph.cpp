@@ -430,7 +430,6 @@ void TopologicallySortedSCCGraph::run(const AstTranslationUnit& translationUnit)
 }
 
 void TopologicallySortedSCCGraph::print(std::ostream& os) const {
-
     // TODO (lyndonhenry): use more appropriate field names and print more information
 
     constexpr auto ONE_TAB = "    ";
@@ -456,30 +455,25 @@ void TopologicallySortedSCCGraph::print(std::ostream& os) const {
      */
     {
         os << ONE_TAB << "\"StratumDependencies\": {" << std::endl;
-        os << join(
-            sccOrder, 
-            [&](){
-                std::stringstream ss;
-                ss << "," << std::endl;
-                return ss.str();
-            }(),
-            [&](std::ostream& os1, const std::size_t scc) {
-                os1 << TWO_TABS << "\"" << scc << "\": ";
-                if (sccGraph->getSuccessorSCCs(scc).empty()) {
-                    os1 << "[]";
-                } else {
-                    os << "[\"";
-                    os1 << join(
-                        sccGraph->getSuccessorSCCs(scc),
-                        "\", \"",
-                        [&](std::ostream& os2, const std::size_t successorScc) {
-                            os2 << successorScc;
-                        }
-                    );
-                    os1 << "\"]";
-                }
-            }
-        );
+        os << join(sccOrder,
+                [&]() {
+                    std::stringstream ss;
+                    ss << "," << std::endl;
+                    return ss.str();
+                }(),
+                [&](std::ostream& os1, const std::size_t scc) {
+                    os1 << TWO_TABS << "\"" << scc << "\": ";
+                    if (sccGraph->getSuccessorSCCs(scc).empty()) {
+                        os1 << "[]";
+                    } else {
+                        os << "[\"";
+                        os1 << join(sccGraph->getSuccessorSCCs(scc), "\", \"",
+                                [&](std::ostream& os2, const std::size_t successorScc) {
+                                    os2 << successorScc;
+                                });
+                        os1 << "\"]";
+                    }
+                });
         os << std::endl << ONE_TAB << "}," << std::endl;
     }
 
@@ -501,34 +495,27 @@ void TopologicallySortedSCCGraph::print(std::ostream& os) const {
         os << "\n" << ONE_TAB << "]," << std::endl;
     }
 
-
     /*
      * Print the relations contained in each stratum.
      */
-{
+    {
         os << ONE_TAB << "\"StratumRelations\": {" << std::endl;
-        os << join(
-            sccOrder, 
-            [&](){
-                std::stringstream ss;
-                ss << "," << std::endl;
-                return ss.str();
-            }(),
-            [&](std::ostream& os1, const std::size_t scc) {
-                os1 << TWO_TABS << "\"" << scc << "\": [\"";
-                os1 << join(
-                    sccGraph->getInternalRelations(scc),
-                    "\", \"",
-                    [&](std::ostream& os2, const AstRelation* relation) {
-                        os2 << relation->getName();
-                    }
-                );
-                os1 << "\"]";
-            }
-        );
+        os << join(sccOrder,
+                [&]() {
+                    std::stringstream ss;
+                    ss << "," << std::endl;
+                    return ss.str();
+                }(),
+                [&](std::ostream& os1, const std::size_t scc) {
+                    os1 << TWO_TABS << "\"" << scc << "\": [\"";
+                    os1 << join(sccGraph->getInternalRelations(scc), "\", \"",
+                            [&](std::ostream& os2, const AstRelation* relation) {
+                                os2 << relation->getName();
+                            });
+                    os1 << "\"]";
+                });
         os << std::endl << ONE_TAB << "}," << std::endl;
     }
-
 
     /*
      * Print the topological ordering cost.

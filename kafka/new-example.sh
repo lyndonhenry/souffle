@@ -383,8 +383,6 @@ function main() {
     # ensure that the testsuite directory does does not exist yet
     local TESTSUITE_DIR="${PWD}/tests/testsuite.dir"
 
-    # @@@TODO: try with 'input_output_numbers_recursive'
-
     # set the test case used by this script
     local TEST_CASE="example/input_output_numbers"
 
@@ -393,7 +391,7 @@ function main() {
     local KAFKA_DOCKER_PATH="${PWD}/kafka"
 
     # make a temp directory for dependencies
-    local TMP_DIRECTORY="$(mktemp -d)"
+    local TMP_DIRECTORY="/tmp/souffle"
 
     # set the path to use the kafka scripts
     export PATH="${TMP_DIRECTORY}/kafka_2.12-2.3.1/bin:${PATH}"
@@ -415,19 +413,32 @@ function main() {
     local EXE="${TESTSUITE_DIR}/${TEST_CASE}/$(basename ${TEST_CASE})"
 
     # run tests for no -e
+
+    # normal seminaive evaluation
     ensure_test_case_passes "${TEST_CASE}"
+    # generalized seminaive evaluation
     ensure_test_case_passes "${TEST_CASE}" --custom=use-general
+    # generalized seminaive evaluation with output relations written to files inside fixpoint loop
     ensure_test_case_passes "${TEST_CASE}" --custom=use-general,use-general-producers
 
     # run tests for -efile
+    
+    # normal seminaive evaluation with intermediate results written to and read from files
     ensure_test_case_passes "${TEST_CASE}" "-efile"
+    # generalized seminaive evaluation with intermediate results written to and read from files outside of fixpoint loop
     ensure_test_case_passes "${TEST_CASE}" "-efile --custom=use-general"
+    # generalized seminaive evaluation with intermediate results read from files outside of fixpoint loop and written to files inside fixpoint loop
     ensure_test_case_passes "${TEST_CASE}" "-efile --custom=use-general,use-general-producers"
 
-    # run tests for -ekafka, tested and working
+    # run tests for -ekafka
+
+    # normal seminaive evaluation with intermediate results produced to and consumed from kafka topics
     ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka" 
+    # generalized seminaive evaluation with intermediate results produced to and consumed from kafka topics outside of fixpoint loop
     ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka --custom=use-general"
+    # generalized seminaive evaluation with intermediate results consumed from kafka topics outside of fixpoint loop and produced to kafka topics inside of fixpoint loop
     ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka --custom=use-general,use-general-producers"
+    # generalized seminaive evaluation with intermediate results produced to and consumed from kafka topics inside of fixpoint loop
     ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka --custom=use-general,use-general-producers,use-general-consumers"
 
     # prompt the user to continue with cleanup

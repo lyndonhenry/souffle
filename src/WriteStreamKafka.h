@@ -38,8 +38,7 @@ public:
     WriteStreamKafka(const std::vector<bool>& symbolMask, const SymbolTable& symbolTable,
             const IODirectives& ioDirectives, const size_t numberOfHeights = 0, const bool provenance = false)
             : WriteStream(symbolMask, symbolTable, provenance, numberOfHeights),
-              relationName_(ioDirectives.getRelationNameSuffix()),
-              kafka_(kafka::Kafka::getInstance()) {}
+              relationName_(ioDirectives.getRelationNameSuffix()), kafka_(kafka::Kafka::getInstance()) {}
     virtual ~WriteStreamKafka() = default;
 
 protected:

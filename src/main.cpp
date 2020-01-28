@@ -190,7 +190,8 @@ int main(int argc, char** argv) {
                 {"verbose", 'v', "", "", false, "Verbose output."},
                 {"version", '\3', "", "", false, "Version."},
                 {"show", '\4',
-                        "[ parse-errors | precedence-graph | scc-graph | topsort-info | transformed-datalog | "
+                        "[ parse-errors | precedence-graph | scc-graph | topsort-info | transformed-datalog "
+                        "| "
                         "transformed-ram | type-analysis ]",
                         "", false, "Print selected program information."},
                 {"parse-errors", '\5', "", "", false, "Show parsing errors, if any, then exit."},
