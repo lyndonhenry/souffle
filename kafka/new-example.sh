@@ -391,11 +391,16 @@ function main() {
     # set variables for kafka
     local KAFKA_HOST="localhost:9092"
     local KAFKA_DOCKER_PATH="${PWD}/kafka"
-    export PATH="${PWD}/kafka/tmp/kafka_2.12-2.3.1/bin:${PATH}"
+
+    # make a temp directory for dependencies
+    local TMP_DIRECTORY="$(mktemp -d)"
+
+    # set the path to use the kafka scripts
+    export PATH="${TMP_DIRECTORY}/kafka_2.12-2.3.1/bin:${PATH}"
 
     # ensure dependencies are installed
-    ensure_kafka_depencencies_are_installed "${PWD}/kafka/tmp"
-    ensure_jq_is_installed "${PWD}/kafka/tmp"
+    ensure_kafka_depencencies_are_installed "${TMP_DIRECTORY}"
+    ensure_jq_is_installed "${TMP_DIRECTORY}"
 
     # ensure that souffle is built for kafka
     ensure_souffle_is_built_for_kafka "${PWD}"
