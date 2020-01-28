@@ -1432,17 +1432,10 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                                             std::unique_ptr<RamRelationReference>(relNew[rel]->clone())),
                                     std::make_unique<RamExit>(std::make_unique<RamTrue>())));
                 } else {
-
-                // @TODO (lh): see if it's possible to just clear the deltas here if not using general
-                // consumers as the new's are not even used
-                    /* Generate merge operation for temp tables */
+                    /* Generate clear operations for delta relations. */
                     appendStmt(updateRelTable,
-                            std::make_unique<RamSequence>(genMerge(rrel[rel].get(), relNew[rel].get()),
-                                    std::make_unique<RamSwap>(
-                                            std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()),
-                                            std::unique_ptr<RamRelationReference>(relNew[rel]->clone())),
                                     std::make_unique<RamClear>(
-                                            std::unique_ptr<RamRelationReference>(relNew[rel]->clone()))));
+                                            std::unique_ptr<RamRelationReference>(relNew[rel]->clone())));
                 }
 
                 /* Add update operations of relations to parallel statements */
