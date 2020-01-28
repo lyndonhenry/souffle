@@ -1412,9 +1412,6 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
         for (const AstRelation* rel : externPreds) {
             if (!externAggNegPreds.count(rel)) {
                 std::unique_ptr<RamStatement> updateRelTable;
-
-                // @TODO (lh): see if it's possible to just clear the deltas here if not using general
-                // consumers as the new's are not even used
                 if (Global::config().has("use-general-consumers")) {
                     std::vector<std::unique_ptr<RamExpression>> nullPayload;
                     nullPayload.push_back(std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
@@ -1435,6 +1432,9 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                                             std::unique_ptr<RamRelationReference>(relNew[rel]->clone())),
                                     std::make_unique<RamExit>(std::make_unique<RamTrue>())));
                 } else {
+
+                // @TODO (lh): see if it's possible to just clear the deltas here if not using general
+                // consumers as the new's are not even used
                     /* Generate merge operation for temp tables */
                     appendStmt(updateRelTable,
                             std::make_unique<RamSequence>(genMerge(rrel[rel].get(), relNew[rel].get()),
