@@ -32,7 +32,7 @@ namespace kafka {
 class ReadStreamKafka : public ReadStream {
 private:
     const std::string relationName_;
-    kafka::detail::KafkaClient& kafkaClient_;
+    kafka::Kafka& kafka_;
     std::vector<RamDomain> payload_;
     std::size_t index_;
 
@@ -41,7 +41,7 @@ public:
             const IODirectives& ioDirectives, const size_t numberOfHeights = 0, const bool provenance = false)
             : ReadStream(symbolMask, symbolTable, provenance, numberOfHeights),
               relationName_(ioDirectives.getRelationNameSuffix()),
-              kafkaClient_(kafka::detail::KafkaClient::getInstance()), index_(0) {}
+              kafka_(kafka::Kafka::getInstance()), index_(0) {}
     virtual ~ReadStreamKafka() = default;
 
 protected:
@@ -58,14 +58,14 @@ private:
 
 protected:
     void beginConsumption() {
-        kafkaClient_.beginConsumption(relationName_);
+        kafka_.beginConsumption(relationName_);
     }
     void endConsumption() {
-        kafkaClient_.endConsumption(relationName_);
+        kafka_.endConsumption(relationName_);
     }
     bool consumePayload(const int timeoutMs = -1) {
         std::vector<RamDomain> nextPayload;
-        kafkaClient_.consume(relationName_, nextPayload, timeoutMs);
+        kafka_.consume(relationName_, nextPayload, timeoutMs);
         if (nextPayload.empty()) {
             return true;
         }
@@ -78,13 +78,13 @@ protected:
         }
     }
     void pollConsumer() {
-        kafkaClient_.pollConsumer();
+        kafka_.pollConsumer();
     }
     bool hasConsumptionBegun() const {
-        return kafkaClient_.hasConsumptionBegun(relationName_);
+        return kafka_.hasConsumptionBegun(relationName_);
     }
     bool hasConsumptionEnded() const {
-        return kafkaClient_.hasConsumptionEnded(relationName_);
+        return kafka_.hasConsumptionEnded(relationName_);
     }
     void setPayload(const std::vector<RamDomain>& payload) {
         payload_ = payload;
@@ -139,7 +139,6 @@ private:
         endConsumption();
     }
 };
-// @TODO (lh): name this and all other classes better
 class ReadStreamKafkaWithTimeout : public ReadStreamKafka {
 public:
     ReadStreamKafkaWithTimeout(const std::vector<bool>& symbolMask, SymbolTable& symbolTable,
@@ -161,7 +160,7 @@ private:
             setPayload(nullPayload);
             return;
         }
-        // @@@TODO (lh): either use an appropriate timeoutMs, or implement an exponential backoff here if
+        // @TODO (lh): figure out a good consumer timeout, maybe set with -X
         // possible set a timeout for the consumer
         const int timeoutMs = 10;
         while (true) {

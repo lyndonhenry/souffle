@@ -194,14 +194,14 @@ int main(int argc, char** argv) {
                         "transformed-ram | type-analysis ]",
                         "", false, "Print selected program information."},
                 {"parse-errors", '\5', "", "", false, "Show parsing errors, if any, then exit."},
-                // @TODO (lh): remove this when possible
+                // @TODO (lh): remove this option when kafka implementation complete
                 {"custom", '\7', "FLAGS", "", false, ""},
                 {"help", 'h', "", "", false, "Display this help message."}};
         Global::config().processArgs(argc, argv, header.str(), footer.str(), options);
 
         // ------ command line arguments -------------
 
-        // @TODO (lh): remove this when possible
+        // @TODO (lh): remove this option handling when kafka implementation complete
         for (const auto& flag : splitString(Global::config().get("custom"), ',')) {
             Global::config().set(flag, "true");
         }

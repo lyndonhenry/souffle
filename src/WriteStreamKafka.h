@@ -31,7 +31,7 @@ namespace kafka {
 class WriteStreamKafka : public WriteStream {
 protected:
     const std::string relationName_;
-    kafka::detail::KafkaClient& kafkaClient_;
+    kafka::Kafka& kafka_;
     std::vector<RamDomain> payload_;
 
 public:
@@ -39,7 +39,7 @@ public:
             const IODirectives& ioDirectives, const size_t numberOfHeights = 0, const bool provenance = false)
             : WriteStream(symbolMask, symbolTable, provenance, numberOfHeights),
               relationName_(ioDirectives.getRelationNameSuffix()),
-              kafkaClient_(kafka::detail::KafkaClient::getInstance()) {}
+              kafka_(kafka::Kafka::getInstance()) {}
     virtual ~WriteStreamKafka() = default;
 
 protected:
@@ -56,26 +56,26 @@ private:
 
 protected:
     void beginProduction() {
-        kafkaClient_.beginProduction(relationName_);
+        kafka_.beginProduction(relationName_);
     }
     void endProduction() {
-        kafkaClient_.endProduction(relationName_);
+        kafka_.endProduction(relationName_);
     }
     void producePayload() {
-        kafkaClient_.produce(relationName_, payload_);
+        kafka_.produce(relationName_, payload_);
     }
     void produceNullPayload() {
         std::vector<RamDomain> nullPayload(arity ? arity : 1, std::numeric_limits<RamDomain>::max());
-        kafkaClient_.produce(relationName_, nullPayload);
+        kafka_.produce(relationName_, nullPayload);
     }
     void pollProducer() {
-        kafkaClient_.pollProducer();
+        kafka_.pollProducer();
     }
     void pollProducerNonBlocking() {
-        kafkaClient_.pollProducer(0);
+        kafka_.pollProducer(0);
     }
     void pollProducerUntilEmpty() {
-        kafkaClient_.pollProducerUntilEmpty();
+        kafka_.pollProducerUntilEmpty();
     }
 
 public:

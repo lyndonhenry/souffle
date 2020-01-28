@@ -441,16 +441,13 @@ void Synthesiser::emitCode(std::ostream& out, const RamStatement& stmt) {
 
         void visitExit(const RamExit& exit, std::ostream& out) override {
             PRINT_BEGIN_COMMENT(out);
-            // @@@TODO (lh): see if you can avoid doing this, or maybe just always use
-            if (Global::config().has("use-general-consumers")) {
-                // create operation contexts for this operation
-                // @TODO: see "getReferencedRelations"
-                std::set<const RamRelation*> referencedRelations;
-                visitDepthFirst(exit.getCondition(), [&](const RamNode& node) {
-                    if (auto exists = dynamic_cast<const RamExistenceCheck*>(&node)) {
-                        referencedRelations.insert(&exists->getRelation());
-                    }
-                });
+            std::set<const RamRelation*> referencedRelations;
+            visitDepthFirst(exit.getCondition(), [&](const RamNode& node) {
+                if (auto exists = dynamic_cast<const RamExistenceCheck*>(&node)) {
+                    referencedRelations.insert(&exists->getRelation());
+                }
+            });
+            if (!referencedRelations.empty()) {
                 out << "if ([&]() {";
                 for (const RamRelation* rel : referencedRelations) {
                     out << "CREATE_OP_CONTEXT(" << synthesiser.getOpContextName(*rel);
@@ -1964,8 +1961,8 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
         if (hasAtLeastOneStrata) {
             os << "switch (stratumIndex) {\n";
             {
-                // @TODO (lh): the conditional here is an ugly hack to make things work with -efile
-                // otherwise use stratum -1 if index is -2
+                // @TODO (lh): fix up the -1 and -2 stuff
+                // otherwise use stratum 0 if index is -2
                 os << "case (size_t) -2:\ngoto STRATUM_0;\nbreak;\n";
             }
             os << ss.str();
@@ -2267,24 +2264,19 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
            << Global::config().get("version") << R"_(");)_" << '\n';
     }
 
+    os << "{" << std::endl;
+
     if (Global::config().get("engine") == "kafka") {
-        // @TODO (lh)
-            /**
-             * Note that the `globalConf` parameter sets the global configuration properties for Kafka.
-             * It is passed to the program with the -X option, using the format key=value.
-             * For example, running with -Xmetadata.broker.list=localhost:9092 sets the Kafka broker.
-             * See https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
-             * for a full list of availble options.
-             */
-        os << "{" << std::endl;
-            os << "auto& kafkaClient = souffle::kafka::detail::KafkaClient::getInstance();" << std::endl;
-            os << "kafkaClient.beginClient(opt.getExtraOptions());" << std::endl;
-            os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), opt.getStratumIndex());" << std::endl;
-            os << "kafkaClient.endClient();" << std::endl;
-        os << "}" << std::endl;
-    } else {
-        os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), opt.getStratumIndex());\n";
+            os << "auto& kafka = souffle::kafka::Kafka::getInstance();" << std::endl;
+            os << "kafka.beginClient(opt.getExtraOptions());" << std::endl;
     }
+    
+    os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), opt.getStratumIndex());" << std::endl;
+
+    if (Global::config().get("engine") == "kafka") {
+            os << "kafka.endClient();" << std::endl;
+    }
+    os << "}" << std::endl;
 
     if (Global::config().get("provenance") == "explain") {
         os << "explain(obj, false, false);\n";

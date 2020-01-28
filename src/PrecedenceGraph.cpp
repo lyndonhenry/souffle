@@ -182,7 +182,6 @@ bool RecursiveClauses::computeIsRecursive(
 }
 
 void AggregatedAndNegatedRelations::run(const AstTranslationUnit& translationUnit) {
-    // @@@TODO (lh)
     const AstProgram* program = translationUnit.getProgram();
     for (const AstRelation* relation : program->getRelations()) {
         aggregatedAndNegatedRelationsInClausesOfRelation.insert(
@@ -432,7 +431,7 @@ void TopologicallySortedSCCGraph::run(const AstTranslationUnit& translationUnit)
 
 void TopologicallySortedSCCGraph::print(std::ostream& os) const {
 
-    // @TODO: clean up naming here, show only topsort info, but use with kafka
+    // TODO (lyndonhenry): use more appropriate field names and print more information
 
     constexpr auto ONE_TAB = "    ";
     constexpr auto TWO_TABS = "        ";

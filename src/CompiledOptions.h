@@ -74,10 +74,11 @@ protected:
      */
     size_t stratumIndex;
 
-    // @TODO (lh): document and suport Kafka config properties (extra options) better here
+    // @TODO (lh): document and suport Kafka config properties/extra options better here
 
     /**
-     * extra options, currently only used by Kafka engine
+     * Extra options, currently only used by Kafka engine.
+     * These set global configuration properties in the librdkafka library.
      * @see Kafka.h for more information
      */
     std::unordered_map<std::string, std::string> extraOptions;

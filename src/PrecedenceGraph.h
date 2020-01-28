@@ -206,6 +206,7 @@ public:
 
     /** Get all external output predecessor relations of a given SCC. */
     const std::set<const AstRelation*> getExternalOutputPredecessorRelations(const size_t scc) const {
+        // TODO (lyndonhenry): use a mutable cache to avoid recomputation of relation sets for this method and others like it of this class
         std::set<const AstRelation*> externOutPreds;
         for (const auto& relation : getInternalRelations(scc)) {
             for (const auto& predecessor : precedenceGraph->graph().predecessors(relation)) {
@@ -234,7 +235,6 @@ public:
      * scc. */
     const std::set<const AstRelation*> getAggregatedAndNegatedExternalPredecessorRelations(
             const size_t scc) const {
-        // @TODO (lh): surely this can be done more efficiently?
         std::set<const AstRelation*> aggregatedAndNegatedExternalPredecessorRelations;
         const auto internalRelations = getInternalRelations(scc);
         const auto externalPredecessorRelations = getExternalPredecessorRelations(scc);

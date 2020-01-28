@@ -68,7 +68,6 @@ public:
     }
 
     const std::string getRelationNamePrefix() const {
-        // @TODO: ensure that this works
         const auto& name = getRelationName();
         if (name.at(0) == '@') {
             return std::string(name.begin(), name.begin() + name.find('_'));
@@ -78,7 +77,6 @@ public:
     }
 
     const std::string getRelationNameSuffix() const {
-        // @TODO: ensure that this works
         const auto& name = getRelationName();
         if (name.at(0) == '@') {
             return std::string(name.begin() + name.find('_'), name.end());

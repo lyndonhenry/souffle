@@ -252,15 +252,13 @@ public:
 
 namespace souffle {
 namespace kafka {
-namespace detail {
-class KafkaClient {
-    // @@@TODO (lh): use mutex and lock_gaurd for now, see
-    // http://www.cplusplus.com/reference/mutex/lock_guard/
+class Kafka {
+    // TODO (lyndonhenry): make this thread safe, use mutex and lock_gaurd
 private:
     RdKafka::Conf* globalConf_;
     RdKafka::Conf* topicConf_;
-    KafkaHelper::EventCb eventCb_;
-    KafkaHelper::DeliveryReportCb deliveryReportCb_;
+    detail::KafkaHelper::EventCb eventCb_;
+    detail::KafkaHelper::DeliveryReportCb deliveryReportCb_;
     RdKafka::Producer* producer_;
     RdKafka::Consumer* consumer_;
     std::unordered_map<std::string, RdKafka::Topic*> producerTopics_;
@@ -269,52 +267,51 @@ private:
     RdKafka::Topic* debugTopic_;
 #endif
 private:
-    explicit KafkaClient() {}
+    explicit Kafka() {}
 
 public:
-    ~KafkaClient() {}
+    ~Kafka() {}
 
 public:
-    static KafkaClient& getInstance() {
+    static Kafka& getInstance() {
         // get instance for singleton design pattern
-        static KafkaClient instance = KafkaClient();
+        static Kafka instance = Kafka();
         return instance;
     }
     // deleted constructor for singleton design pattern
-    KafkaClient(KafkaClient const&) = delete;
+    Kafka(Kafka const&) = delete;
     // deleted constructor for singleton design pattern
-    void operator=(KafkaClient const&) = delete;
+    void operator=(Kafka const&) = delete;
 
 public:
     void beginClient(const std::unordered_map<std::string, std::string>& globalConf) {
-        KafkaHelper::unthrowException();
-        KafkaHelper::setSigintAndSigterm();
-        globalConf_ = KafkaHelper::createGlobalConf();
-        topicConf_ = KafkaHelper::createTopicConf();
+        detail::KafkaHelper::unthrowException();
+        detail::KafkaHelper::setSigintAndSigterm();
+        globalConf_ = detail::KafkaHelper::createGlobalConf();
+        topicConf_ = detail::KafkaHelper::createTopicConf();
         for (auto it = globalConf.begin(); it != globalConf.end(); ++it) {
-            KafkaHelper::setConf(globalConf_, it->first, it->second);
+            detail::KafkaHelper::setConf(globalConf_, it->first, it->second);
         }
-        KafkaHelper::setEventCb(globalConf_, &eventCb_);
-        // @@@TODO (lh): remove these if possible and get polling right, see
-        // https://docs.confluent.io/2.0.0/clients/librdkafka/classRdKafka_1_1Handle.html
-        KafkaHelper::setDeliveryReportCb(globalConf_, &deliveryReportCb_);
-        KafkaHelper::setDefaultTopicConf(globalConf_, topicConf_);
-        producer_ = KafkaHelper::createProducer(globalConf_);
-        consumer_ = KafkaHelper::createConsumer(globalConf_);
+        // TODO (lyndonhenry): remove callbacks for efficiency if possible, ensure polling is still correct
+        detail::KafkaHelper::setEventCb(globalConf_, &eventCb_);
+        detail::KafkaHelper::setDeliveryReportCb(globalConf_, &deliveryReportCb_);
+        detail::KafkaHelper::setDefaultTopicConf(globalConf_, topicConf_);
+        producer_ = detail::KafkaHelper::createProducer(globalConf_);
+        consumer_ = detail::KafkaHelper::createConsumer(globalConf_);
         producerTopics_ = std::unordered_map<std::string, RdKafka::Topic*>();
         consumerTopics_ = std::unordered_map<std::string, RdKafka::Topic*>();
 #ifdef KAFKA_DEBUG
-        debugTopic_ = KafkaHelper::createTopic(topicConf_, producer_, "_DEBUG_");
+        debugTopic_ = detail::KafkaHelper::createTopic(topicConf_, producer_, "_DEBUG_");
 #endif
     }
     void endClient() {
-        KafkaHelper::pollProducerUntilEmpty(producer_);
+        detail::KafkaHelper::pollProducerUntilEmpty(producer_);
 #ifdef KAFKA_DEBUG
         delete debugTopic_;
 #endif
         delete producer_;
         delete consumer_;
-        KafkaHelper::waitDestroyed();
+        detail::KafkaHelper::waitDestroyed();
         delete globalConf_;
         delete topicConf_;
     }
@@ -328,7 +325,7 @@ public:
         const std::string str = stringstream.str();
         const char* cstr = str.c_str();
         std::vector<char> debugPayload(cstr, cstr + str.size());
-        KafkaHelper::produceProducer(producer_, debugTopic_, debugPayload);
+        detail::KafkaHelper::produceProducer(producer_, debugTopic_, debugPayload);
     }
 #endif
     bool hasProductionBegun(const std::string& topicName) const {
@@ -340,7 +337,7 @@ public:
     }
     void beginProduction(const std::string& topicName) {
         if (!hasProductionBegun(topicName) || hasProductionEnded(topicName)) {
-            producerTopics_[topicName] = KafkaHelper::createTopic(topicConf_, producer_, topicName);
+            producerTopics_[topicName] = detail::KafkaHelper::createTopic(topicConf_, producer_, topicName);
         }
     }
     void endProduction(const std::string& topicName) {
@@ -356,12 +353,12 @@ public:
     }
     void beginConsumption(const std::string& topicName) {
         if (!hasConsumptionBegun(topicName) || hasConsumptionEnded(topicName)) {
-            consumerTopics_[topicName] = KafkaHelper::createTopic(topicConf_, consumer_, topicName);
-            KafkaHelper::startConsumer(consumer_, consumerTopics_.at(topicName));
+            consumerTopics_[topicName] = detail::KafkaHelper::createTopic(topicConf_, consumer_, topicName);
+            detail::KafkaHelper::startConsumer(consumer_, consumerTopics_.at(topicName));
         }
     }
     void endConsumption(const std::string& topicName) {
-        KafkaHelper::stopConsumer(consumer_, consumerTopics_.at(topicName));
+        detail::KafkaHelper::stopConsumer(consumer_, consumerTopics_.at(topicName));
         delete consumerTopics_[topicName];
         consumerTopics_[topicName] = nullptr;
     }
@@ -376,13 +373,13 @@ public:
             debug(stringstream, payload);
         }
 #endif
-        KafkaHelper::produceProducer(producer_, topic, payload);
+        detail::KafkaHelper::produceProducer(producer_, topic, payload);
     }
     template <typename T>
     void consume(const std::string& topicName, std::vector<T>& payload, const int timeoutMs = -1) {
         RdKafka::Topic* topic = consumerTopics_.at(topicName);
         assert(topic);
-        KafkaHelper::consumeConsumer(consumer_, topic, payload, timeoutMs);
+        detail::KafkaHelper::consumeConsumer(consumer_, topic, payload, timeoutMs);
 #ifdef KAFKA_DEBUG
         {
             std::stringstream stringstream;
@@ -392,23 +389,14 @@ public:
 #endif
     }
     void pollProducer(const int timeoutMs = 1000) {
-        KafkaHelper::pollHandle(producer_, timeoutMs);
+        detail::KafkaHelper::pollHandle(producer_, timeoutMs);
     }
     void pollConsumer(const int timeoutMs = 1000) {
-        KafkaHelper::pollHandle(consumer_, timeoutMs);
+        detail::KafkaHelper::pollHandle(consumer_, timeoutMs);
     }
     void pollProducerUntilEmpty() {
-        KafkaHelper::pollProducerUntilEmpty(producer_);
+        detail::KafkaHelper::pollProducerUntilEmpty(producer_);
     }
-};
-}  // namespace detail
-}  // namespace kafka
-}  // namespace souffle
-
-namespace souffle {
-namespace kafka {
-class Kafka {
-    // @TODO (lh): move main kafka class here
 };
 }  // namespace kafka
 }  // namespace souffle

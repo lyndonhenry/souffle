@@ -237,8 +237,4 @@ public:
         return out;
     }
 };
-
-// @TODO (lh): add more code here to support symbols with kafka and dictionaries, maybe make an analysis phase
-// first to detect where this is required
-
-}  // namespace souffle
+}
