@@ -73,6 +73,7 @@ void AstTranslator::makeRamLoad(std::unique_ptr<RamStatement>& current, std::siz
         const std::string& engineDirectives = "default",
         const std::string& ioType = Global::config().has("engine") ? Global::config().get("engine") : "file",
         std::unique_ptr<RamRelationReference> ramRelationReference = nullptr) {
+    // @TODO (lh): refactor this function and add comments
     IODirectives ioDirectives;
     ioDirectives.set("location", inputDirectory);
     ioDirectives.set("directory", Global::config().get(inputDirectory));
@@ -101,19 +102,16 @@ void AstTranslator::makeRamStore(std::unique_ptr<RamStatement>& current, std::si
         const std::string& engineDirectives = "default",
         const std::string& ioType = Global::config().has("engine") ? Global::config().get("engine") : "file",
         std::unique_ptr<RamRelationReference> ramRelationReference = nullptr) {
-    // @@@TODO (lh): HERE! THE NEXT STEP IS TO MAKE IT SO THAT THERE ARE SEPARATE HALT STATEMENTS FOR
-    // PRODUCERS IN THE BLOCKING VARIANT, THEN MOVE TO THE NON-BLOCKING --
+    // @TODO (lh): refactor this function and add comments
     IODirectives ioDirectives;
     ioDirectives.set("location", outputDirectory);
     ioDirectives.set("directory", Global::config().get(outputDirectory));
     ioDirectives.set("extension", fileExtension);
     ioDirectives.setIOType(ioType);
 
-    // @@@TODO (lh): HERE! OK, SO MUST SPLIT INTO PAYLOAD BEARING AND END OF STREAM
     ioDirectives.set(Global::config().get("engine"), engineDirectives);
 
     ioDirectives.set("stratum", (scc == (size_t)-1) ? "master" : "slave");
-    // @TODO (lh): ensure that this is done correctly with -a/--async
     if (Global::config().has("use-general")) {
         ioDirectives.set("append", "true");
     } else {
@@ -136,6 +134,7 @@ void AstTranslator::makeRamStore(std::unique_ptr<RamStatement>& current, std::si
 }
 
 void AstTranslator::makeIODirective(IODirectives& ioDirective, const AstRelation* rel) {
+    // @TODO (lh): refactor this function and add comments
     // set relation name correctly
     ioDirective.setRelationName(getRelationName(rel->getName()));
 
@@ -160,6 +159,7 @@ void AstTranslator::makeIODirective(IODirectives& ioDirective, const AstRelation
 
 std::vector<IODirectives> AstTranslator::getInputIODirectives(
         const AstRelation* rel, IODirectives& baseIoDirectives) {
+    // @TODO (lh): refactor this function and add comments
     const auto location = baseIoDirectives.get("location");
     const auto filePath = baseIoDirectives.get("directory");
     const auto fileExt = baseIoDirectives.get("extension");
@@ -209,6 +209,7 @@ std::vector<IODirectives> AstTranslator::getInputIODirectives(
 
 std::vector<IODirectives> AstTranslator::getOutputIODirectives(
         const AstRelation* rel, IODirectives& baseIoDirectives) {
+    // @TODO (lh): refactor this function and add comments
     const auto location = baseIoDirectives.get("location");
     const auto filePath = baseIoDirectives.get("directory");
     const auto fileExt = baseIoDirectives.get("extension");
@@ -1031,6 +1032,8 @@ void AstTranslator::appendStmt(std::unique_ptr<RamStatement>& stmtList, std::uni
 /** generate RAM code for a non-recursive relation */
 std::unique_ptr<RamStatement> AstTranslator::translateNonRecursiveRelation(
         const AstTranslationUnit& translationUnit, const AstRelation& rel) {
+
+    // @TODO (lh): refactor this function and add comments
     const auto* recursiveClauses = translationUnit.getAnalysis<RecursiveClauses>();
 
     /* start with an empty sequence */
@@ -1131,7 +1134,8 @@ void AstTranslator::nameUnnamedVariables(AstClause* clause) {
 /** generate RAM code for recursive relations in a strongly-connected component */
 std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
         const AstTranslationUnit& translationUnit, std::size_t scc) {
-    // @TODO (lh): make the sets computed here mutable, don't recompute always
+
+    // @TODO (lh): refactor this function and add comments
     const auto* sccGraph = translationUnit.getAnalysis<SCCGraph>();
 
     const auto allInterns = sccGraph->getInternalRelations(scc);
@@ -1199,8 +1203,7 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                 }
             }
         } else {
-            // @@@TODO: this is ugly, see if you can clean it up using the above, actually could move into
-            // master stratum just unsure on semantics
+            // @TODO (lh): consider moving this into the master stratum
             if (Global::config().get("engine") == "file" && Global::config().has("use-general-producers")) {
                 for (const AstRelation* relation : internIns) {
                     if (internOuts.count(relation)) {
@@ -1234,54 +1237,10 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
     }
 
     if (Global::config().has("use-general-consumers")) {
-        // @@@TODO HERE?
-        /*
-         - LOOP
-         - - forall @new_rel in externPreds / externAggNegPreds:
-         - - - LOOP
-         - - - - EXIT(((number(-1)) ∈ @new_rel)
-         - - - - LOAD DATA FOR @new_rel FROM {...}
-         - - - - EXIT (true)
-         - - - EXIT (NOT (@new_rel = ∅)) AND (NOT ((number(-1)) ∈ @new_rel))
-         - - EXIT (forall @new_rel in externPreds / externAggNegPreds : ((number(-1)) ∈ @new_rel)
-         ...
-         - EXIT (
-             (forall @new_rel in externPreds / externAggNegPreds : ((number(-1)) ∈ @new_rel) AND
-             (forall @new_rel in allInterns : @new_rel = ∅)
-         )
-         ...
-         - forall @new_rel in externPreds / externAggNegPreds:
-         - - LOOP
-         - - - EXIT (((number(-1)) ∈ @new_rel)
-         - - - MERGE rel WITH @new_rel
-         - - - SWAP (@delta_rel, @new_rel)
-         - - - CLEAR @new_rel
-         - - - EXIT(true)
-         */
         std::unique_ptr<RamStatement> loopBody;
 
         for (const AstRelation* rel : externPreds) {
             if (!externAggNegPreds.count(rel)) {
-                /*
-
-
-
-                Ok, how to actually decide if we continue the loop.
-                Current exit condition waits for some relation to receive data,
-                or all relations to receive a null payload.
-                This may take a long time, and there may be non-empty new relations
-                that can produce new values if we run the loop again.
-                It might be good to actually exit the loop if we see that one of the new
-                internal relations is not empty, after trying to receive a message from all consumers.
-                Also, it might be good to receive as much data as possible, and not just exit once
-                we reach a relation that is non-empty.
-
-
-
-
-
-
-                */
                 // create the inner loop for the current relation
                 {
                     std::vector<std::unique_ptr<RamExpression>> nullPayload;
@@ -1393,8 +1352,6 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                                 std::unique_ptr<RamRelationReference>(relNew[rel]->clone()))));
 
         if (Global::config().has("use-general-producers")) {
-            // @@@TODO (lh): this does not work as IO directives need ast relations, but delta and new are
-            // ram relation references
             if (Global::config().has("use-general-consumers")) {
                 if (internOuts.count(rel) || internNonOutsWithExternSuccs.count(rel)) {
                     appendStmt(updateRelTable,
@@ -1458,13 +1415,8 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
             if (!externAggNegPreds.count(rel)) {
                 std::unique_ptr<RamStatement> updateRelTable;
 
-                // @@@TODO (lh): I think it's enough just to clear the deltas here if not using general
-                // consumers, the news are not even used...
+                // @TODO (lh): see if it's possible to just clear the deltas here if not using general consumers as the new's are not even used
                 if (Global::config().has("use-general-consumers")) {
-                    // @@@TODO: DO THIS! if (null not in new rel, then clear and swap, otherwise leave in
-                    // there)
-                    // @@@TODO: maybe just use an exit cond in a loop evaluated once, ugly hack but does
-                    // the job...
                     std::vector<std::unique_ptr<RamExpression>> nullPayload;
                     nullPayload.push_back(std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
                     for (std::size_t i = 1; i < rel->getArity(); ++i) {
@@ -1548,8 +1500,7 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                     // add to loop body
                     appendStmt(loopRelSeq, std::move(rule));
 
-                    // @TODO (lh): handle logging, profiling, execution plans, and provenance, where
-                    // possible
+                    // @TODO (lh): handle logging, profiling, execution plans, and provenance here
                 }
             }
 
@@ -1655,9 +1606,6 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                                            std::unique_ptr<RamRelationReference>(relNew[rel]->clone())));
         }
         if (Global::config().has("use-general-consumers")) {
-            // @@@TODO: HERE
-
-            // @TODO (lh): fix this, see ram algorithm above, add comments
             for (const AstRelation* rel : externPreds) {
                 if (!externAggNegPreds.count(rel)) {
                     std::vector<std::unique_ptr<RamExpression>> nullPayload;
@@ -1946,7 +1894,8 @@ std::unique_ptr<RamStatement> AstTranslator::makeNegationSubproofSubroutine(cons
 
 /** translates the given datalog program into an equivalent RAM program  */
 void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) {
-    // @TODO (lh): enable non-blocking communication for kafka engine when -a/--async option enabled
+
+    // @TODO (lh): refactor this function and add comments
 
     // obtain type environment from analysis
     typeEnv = &translationUnit.getAnalysis<TypeEnvironmentAnalysis>()->getTypeEnvironment();
@@ -1980,7 +1929,6 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
     };
 
     if (Global::config().has("engine")) {
-        // @@@TODO (lh): try with a ram parallel statement for kafka loads and stores
         std::size_t masterScc = -1;
 
         // make a new ram statement for the master stratum
@@ -2030,17 +1978,6 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
     for (const auto& scc : sccOrder.order()) {
         // make a new ram statement for the current SCC
         std::unique_ptr<RamStatement> current;
-
-        // @@@TODO: move this down to the conditional,
-        // then just use if (Global::config().has("use-general")) { for generalisation,
-        // and change cli option "async" to "append" for now,
-        // then get working with blocking kafka/file IO and
-        // USE_GENERAL defined, then start with *production*
-        // (not *consumption*) of the new relations with
-        // USE_GENERAL_WRITE/USE_GENERAL_PRODUCTION defined for both kafka and file
-        // (and file must have -a or maybe just remove -a for now
-        // and do USE_GENERAL_PRODUCTION instead
-        // then move on to CONSUMPTION
 
         // find out if the current SCC is recursive
         const auto isRecursive = (!Global::config().has("use-general")) ? sccGraph.isRecursive(scc) : true;
