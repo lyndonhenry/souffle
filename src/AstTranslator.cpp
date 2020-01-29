@@ -1881,6 +1881,8 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
 
     // @TODO (lh): have this pass all tests in the souffle testsuite, disable any features that don't work yet
 
+    // @TODO (lh): add new kafka tests to the souffle testsuite so that you don't break anything as things progress
+
     // obtain type environment from analysis
     typeEnv = &translationUnit.getAnalysis<TypeEnvironmentAnalysis>()->getTypeEnvironment();
 
