@@ -1949,7 +1949,7 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
             // get all output relations of the current scc
             const auto& outputRelations = sccGraph.getInternalOutputRelations(scc);
 
-            // make load statements for each output relation to consume with kafak
+            // make load statements for each output relation to consume with kafka
             for (const auto& outputRelation : outputRelations) {
                 makeRamLoad(current, masterScc, outputRelation, "output-dir", ".csv", "null-payload");
             }
