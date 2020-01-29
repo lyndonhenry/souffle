@@ -207,7 +207,8 @@ const std::string DebugReporter::getTitleForAstAnalysisPhase() {
     for (const auto& word : splitString(AstAnalysisSubclass::name, '-')) {
         assert(!word.empty());
         const char first = std::toupper(word.at(0));
-        const std::string rest = (word.size() > 1) ? std::string(word.begin() + 1, word.end()) : std::string();
+        const std::string rest =
+                (word.size() > 1) ? std::string(word.begin() + 1, word.end()) : std::string();
         title << " " << first << rest;
     }
     const auto titleString = title.str();
@@ -222,21 +223,19 @@ const std::string DebugReporter::getBodyForAstAnalysisPhase(AstTranslationUnit& 
 }
 
 template <typename AstAnalysisSubclass>
-DebugReportSection DebugReporter::getCodeSectionForAstAnalysisPhase(AstTranslationUnit& translationUnit, const std::string& id) {
-    return getCodeSection(
-        id + "-" + AstAnalysisSubclass::name, 
-        getTitleForAstAnalysisPhase<AstAnalysisSubclass>(),
-        getBodyForAstAnalysisPhase<AstAnalysisSubclass>(translationUnit)
-    );
+DebugReportSection DebugReporter::getCodeSectionForAstAnalysisPhase(
+        AstTranslationUnit& translationUnit, const std::string& id) {
+    return getCodeSection(id + "-" + AstAnalysisSubclass::name,
+            getTitleForAstAnalysisPhase<AstAnalysisSubclass>(),
+            getBodyForAstAnalysisPhase<AstAnalysisSubclass>(translationUnit));
 }
 
 template <typename AstAnalysisSubclass>
-DebugReportSection DebugReporter::getDotGraphSectionForAstAnalysisPhase(AstTranslationUnit& translationUnit, const std::string& id) {
-    return getDotGraphSection(
-        id + "-" + AstAnalysisSubclass::name, 
-        getTitleForAstAnalysisPhase<AstAnalysisSubclass>(),
-        getBodyForAstAnalysisPhase<AstAnalysisSubclass>(translationUnit)
-    );
+DebugReportSection DebugReporter::getDotGraphSectionForAstAnalysisPhase(
+        AstTranslationUnit& translationUnit, const std::string& id) {
+    return getDotGraphSection(id + "-" + AstAnalysisSubclass::name,
+            getTitleForAstAnalysisPhase<AstAnalysisSubclass>(),
+            getBodyForAstAnalysisPhase<AstAnalysisSubclass>(translationUnit));
 }
 
 bool DebugReporter::transform(AstTranslationUnit& translationUnit) {
@@ -256,25 +255,25 @@ bool DebugReporter::transform(AstTranslationUnit& translationUnit) {
 
 void DebugReporter::generateDebugReport(
         AstTranslationUnit& translationUnit, const std::string& id, std::string title) {
+            // @TODO (lh): decide on a useful set of debug report sections, maybe enable more with verbose
     translationUnit.getDebugReport().addSection(DebugReportSection(id, std::move(title),
-            {
-                [&](){
-                    const auto name = "dl";
-                    const auto title = "Datalog";
-                    std::stringstream body;
-                    translationUnit.getProgram()->print(body);
-                    return getCodeSection(id + "-" + name, title, body.str());
-                }(),
-                getCodeSectionForAstAnalysisPhase<TypeAnalysis>(translationUnit, id),
-                getCodeSectionForAstAnalysisPhase<TypeEnvironmentAnalysis>(translationUnit, id),
-                getDotGraphSectionForAstAnalysisPhase<PrecedenceGraph>(translationUnit, id),
-                getDotGraphSectionForAstAnalysisPhase<SCCGraph>(translationUnit, id),
-                getCodeSectionForAstAnalysisPhase<TopologicallySortedSCCGraph>(translationUnit, id),
-                getCodeSectionForAstAnalysisPhase<RedundantRelations>(translationUnit, id),
-                getCodeSectionForAstAnalysisPhase<RecursiveClauses>(translationUnit, id),
-                getCodeSectionForAstAnalysisPhase<AggregatedAndNegatedRelations>(translationUnit, id),
-                getCodeSectionForAstAnalysisPhase<RelationSchedule>(translationUnit, id)
-            }, ""));
+            {[&]() {
+                 const auto name = "dl";
+                 const auto title = "Datalog";
+                 std::stringstream body;
+                 translationUnit.getProgram()->print(body);
+                 return getCodeSection(id + "-" + name, title, body.str());
+             }(),
+                    getCodeSectionForAstAnalysisPhase<TypeAnalysis>(translationUnit, id),
+                    getCodeSectionForAstAnalysisPhase<TypeEnvironmentAnalysis>(translationUnit, id),
+                    getDotGraphSectionForAstAnalysisPhase<PrecedenceGraph>(translationUnit, id),
+                    getDotGraphSectionForAstAnalysisPhase<SCCGraph>(translationUnit, id),
+                    getCodeSectionForAstAnalysisPhase<TopologicallySortedSCCGraph>(translationUnit, id),
+                    getCodeSectionForAstAnalysisPhase<RedundantRelations>(translationUnit, id),
+                    getCodeSectionForAstAnalysisPhase<RecursiveClauses>(translationUnit, id),
+                    getCodeSectionForAstAnalysisPhase<AggregatedAndNegatedRelations>(translationUnit, id),
+                    getCodeSectionForAstAnalysisPhase<RelationSchedule>(translationUnit, id)},
+            ""));
 }
 
 }  // end of namespace souffle

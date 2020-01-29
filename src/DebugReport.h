@@ -151,7 +151,8 @@ public:
      * @param id the unique id of the generated section
      * @param title the text to display as the heading of the section
      */
-    static void generateDebugReport(AstTranslationUnit& translationUnit, const std::string& id, std::string title);
+    static void generateDebugReport(
+            AstTranslationUnit& translationUnit, const std::string& id, std::string title);
 
     /**
      * Generate a debug report section for code (preserving formatting), with the given id and title.
@@ -161,7 +162,9 @@ public:
     /**
      * Generated a debug report section for a dot graph specification, with the given id and title.
      */
-    static DebugReportSection getDotGraphSection(const std::string& id, std::string title, const std::string& dotSpec);
+    static DebugReportSection getDotGraphSection(
+            const std::string& id, std::string title, const std::string& dotSpec);
+
 private:
     /*
      * Generate a title for a given AstAnalysis subclass.
@@ -173,17 +176,20 @@ private:
      */
     template <typename AstAnalysisSubclass>
     static const std::string getBodyForAstAnalysisPhase(AstTranslationUnit& translationUnit);
+
 public:
     /*
      * Generate a debug report section for code for a given AstAnalysis subclass.
      */
     template <typename AstAnalysisSubclass>
-    static DebugReportSection getCodeSectionForAstAnalysisPhase(AstTranslationUnit& translationUnit, const std::string& id);
+    static DebugReportSection getCodeSectionForAstAnalysisPhase(
+            AstTranslationUnit& translationUnit, const std::string& id);
     /*
      * Generate a debug report section for a dot graph for a given AstAnalysis subclass.
      */
     template <typename AstAnalysisSubclass>
-    static DebugReportSection getDotGraphSectionForAstAnalysisPhase(AstTranslationUnit& translationUnit, const std::string& id);
+    static DebugReportSection getDotGraphSectionForAstAnalysisPhase(
+            AstTranslationUnit& translationUnit, const std::string& id);
 
 private:
     std::unique_ptr<AstTransformer> wrappedTransformer;

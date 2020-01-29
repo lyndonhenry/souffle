@@ -107,6 +107,9 @@ public:
     }
 };
 class ReadStreamKafkaDefault : public ReadStreamKafka {
+    // @TODO (lh): get this working with streaming strings without dictionaries for now, so that all tests
+    // pass
+
 public:
     ReadStreamKafkaDefault(const std::vector<bool>& symbolMask, SymbolTable& symbolTable,
             const IODirectives& ioDirectives, const size_t numberOfHeights = 0, const bool provenance = false)

@@ -121,6 +121,9 @@ private:
     }
 };
 class WriteStreamKafkaFactory : public WriteStreamFactory {
+    // @TODO (lh): get this working with streaming strings without dictionaries for now, so that all tests
+    // pass
+
 public:
     std::unique_ptr<WriteStream> getWriter(const std::vector<bool>& symbolMask,
             const SymbolTable& symbolTable, const IODirectives& ioDirectives, const bool provenance,

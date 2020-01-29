@@ -1961,9 +1961,10 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
         if (hasAtLeastOneStrata) {
             os << "switch (stratumIndex) {\n";
             {
-                // @TODO (lh): fix up the -1 and -2 stuff
-                // otherwise use stratum 0 if index is -2
-                os << "case (size_t) -2:\ngoto STRATUM_0;\nbreak;\n";
+                // @TODO (lh): fix up the -1 and -2 stuff, make it work so kafka does not need to be run with
+                // -i
+                const size_t startStratum = (Global::config().has("engine")) ? (size_t)-1 : 0;
+                os << "case (size_t) -2:\ngoto STRATUM_" << startStratum << ";\nbreak;\n";
             }
             os << ss.str();
             os << "}\n";
