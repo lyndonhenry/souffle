@@ -28,6 +28,7 @@ class AstTranslationUnit;
 class TypeEnvironmentAnalysis : public AstAnalysis {
 public:
     static constexpr const char* name = "type-environment";
+    static constexpr const char* title = "Type Environment";
 
     void run(const AstTranslationUnit& translationUnit) override;
 

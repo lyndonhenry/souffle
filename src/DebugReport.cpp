@@ -201,6 +201,20 @@ DebugReportSection DebugReporter::getDotGraphSection(
     return DebugReportSection(id, std::move(title), {}, graphHTML.str());
 }
 
+template <typename AstAnalysisSubclass>
+DebugReportSection DebugReporter::getCodeSectionForAstAnalysisPhase(AstTranslationUnit& translationUnit, const std::string& id) {
+    std::stringstream stringstream;
+    translationUnit.getAnalysis<AstAnalysisSubclass>()->print(stringstream);
+    return getCodeSection(id + "-" + AstAnalysisSubclass::name, AstAnalysisSubclass::title, stringstream.str());
+}
+
+template <typename AstAnalysisSubclass>
+DebugReportSection DebugReporter::getDotGraphSectionForAstAnalysisPhase(AstTranslationUnit& translationUnit, const std::string& id) {
+    std::stringstream stringstream;
+    translationUnit.getAnalysis<AstAnalysisSubclass>()->print(stringstream);
+    return getDotGraphSection(id + "-" + AstAnalysisSubclass::name, AstAnalysisSubclass::title, stringstream.str());
+}
+
 bool DebugReporter::transform(AstTranslationUnit& translationUnit) {
     auto start = std::chrono::high_resolution_clock::now();
     bool changed = applySubtransformer(translationUnit, wrappedTransformer.get());
