@@ -333,6 +333,9 @@ function ensure_kafka_test_case_passes() {
     local JSON_DATA="$(${PWD}/src/souffle ${EXE}.dl --show=topsort-info)"
     local RELATION_NAMES="$(echo ${JSON_DATA} | jq -r '.RelationNames | .[]')" 
     local STRATUM_NAMES="$(echo ${JSON_DATA} | jq -r '.StratumNames | .[]')"
+
+    # @TODO (lh): move topic creation and/or deletion to C++ code so testing is possible
+
     # ensure that all program specific topics are initially empty by deleting them
     for_each_async "ensure_kafka_topic_deleted ${KAFKA_HOST}" ${RELATION_NAMES}
     wait
@@ -478,9 +481,6 @@ function main() {
     # generalized seminaive evaluation with intermediate results produced to and consumed from kafka topics inside of fixpoint loop
     ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka --custom=use-general_use-general-producers_use-general-consumers"
 
-    # prompt the user to continue with cleanup
-    read -p "Continue?"
-
     # stop the kafka broker
     ensure_docker_compose_is_down "${KAFKA_DOCKER_PATH}"
 
@@ -490,8 +490,5 @@ function main() {
     exit 0
 
 }
-
-# @TODO: remove this after getting testsuite to run
-ensure_testsuite_passes
 
 main ${@:-}
