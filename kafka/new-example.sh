@@ -413,7 +413,14 @@ function ensure_testsuite_passes() {
     TESTSUITEFLAGS="-j${JOBS}" make check -j${JOBS}
 }
 
+function ensure_sudo_permissions() {
+    sudo echo
+}
+
 function main() {
+
+    # ensure we have sudo permissions
+    ensure_sudo_permissions
 
     # ensure that we are in the root directory of the souffle project
     [[ $(basename ${PWD}) != souffle ]] && exit 1
@@ -422,11 +429,8 @@ function main() {
     local TESTSUITE_DIR="${PWD}/tests/testsuite.dir"
 
     # set the test case used by this script
-    local TEST_CASE="example/input_output_numbers"
-
-    # set variables for kafka
-    local KAFKA_HOST="localhost:9092"
-    local KAFKA_DOCKER_PATH="${PWD}/kafka"
+    # @TODO (lh): local TEST_CASE="example/input_output_numbers"
+    local TEST_CASE="evaluation/binop"
 
     # make a temp directory for dependencies
     local TMP_DIRECTORY="/tmp/souffle"
@@ -440,15 +444,6 @@ function main() {
 
     # ensure that souffle is built for kafka
     ensure_souffle_is_built_for_kafka "${PWD}"
-
-    # start the kafka broker
-    ensure_docker_compose_is_up "${KAFKA_DOCKER_PATH}"
-
-    # ensure that the debugging topic exists
-    ensure_kafka_topic_created ${KAFKA_HOST} _DEBUG_
-
-    # set the executable for the test case
-    local EXE="${TESTSUITE_DIR}/${TEST_CASE}/$(basename ${TEST_CASE})"
 
     # @@@TODO: see if you can get this working with --use-general-producers and no --use-general
 
@@ -471,6 +466,16 @@ function main() {
     ensure_test_case_passes "${TEST_CASE}" "-efile --custom=use-general_use-general-producers"
 
     # run tests for -ekafka
+
+    # set variables for kafka
+    local KAFKA_HOST="localhost:9092"
+    local KAFKA_DOCKER_PATH="${PWD}/kafka"
+
+    # start the kafka broker
+    ensure_docker_compose_is_up "${KAFKA_DOCKER_PATH}"
+
+    # ensure that the debugging topic exists
+    ensure_kafka_topic_created ${KAFKA_HOST} _DEBUG_
 
     # normal seminaive evaluation with intermediate results produced to and consumed from kafka topics
     ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka" 

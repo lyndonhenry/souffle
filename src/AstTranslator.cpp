@@ -1242,7 +1242,10 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                 makeRamLoad(preamble, scc, relation, "output-dir", ".csv", "null-payload",
                         (hasEngine) ? getEngine : "file",
                         std::unique_ptr<RamRelationReference>(relDelta[relation]->clone()));
+                // @@@TODO (lh)
+                appendStmt(preamble, std::make_unique<RamSequence>(genMerge(rrel[relation].get(), relDelta[relation].get())));
             }
+
         }
         // load all external non-output predecessor relations from the output dir with a .facts
         // extension
@@ -1251,6 +1254,8 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                 makeRamLoad(preamble, scc, relation, "output-dir", ".facts", "null-payload",
                         hasEngine ? getEngine : "file",
                         std::unique_ptr<RamRelationReference>(relDelta[relation]->clone()));
+                // @@@TODO (lh)
+                appendStmt(preamble, std::make_unique<RamSequence>(genMerge(rrel[relation].get(), relDelta[relation].get())));
             }
         }
     }
@@ -1965,7 +1970,10 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
 
         // ensure that current exists, i.e. there is at least one output or printSize relation in the
         // program
-        assert(current);
+        // @TODO (lh): avoid this cheap hack
+        if (!current) {
+            current = std::make_unique<RamLoop>(std::make_unique<RamExit>(std::make_unique<RamTrue>()));
+        }
 
         // append the master stratum
         appendStmt(res, std::make_unique<RamStratum>(std::move(current), (size_t)-1));
@@ -2031,14 +2039,14 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
                     // extension
                     for (const auto& relation : externOutPreds) {
                         if (!externAggNegPreds.count(relation)) {
-                            makeRamLoad(current, scc, relation, "output-dir", ".csv", "null-payload");
+                            makeRamLoad(current, scc, relation, "output-dir", ".csv");
                         }
                     }
                     // load all external non-output predecessor relations from the output dir with a
                     // .facts extension
                     for (const auto& relation : externNonOutPreds) {
                         if (!externAggNegPreds.count(relation)) {
-                            makeRamLoad(current, scc, relation, "output-dir", ".facts", "null-payload");
+                            makeRamLoad(current, scc, relation, "output-dir", ".facts");
                         }
                     }
                 }
@@ -2051,8 +2059,8 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
                                          translationUnit, *((const AstRelation*)*allInterns.begin()))
                                : translateRecursiveRelation(translationUnit, scc);
         appendStmt(current, std::move(bodyStatement));
+
         if (!Global::config().has("use-general-producers")) {
-            {
                 // if a communication engine is enabled...
                 if (Global::config().has("engine")) {
                     // store all internal non-output relations with external successors to the output dir
@@ -2066,9 +2074,7 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
                 for (const auto& relation : internOuts) {
                     makeRamStore(current, scc, relation, "output-dir", ".csv");
                 }
-            }
         }
-        {
             // if a communication engine is enabled and is kafka...
             if (Global::config().get("engine") == "kafka") {
                 // send halts for all internal relations
@@ -2084,7 +2090,6 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
                     }
                 }
             }
-        }
 
         // if provenance is not enabled...
         if (!Global::config().has("provenance")) {
