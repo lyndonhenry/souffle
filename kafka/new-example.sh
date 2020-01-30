@@ -383,6 +383,34 @@ function ensure_kafka_test_case_passes() {
     fi
 }
 
+function ensure_testsuite_passes() {
+    # @TODO (lh): get testing right here
+    local JOBS=$(nproc || sysctl -n hw.ncpu || echo 2)
+    local SOUFFLE_CATEGORY="FastEvaluation"
+    local SOUFFLE_CONFS=""
+    SOUFFLE_CONFS+="-j${JOBS}"
+    SOUFFLE_CONFS+=",-j${JOBS} -c"
+    SOUFFLE_CONFS+=",-j${JOBS} -c -efile"
+    # @TODO (lh): SOUFFLE_CONFS+=",-j8 -c -ekafka"
+    SOUFFLE_CONFS+=",-j${JOBS} --custom=use-general"
+    SOUFFLE_CONFS+=",-j${JOBS} -c --custom=use-general"
+    SOUFFLE_CONFS+=",-j${JOBS} -c -efile --custom=use-general"
+    # @TODO (lh): SOUFFLE_CONFS+=",-j8 -c -ekafka --custom=use-general"
+    # @TODO (lh): SOUFFLE_CONFS+=",-j8 --custom=use-general,use-general-producers"
+    # @TODO (lh): SOUFFLE_CONFS+=",-j8 -c --custom=use-general,use-general-producers"
+    # @TODO (lh): SOUFFLE_CONFS+=",-j8 -c -efile --custom=use-general,use-general-producers"
+    # @TODO (lh): SOUFFLE_CONFS+=",-j8 -c -ekafka --custom=use-general,use-general-producers"
+    # @TODO (lh): SOUFFLE_CONFS+=",-j8 -c -ekafka --custom=use-general,use-general-producers,use-general-consumers"
+    # @TODO (lh): double check if the export statements are necessary here
+    export SOUFFLE_CATEGORY="${SOUFFLE_CATEGORY}"
+    export SOUFFLE_CONFS="${SOUFFLE_CONFS}"
+    make clean
+    ./bootstrap
+    SOUFFLE_CATEGORY=${SOUFFLE_CATEGORY} SOUFFLE_CONFS=${SOUFFLE_CONFS} ./configure --enable-kafka
+    make -j${JOBS}
+    TESTSUITEFLAGS="-j${JOBS}" make check -j${JOBS}
+}
+
 function main() {
 
     # ensure that we are in the root directory of the souffle project
@@ -458,27 +486,13 @@ function main() {
     ensure_docker_compose_is_down "${KAFKA_DOCKER_PATH}"
 
     # run the testsuite
-
-    # @TODO (lh): get testing right here
-    local SOUFFLE_CATEGORY="FastEvaluation"
-    local SOUFFLE_CONFS=""
-    SOUFFLE_CONFS+="-j8"
-    SOUFFLE_CONFS+=",-j8 -c"
-    SOUFFLE_CONFS+=",-j8 -c -efile"
-    # @TODO (lh): SOUFFLE_CONFS+=",-j8 -c -ekafka"
-    SOUFFLE_CONFS+=",-j8 --custom=use-general"
-    SOUFFLE_CONFS+=",-j8 -c --custom=use-general"
-    SOUFFLE_CONFS+=",-j8 -c -efile --custom=use-general"
-    # @TODO (lh): SOUFFLE_CONFS+=",-j8 -c -ekafka --custom=use-general"
-    # @TODO (lh): SOUFFLE_CONFS+=",-j8 --custom=use-general,use-general-producers"
-    # @TODO (lh): SOUFFLE_CONFS+=",-j8 -c --custom=use-general,use-general-producers"
-    # @TODO (lh): SOUFFLE_CONFS+=",-j8 -c -efile --custom=use-general,use-general-producers"
-    # @TODO (lh): SOUFFLE_CONFS+=",-j8 -c -ekafka --custom=use-general,use-general-producers"
-    # @TODO (lh): SOUFFLE_CONFS+=",-j8 -c -ekafka --custom=use-general,use-general-producers,use-general-consumers"
-    SOUFFLE_CATEGORY="${SOUFFLE_CATEGORY}" SOUFFLE_CONFS="${SOUFLE_CONFS}" make check -j8
+    ensure_testsuite_passes
 
     exit 0
 
 }
+
+# @TODO: remove this after getting testsuite to run
+ensure_testsuite_passes
 
 main ${@:-}
