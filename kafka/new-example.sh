@@ -214,17 +214,25 @@ function ensure_souffle_program_is_built() {
     local DIRNAME="$(dirname ${FILE})"
     local BASENAME="$(basename ${FILE})"
     local NAME="${BASENAME%%.*}"
-
+    local COMMAND=""
+    COMMAND+="${EXE}"
+    COMMAND+=" -D${DIRNAME} "
+    COMMAND+=" -F${DIRNAME}/facts "
+    COMMAND+=" -o${DIRNAME}/${NAME} "
+    COMMAND+=" -r${DIRNAME}/${NAME}.html "
+    COMMAND+=" ${ARGS} "
+    COMMAND+=" ${FILE} "
     if [ ! -e "${DIRNAME}/${NAME}" ]
     then
         cd "${DIRNAME}"
-        "${EXE}" \
-            -D"${DIRNAME}" \
-            -F"${DIRNAME}/facts" \
-            -o"${DIRNAME}/${NAME}" \
-            -r"${DIRNAME}/${NAME}.html" \
-            ${ARGS} \
-            "${FILE}"
+        # show transformed ram
+        ${COMMAND} --show=transformed-ram
+        # echo the command
+        echo 
+        echo "${COMMAND}"
+        echo
+        # run souffle
+        ${COMMAND}
         cd -
     fi
 
@@ -264,7 +272,7 @@ function ensure_test_case_passes() {
     # remove the expected output files, these are overridden by actual outputs on execution
     rm -rf "${TEST_CASE_ROOT}"/*.csv
     # run the program
-    ${EXE} "${3:-}"
+    ${EXE} ${EXE_ARGS}
     # show the line count of the actual output files, the user should compare this to the expected produced above
     wc -l "${TEST_CASE_ROOT}"/*.csv > "${TEST_CASE_ROOT}"/actual.txt 
     # diff the actual vs expected output
@@ -333,7 +341,7 @@ function ensure_kafka_test_case_passes() {
     for_each_async "ensure_kafka_topic_created ${KAFKA_HOST}" ${RELATION_NAMES}
     wait
     # run all program strata as subprograms
-    for_each_async "${EXE} -Xmetadata.broker.list=${KAFKA_HOST} -i" -1 ${STRATUM_NAMES}
+    for_each_async "${EXE} ${EXE_ARGS} -Xmetadata.broker.list=${KAFKA_HOST} -i" -1 ${STRATUM_NAMES}
     wait
     # show the line count of the actual output files, the user should compare this to the expected produced above
     wc -l "${TEST_CASE_ROOT}"/*.csv > "${TEST_CASE_ROOT}"/actual.txt 

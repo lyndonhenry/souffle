@@ -1421,7 +1421,7 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                                             std::unique_ptr<RamRelationReference>(relNew[rel]->clone())),
                                     std::make_unique<RamExit>(std::make_unique<RamTrue>())));
                 } else {
-                    /* Generate clear operations for delta relations. */
+                    /* Generate clear operations for new relations. */
                     appendStmt(updateRelTable,
                             std::make_unique<RamClear>(
                                     std::unique_ptr<RamRelationReference>(relNew[rel]->clone())));
