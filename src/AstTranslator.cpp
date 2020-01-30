@@ -74,19 +74,84 @@ void AstTranslator::makeRamLoad(std::unique_ptr<RamStatement>& current, std::siz
         const std::string& ioType = Global::config().has("engine") ? Global::config().get("engine") : "file",
         std::unique_ptr<RamRelationReference> ramRelationReference = nullptr) {
     // @TODO (lh): refactor this function and add comments
-    IODirectives ioDirectives;
-    ioDirectives.set("location", inputDirectory);
-    ioDirectives.set("directory", Global::config().get(inputDirectory));
-    ioDirectives.set("extension", fileExtension);
-    ioDirectives.setIOType(ioType);
-    ioDirectives.set(Global::config().get("engine"), engineDirectives);
-    ioDirectives.set("stratum", (scc == (size_t)-1) ? "master" : "slave");
+    IODirectives baseIoDirectives;
+    baseIoDirectives.set("location", inputDirectory);
+    baseIoDirectives.set("directory", Global::config().get(inputDirectory));
+    baseIoDirectives.set("extension", fileExtension);
+    baseIoDirectives.setIOType(ioType);
+    baseIoDirectives.set(Global::config().get("engine"), engineDirectives);
+    baseIoDirectives.set("stratum", (scc == (size_t)-1) ? "master" : "slave");
+
+    std::vector<IODirectives> inputDirectives;
+    {
+        const auto location = baseIoDirectives.get("location");
+        const auto filePath = baseIoDirectives.get("directory");
+        const auto fileExt = baseIoDirectives.get("extension");
+        const auto stratumIndex = baseIoDirectives.get("stratum");
+        const auto ioType = baseIoDirectives.getIOType();
+        const auto engineConfig = baseIoDirectives.get(Global::config().get("engine"));
+
+        for (const auto& current : relation->getLoads()) {
+            IODirectives ioDirectives;
+            for (const auto& currentPair : current->getIODirectiveMap()) {
+                ioDirectives.set(currentPair.first, currentPair.second);
+            }
+            inputDirectives.push_back(ioDirectives);
+        }
+
+        if (inputDirectives.empty()) {
+            inputDirectives.emplace_back();
+        }
+
+        const std::string inputFilePath = (filePath.empty()) ? Global::config().get("fact-dir") : filePath;
+        const std::string inputFileExt = (fileExt.empty()) ? ".facts" : fileExt;
+
+        const bool isIntermediate =
+                (Global::config().has("engine") && inputFilePath == Global::config().get("output-dir") &&
+                        inputFileExt == ".facts");
+
+        for (auto& ioDirective : inputDirectives) {
+            // all intermediate relations are given the default delimiter and have no headers
+            if (isIntermediate) {
+                ioDirective.set("intermediate", "true");
+                ioDirective.set("delimiter", "\t");
+                ioDirective.set("headers", "false");
+            }
+            ioDirective.set("location", location);
+            ioDirective.set("directory", inputFilePath);
+            ioDirective.set("extension", inputFileExt);
+            ioDirective.set("stratum", stratumIndex);
+            ioDirective.setIOType(ioType);
+            ioDirective.set(Global::config().get("engine"), engineConfig);
+            // @TODO (lh): refactor this function and add comments
+            // set relation name correctly
+            ioDirective.setRelationName(getRelationName(relation->getName()));
+
+            // set a default IO type of file and a default filename if not supplied
+            if (!ioDirective.has("IO")) {
+                ioDirective.setIOType("file");
+            }
+
+            // load intermediate relations from correct files
+            if (ioDirective.getIOType() == "file") {
+                // set filename by relation if not given, or if relation is intermediate
+                if (!ioDirective.has("filename") || ioDirective.get("intermediate") == "true") {
+                    ioDirective.setFileName(ioDirective.getRelationName() + ioDirective.get("extension"));
+                }
+
+                // if filename is not an absolute path, concat with cmd line directory
+                if (ioDirective.getIOType() == "file" && ioDirective.getFileName().front() != '/') {
+                    ioDirective.setFileName(ioDirective.get("directory") + "/" + ioDirective.getFileName());
+                }
+            }
+        }
+    }
 
     std::unique_ptr<RamStatement> statement = std::make_unique<RamLoad>(
             (ramRelationReference == nullptr)
                     ? std::unique_ptr<RamRelationReference>(translateRelation(relation))
                     : std::move(ramRelationReference),
-            getInputIODirectives(relation, ioDirectives));
+            std::move(inputDirectives));
 
     if (Global::config().has("profile")) {
         const std::string logTimerStatement =
@@ -103,26 +168,130 @@ void AstTranslator::makeRamStore(std::unique_ptr<RamStatement>& current, std::si
         const std::string& ioType = Global::config().has("engine") ? Global::config().get("engine") : "file",
         std::unique_ptr<RamRelationReference> ramRelationReference = nullptr) {
     // @TODO (lh): refactor this function and add comments
-    IODirectives ioDirectives;
-    ioDirectives.set("location", outputDirectory);
-    ioDirectives.set("directory", Global::config().get(outputDirectory));
-    ioDirectives.set("extension", fileExtension);
-    ioDirectives.setIOType(ioType);
+    IODirectives baseIoDirectives;
+    baseIoDirectives.set("location", outputDirectory);
+    baseIoDirectives.set("directory", Global::config().get(outputDirectory));
+    baseIoDirectives.set("extension", fileExtension);
+    baseIoDirectives.setIOType(ioType);
 
-    ioDirectives.set(Global::config().get("engine"), engineDirectives);
+    baseIoDirectives.set(Global::config().get("engine"), engineDirectives);
 
-    ioDirectives.set("stratum", (scc == (size_t)-1) ? "master" : "slave");
+    baseIoDirectives.set("stratum", (scc == (size_t)-1) ? "master" : "slave");
     if (Global::config().has("use-general-producers")) {
-        ioDirectives.set("append", "true");
+        baseIoDirectives.set("append", "true");
     } else {
-        ioDirectives.set("append", "false");
+        baseIoDirectives.set("append", "false");
+    }
+
+    // @TODO (lh): refactor this function and add comments
+    std::vector<IODirectives> outputDirectives;
+    {
+        const auto location = baseIoDirectives.get("location");
+        const auto filePath = baseIoDirectives.get("directory");
+        const auto fileExt = baseIoDirectives.get("extension");
+        const auto stratumIndex = baseIoDirectives.get("stratum");
+        const auto ioType = baseIoDirectives.getIOType();
+        const auto engineConfig = baseIoDirectives.get(Global::config().get("engine"));
+        const auto isAppend = baseIoDirectives.get("append");
+
+        // If stdout is requested then remove all directives from the datalog file.
+        if (Global::config().get("output-dir") == "-") {
+            bool hasOutput = false;
+            for (const auto* current : relation->getStores()) {
+                IODirectives ioDirectives;
+                if (dynamic_cast<const AstPrintSize*>(current) != nullptr) {
+                    ioDirectives.setIOType("stdoutprintsize");
+                    outputDirectives.push_back(ioDirectives);
+                } else if (!hasOutput) {
+                    hasOutput = true;
+                    ioDirectives.setIOType("stdout");
+                    ioDirectives.set("headers", "true");
+                    outputDirectives.push_back(ioDirectives);
+                }
+            }
+        } else {
+            for (const auto* current : relation->getStores()) {
+                IODirectives ioDirectives;
+                for (const auto& currentPair : current->getIODirectiveMap()) {
+                    ioDirectives.set(currentPair.first, currentPair.second);
+                }
+                outputDirectives.push_back(ioDirectives);
+            }
+        }
+
+        if (outputDirectives.empty()) {
+            outputDirectives.emplace_back();
+        }
+
+        const std::string outputFilePath = (filePath.empty()) ? Global::config().get("output-dir") : filePath;
+        const std::string outputFileExt = (fileExt.empty()) ? ".csv" : fileExt;
+
+        const bool isIntermediate =
+                (Global::config().has("engine") && outputFilePath == Global::config().get("output-dir") &&
+                        outputFileExt == ".facts");
+
+        for (auto& ioDirective : outputDirectives) {
+            // all intermediate relations are given the default delimiter and have no headers
+            if (isIntermediate) {
+                ioDirective.set("intermediate", "true");
+                ioDirective.set("delimiter", "\t");
+                ioDirective.set("headers", "false");
+            }
+            ioDirective.set("location", location);
+            ioDirective.set("directory", outputFilePath);
+            ioDirective.set("extension", outputFileExt);
+            ioDirective.set("stratum", stratumIndex);
+            ioDirective.set("append", isAppend);
+            ioDirective.setIOType(ioType);
+            ioDirective.set(Global::config().get("engine"), engineConfig);
+            // @TODO (lh): refactor this function and add comments
+            // set relation name correctly
+            ioDirective.setRelationName(getRelationName(relation->getName()));
+
+            // set a default IO type of file and a default filename if not supplied
+            if (!ioDirective.has("IO")) {
+                ioDirective.setIOType("file");
+            }
+
+            // load intermediate relations from correct files
+            if (ioDirective.getIOType() == "file") {
+                // set filename by relation if not given, or if relation is intermediate
+                if (!ioDirective.has("filename") || ioDirective.get("intermediate") == "true") {
+                    ioDirective.setFileName(ioDirective.getRelationName() + ioDirective.get("extension"));
+                }
+
+                // if filename is not an absolute path, concat with cmd line directory
+                if (ioDirective.getIOType() == "file" && ioDirective.getFileName().front() != '/') {
+                    ioDirective.setFileName(ioDirective.get("directory") + "/" + ioDirective.getFileName());
+                }
+            }
+
+            if (!ioDirective.has("attributeNames")) {
+                std::string delimiter("\t");
+                if (ioDirective.has("delimiter")) {
+                    delimiter = ioDirective.get("delimiter");
+                }
+                std::vector<std::string> attributeNames;
+                for (unsigned int i = 0; i < relation->getArity(); i++) {
+                    attributeNames.push_back(relation->getAttribute(i)->getAttributeName());
+                }
+
+                if (Global::config().has("provenance")) {
+                    std::vector<std::string> originalAttributeNames(attributeNames.begin(),
+                            attributeNames.end() - 1 - relation->numberOfHeightParameters());
+                    ioDirective.set("attributeNames", toString(join(originalAttributeNames, delimiter)));
+                } else {
+                    ioDirective.set("attributeNames", toString(join(attributeNames, delimiter)));
+                }
+            }
+        }
     }
 
     std::unique_ptr<RamStatement> statement = std::make_unique<RamStore>(
             (ramRelationReference == nullptr)
                     ? std::unique_ptr<RamRelationReference>(translateRelation(relation))
                     : std::move(ramRelationReference),
-            getOutputIODirectives(relation, ioDirectives));
+            std::move(outputDirectives));
 
     if (Global::config().has("profile")) {
         const std::string logTimerStatement =
@@ -131,168 +300,6 @@ void AstTranslator::makeRamStore(std::unique_ptr<RamStatement>& current, std::si
                 std::unique_ptr<RamRelationReference>(translateRelation(relation)));
     }
     appendStmt(current, std::move(statement));
-}
-
-void AstTranslator::makeIODirective(IODirectives& ioDirective, const AstRelation* rel) {
-    // @TODO (lh): refactor this function and add comments
-    // set relation name correctly
-    ioDirective.setRelationName(getRelationName(rel->getName()));
-
-    // set a default IO type of file and a default filename if not supplied
-    if (!ioDirective.has("IO")) {
-        ioDirective.setIOType("file");
-    }
-
-    // load intermediate relations from correct files
-    if (ioDirective.getIOType() == "file") {
-        // set filename by relation if not given, or if relation is intermediate
-        if (!ioDirective.has("filename") || ioDirective.get("intermediate") == "true") {
-            ioDirective.setFileName(ioDirective.getRelationName() + ioDirective.get("extension"));
-        }
-
-        // if filename is not an absolute path, concat with cmd line directory
-        if (ioDirective.getIOType() == "file" && ioDirective.getFileName().front() != '/') {
-            ioDirective.setFileName(ioDirective.get("directory") + "/" + ioDirective.getFileName());
-        }
-    }
-}
-
-std::vector<IODirectives> AstTranslator::getInputIODirectives(
-        const AstRelation* rel, IODirectives& baseIoDirectives) {
-    // @TODO (lh): refactor this function and add comments
-    const auto location = baseIoDirectives.get("location");
-    const auto filePath = baseIoDirectives.get("directory");
-    const auto fileExt = baseIoDirectives.get("extension");
-    const auto stratumIndex = baseIoDirectives.get("stratum");
-    const auto ioType = baseIoDirectives.getIOType();
-    const auto engineConfig = baseIoDirectives.get(Global::config().get("engine"));
-
-    std::vector<IODirectives> inputDirectives;
-
-    for (const auto& current : rel->getLoads()) {
-        IODirectives ioDirectives;
-        for (const auto& currentPair : current->getIODirectiveMap()) {
-            ioDirectives.set(currentPair.first, currentPair.second);
-        }
-        inputDirectives.push_back(ioDirectives);
-    }
-
-    if (inputDirectives.empty()) {
-        inputDirectives.emplace_back();
-    }
-
-    const std::string inputFilePath = (filePath.empty()) ? Global::config().get("fact-dir") : filePath;
-    const std::string inputFileExt = (fileExt.empty()) ? ".facts" : fileExt;
-
-    const bool isIntermediate =
-            (Global::config().has("engine") && inputFilePath == Global::config().get("output-dir") &&
-                    inputFileExt == ".facts");
-
-    for (auto& ioDirective : inputDirectives) {
-        // all intermediate relations are given the default delimiter and have no headers
-        if (isIntermediate) {
-            ioDirective.set("intermediate", "true");
-            ioDirective.set("delimiter", "\t");
-            ioDirective.set("headers", "false");
-        }
-        ioDirective.set("location", location);
-        ioDirective.set("directory", inputFilePath);
-        ioDirective.set("extension", inputFileExt);
-        ioDirective.set("stratum", stratumIndex);
-        ioDirective.setIOType(ioType);
-        ioDirective.set(Global::config().get("engine"), engineConfig);
-        makeIODirective(ioDirective, rel);
-    }
-
-    return inputDirectives;
-}
-
-std::vector<IODirectives> AstTranslator::getOutputIODirectives(
-        const AstRelation* rel, IODirectives& baseIoDirectives) {
-    // @TODO (lh): refactor this function and add comments
-    const auto location = baseIoDirectives.get("location");
-    const auto filePath = baseIoDirectives.get("directory");
-    const auto fileExt = baseIoDirectives.get("extension");
-    const auto stratumIndex = baseIoDirectives.get("stratum");
-    const auto ioType = baseIoDirectives.getIOType();
-    const auto engineConfig = baseIoDirectives.get(Global::config().get("engine"));
-    const auto isAppend = baseIoDirectives.get("append");
-
-    std::vector<IODirectives> outputDirectives;
-
-    // If stdout is requested then remove all directives from the datalog file.
-    if (Global::config().get("output-dir") == "-") {
-        bool hasOutput = false;
-        for (const auto* current : rel->getStores()) {
-            IODirectives ioDirectives;
-            if (dynamic_cast<const AstPrintSize*>(current) != nullptr) {
-                ioDirectives.setIOType("stdoutprintsize");
-                outputDirectives.push_back(ioDirectives);
-            } else if (!hasOutput) {
-                hasOutput = true;
-                ioDirectives.setIOType("stdout");
-                ioDirectives.set("headers", "true");
-                outputDirectives.push_back(ioDirectives);
-            }
-        }
-    } else {
-        for (const auto* current : rel->getStores()) {
-            IODirectives ioDirectives;
-            for (const auto& currentPair : current->getIODirectiveMap()) {
-                ioDirectives.set(currentPair.first, currentPair.second);
-            }
-            outputDirectives.push_back(ioDirectives);
-        }
-    }
-
-    if (outputDirectives.empty()) {
-        outputDirectives.emplace_back();
-    }
-
-    const std::string outputFilePath = (filePath.empty()) ? Global::config().get("output-dir") : filePath;
-    const std::string outputFileExt = (fileExt.empty()) ? ".csv" : fileExt;
-
-    const bool isIntermediate =
-            (Global::config().has("engine") && outputFilePath == Global::config().get("output-dir") &&
-                    outputFileExt == ".facts");
-
-    for (auto& ioDirective : outputDirectives) {
-        // all intermediate relations are given the default delimiter and have no headers
-        if (isIntermediate) {
-            ioDirective.set("intermediate", "true");
-            ioDirective.set("delimiter", "\t");
-            ioDirective.set("headers", "false");
-        }
-        ioDirective.set("location", location);
-        ioDirective.set("directory", outputFilePath);
-        ioDirective.set("extension", outputFileExt);
-        ioDirective.set("stratum", stratumIndex);
-        ioDirective.set("append", isAppend);
-        ioDirective.setIOType(ioType);
-        ioDirective.set(Global::config().get("engine"), engineConfig);
-        makeIODirective(ioDirective, rel);
-
-        if (!ioDirective.has("attributeNames")) {
-            std::string delimiter("\t");
-            if (ioDirective.has("delimiter")) {
-                delimiter = ioDirective.get("delimiter");
-            }
-            std::vector<std::string> attributeNames;
-            for (unsigned int i = 0; i < rel->getArity(); i++) {
-                attributeNames.push_back(rel->getAttribute(i)->getAttributeName());
-            }
-
-            if (Global::config().has("provenance")) {
-                std::vector<std::string> originalAttributeNames(
-                        attributeNames.begin(), attributeNames.end() - 1 - rel->numberOfHeightParameters());
-                ioDirective.set("attributeNames", toString(join(originalAttributeNames, delimiter)));
-            } else {
-                ioDirective.set("attributeNames", toString(join(attributeNames, delimiter)));
-            }
-        }
-    }
-
-    return outputDirectives;
 }
 
 std::unique_ptr<RamRelationReference> AstTranslator::createRelationReference(const std::string name,
@@ -1032,7 +1039,6 @@ void AstTranslator::appendStmt(std::unique_ptr<RamStatement>& stmtList, std::uni
 /** generate RAM code for a non-recursive relation */
 std::unique_ptr<RamStatement> AstTranslator::translateNonRecursiveRelation(
         const AstTranslationUnit& translationUnit, const AstRelation& rel) {
-    // @TODO (lh): refactor this function and add comments
     const auto* recursiveClauses = translationUnit.getAnalysis<RecursiveClauses>();
 
     /* start with an empty sequence */
@@ -1179,14 +1185,28 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
         return stmt;
     };
 
-    // --- create preamble ---
+    const auto hasEngine = Global::config().has("engine");
+    const auto hasUseGeneral = Global::config().has("use-general");
+    const auto hasUseGeneralProducers = Global::config().has("use-general-producers");
+    const auto hasUseGeneralConsumers = Global::config().has("use-general-consumers");
 
-    // clear mappings for temporary relations
-    if (!Global::config().has("use-general")) {
-        rrel.clear();
-        relDelta.clear();
-        relNew.clear();
+    if (hasUseGeneralProducers) {
+        assert(hasUseGeneral);
     }
+
+    if (hasUseGeneralConsumers) {
+        assert(hasUseGeneral && hasUseGeneralProducers);
+    }
+
+    if (hasUseGeneral && !hasEngine) {
+
+    }
+
+    if (hasUseGeneral && !hasEngine && hasUseGeneralProducers) {
+
+    }
+
+    // --- create preamble ---
 
     if (Global::config().has("use-general")) {
         if (!Global::config().has("engine")) {
@@ -1219,102 +1239,111 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                                 std::unique_ptr<RamRelationReference>(relDelta[relation]->clone()));
                     }
                 }
-            }
-        }
-    }
+            } else {
+                std::unique_ptr<RamStatement> loopBody;
 
-    if (Global::config().has("use-general-consumers")) {
-        std::unique_ptr<RamStatement> loopBody;
-
-        for (const AstRelation* rel : externPreds) {
-            if (!externAggNegPreds.count(rel)) {
-                // create the inner loop for the current relation
-                {
-                    std::vector<std::unique_ptr<RamExpression>> nullPayload;
-                    nullPayload.push_back(std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
-                    for (std::size_t i = 1; i < rel->getArity(); ++i) {
-                        nullPayload.push_back(
-                                std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
-                    }
-                    appendStmt(loopBody,
-                            std::make_unique<RamLoop>(
-                                    std::make_unique<RamExit>(std::make_unique<RamExistenceCheck>(
-                                            std::unique_ptr<RamRelationReference>(relNew[rel]->clone()),
-                                            std::move(nullPayload))),
-                                    ([&]() {
-                                        std::unique_ptr<RamStatement> tmp;
-                                        makeRamLoad(tmp, scc, rel, "output-dir",
-                                                (externOutPreds.count(rel)) ? ".csv" : ".facts",
-                                                "with-timeout",
-                                                (Global::config().has("engine"))
-                                                        ? Global::config().get("engine")
-                                                        : "file",
-                                                std::unique_ptr<RamRelationReference>(relNew[rel]->clone()));
-                                        return tmp;
-                                    })(),
-                                    std::make_unique<RamExit>(std::make_unique<RamTrue>())));
-                }
-            }
-        }
-        // exit if any interns have new facts
-        for (const AstRelation* rel : allInterns) {
-            appendStmt(
-                    loopBody, std::make_unique<RamExit>(
-                                      std::make_unique<RamNegation>(std::make_unique<RamEmptinessCheck>(
-                                              std::unique_ptr<RamRelationReference>(relNew[rel]->clone())))));
-        }
-        // exit if any extern preds have new facts
-        for (const AstRelation* rel : externPreds) {
-            if (!externAggNegPreds.count(rel)) {
-                // add the exit condition for the outer loop and the current relation
-                {
-                    std::vector<std::unique_ptr<RamExpression>> nullPayload;
-                    nullPayload.push_back(std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
-                    for (std::size_t i = 1; i < rel->getArity(); ++i) {
-                        nullPayload.push_back(
-                                std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
-                    }
-                    appendStmt(loopBody,
-                            std::make_unique<RamExit>(std::make_unique<RamConjunction>(
-                                    std::make_unique<RamNegation>(std::make_unique<RamExistenceCheck>(
-                                            std::unique_ptr<RamRelationReference>(relNew[rel]->clone()),
-                                            std::move(nullPayload))),
-                                    std::make_unique<RamNegation>(std::make_unique<RamEmptinessCheck>(
-                                            std::unique_ptr<RamRelationReference>(relNew[rel]->clone()))))));
-                }
-            }
-        }
-        // exit if all extern preds have consumed null payload
-        if (loopBody) {
-            {
-                std::unique_ptr<RamCondition> exitCondition;
-                auto addCondition = [](std::unique_ptr<RamCondition>& cond,
-                                            std::unique_ptr<RamCondition> clause) {
-                    cond = ((cond) ? std::make_unique<RamConjunction>(std::move(cond), std::move(clause))
-                                   : std::move(clause));
-                };
                 for (const AstRelation* rel : externPreds) {
                     if (!externAggNegPreds.count(rel)) {
-                        std::vector<std::unique_ptr<RamExpression>> nullPayload;
-                        nullPayload.push_back(
-                                std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
-                        for (std::size_t i = 1; i < rel->getArity(); ++i) {
+                        // create the inner loop for the current relation
+                        {
+                            std::vector<std::unique_ptr<RamExpression>> nullPayload;
                             nullPayload.push_back(
                                     std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
+                            for (std::size_t i = 1; i < rel->getArity(); ++i) {
+                                nullPayload.push_back(
+                                        std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
+                            }
+                            appendStmt(loopBody,
+                                    std::make_unique<RamLoop>(
+                                            std::make_unique<RamExit>(std::make_unique<RamExistenceCheck>(
+                                                    std::unique_ptr<RamRelationReference>(
+                                                            relNew[rel]->clone()),
+                                                    std::move(nullPayload))),
+                                            ([&]() {
+                                                std::unique_ptr<RamStatement> tmp;
+                                                makeRamLoad(tmp, scc, rel, "output-dir",
+                                                        (externOutPreds.count(rel)) ? ".csv" : ".facts",
+                                                        "with-timeout",
+                                                        (Global::config().has("engine"))
+                                                                ? Global::config().get("engine")
+                                                                : "file",
+                                                        std::unique_ptr<RamRelationReference>(
+                                                                relNew[rel]->clone()));
+                                                return tmp;
+                                            })(),
+                                            std::make_unique<RamExit>(std::make_unique<RamTrue>())));
                         }
-
-                        addCondition(exitCondition,
-                                std::make_unique<RamExistenceCheck>(
-                                        std::unique_ptr<RamRelationReference>(relNew[rel]->clone()),
-                                        std::move(nullPayload)));
                     }
                 }
-                if (exitCondition) {
-                    appendStmt(loopBody, std::make_unique<RamExit>(std::move(exitCondition)));
+                // exit if any interns have new facts
+                for (const AstRelation* rel : allInterns) {
+                    appendStmt(loopBody,
+                            std::make_unique<RamExit>(
+                                    std::make_unique<RamNegation>(std::make_unique<RamEmptinessCheck>(
+                                            std::unique_ptr<RamRelationReference>(relNew[rel]->clone())))));
+                }
+                // exit if any extern preds have new facts
+                for (const AstRelation* rel : externPreds) {
+                    if (!externAggNegPreds.count(rel)) {
+                        // add the exit condition for the outer loop and the current relation
+                        {
+                            std::vector<std::unique_ptr<RamExpression>> nullPayload;
+                            nullPayload.push_back(
+                                    std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
+                            for (std::size_t i = 1; i < rel->getArity(); ++i) {
+                                nullPayload.push_back(
+                                        std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
+                            }
+                            appendStmt(loopBody,
+                                    std::make_unique<RamExit>(std::make_unique<RamConjunction>(
+                                            std::make_unique<RamNegation>(std::make_unique<RamExistenceCheck>(
+                                                    std::unique_ptr<RamRelationReference>(
+                                                            relNew[rel]->clone()),
+                                                    std::move(nullPayload))),
+                                            std::make_unique<RamNegation>(std::make_unique<RamEmptinessCheck>(
+                                                    std::unique_ptr<RamRelationReference>(
+                                                            relNew[rel]->clone()))))));
+                        }
+                    }
+                }
+                // exit if all extern preds have consumed null payload
+                if (loopBody) {
+                    {
+                        std::unique_ptr<RamCondition> exitCondition;
+                        auto addCondition = [](std::unique_ptr<RamCondition>& cond,
+                                                    std::unique_ptr<RamCondition> clause) {
+                            cond = ((cond) ? std::make_unique<RamConjunction>(
+                                                     std::move(cond), std::move(clause))
+                                           : std::move(clause));
+                        };
+                        for (const AstRelation* rel : externPreds) {
+                            if (!externAggNegPreds.count(rel)) {
+                                std::vector<std::unique_ptr<RamExpression>> nullPayload;
+                                nullPayload.push_back(
+                                        std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
+                                for (std::size_t i = 1; i < rel->getArity(); ++i) {
+                                    nullPayload.push_back(std::make_unique<RamNumber>(
+                                            std::numeric_limits<RamDomain>::max()));
+                                }
+
+                                addCondition(exitCondition,
+                                        std::make_unique<RamExistenceCheck>(
+                                                std::unique_ptr<RamRelationReference>(relNew[rel]->clone()),
+                                                std::move(nullPayload)));
+                            }
+                        }
+                        if (exitCondition) {
+                            appendStmt(loopBody, std::make_unique<RamExit>(std::move(exitCondition)));
+                        }
+                    }
+                    updateTable->add(std::make_unique<RamLoop>(std::move(loopBody)));
                 }
             }
-            updateTable->add(std::make_unique<RamLoop>(std::move(loopBody)));
         }
+    } else {
+        rrel.clear();
+        relDelta.clear();
+        relNew.clear();
     }
 
     /* Compute non-recursive clauses for relations in scc and push
@@ -1403,21 +1432,19 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                 std::vector<std::unique_ptr<RamExpression>> nullPayload;
                 nullPayload.push_back(std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
                 for (std::size_t i = 1; i < rel->getArity(); ++i) {
-                    nullPayload.push_back(
-                            std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
+                    nullPayload.push_back(std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
                 }
-                updateTable->add(
-                        std::make_unique<RamLoop>(
-                                std::make_unique<RamExit>(std::make_unique<RamExistenceCheck>(
-                                        std::unique_ptr<RamRelationReference>(relNew[rel]->clone()),
-                                        std::move(nullPayload))),
-                                genMerge(rrel[rel].get(), relNew[rel].get()),
-                                std::make_unique<RamSwap>(
-                                        std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()),
-                                        std::unique_ptr<RamRelationReference>(relNew[rel]->clone())),
-                                std::make_unique<RamClear>(
-                                        std::unique_ptr<RamRelationReference>(relNew[rel]->clone())),
-                                std::make_unique<RamExit>(std::make_unique<RamTrue>())));
+                updateTable->add(std::make_unique<RamLoop>(
+                        std::make_unique<RamExit>(std::make_unique<RamExistenceCheck>(
+                                std::unique_ptr<RamRelationReference>(relNew[rel]->clone()),
+                                std::move(nullPayload))),
+                        genMerge(rrel[rel].get(), relNew[rel].get()),
+                        std::make_unique<RamSwap>(
+                                std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()),
+                                std::unique_ptr<RamRelationReference>(relNew[rel]->clone())),
+                        std::make_unique<RamClear>(
+                                std::unique_ptr<RamRelationReference>(relNew[rel]->clone())),
+                        std::make_unique<RamExit>(std::make_unique<RamTrue>())));
             }
         }
     }
@@ -1870,7 +1897,8 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
 
     // @TODO (lh): have this pass all tests in the souffle testsuite, disable any features that don't work yet
 
-    // @TODO (lh): add new kafka tests to the souffle testsuite so that you don't break anything as things progress
+    // @TODO (lh): add new kafka tests to the souffle testsuite so that you don't break anything as things
+    // progress
 
     // obtain type environment from analysis
     typeEnv = &translationUnit.getAnalysis<TypeEnvironmentAnalysis>()->getTypeEnvironment();
@@ -1926,14 +1954,16 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
             for (const AstRelation* relation : internIns) {
                 if (internOuts.count(relation)) {
                     makeRamStore(current, masterScc, relation, "output-dir", ".csv");
-                if (Global::config().get("engine") == "kafka" && internIns.count(relation) && relation->getClauses().empty()) {
-                    makeRamStore(current, masterScc, relation, "output-dir", ".facts", "null-payload");
-                }
+                    if (Global::config().get("engine") == "kafka" && internIns.count(relation) &&
+                            relation->getClauses().empty()) {
+                        makeRamStore(current, masterScc, relation, "output-dir", ".facts", "null-payload");
+                    }
                 } else {
                     makeRamStore(current, masterScc, relation, "output-dir", ".facts");
-                if (Global::config().get("engine") == "kafka" && internIns.count(relation) && relation->getClauses().empty()) {
-                    makeRamStore(current, masterScc, relation, "output-dir", ".facts", "null-payload");
-                }
+                    if (Global::config().get("engine") == "kafka" && internIns.count(relation) &&
+                            relation->getClauses().empty()) {
+                        makeRamStore(current, masterScc, relation, "output-dir", ".facts", "null-payload");
+                    }
                 }
             }
         }

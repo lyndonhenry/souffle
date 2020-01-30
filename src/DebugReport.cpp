@@ -255,7 +255,7 @@ bool DebugReporter::transform(AstTranslationUnit& translationUnit) {
 
 void DebugReporter::generateDebugReport(
         AstTranslationUnit& translationUnit, const std::string& id, std::string title) {
-            // @TODO (lh): decide on a useful set of debug report sections, maybe enable more with verbose
+    // @TODO (lh): decide on a useful set of debug report sections, maybe enable more with verbose
     translationUnit.getDebugReport().addSection(DebugReportSection(id, std::move(title),
             {[&]() {
                  const auto name = "dl";

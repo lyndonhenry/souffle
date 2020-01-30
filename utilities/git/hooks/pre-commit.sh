@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -oue pipefail
+set -ouex pipefail
 
 function error() {
     local MESSAGE="${1:-}"

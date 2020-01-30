@@ -303,12 +303,6 @@ private:
             const std::string& engineDirectives, const std::string& ioType,
             std::unique_ptr<RamRelationReference> ramRelationReference);
 
-    void makeIODirective(IODirectives& ioDirective, const AstRelation* rel);
-
-    std::vector<IODirectives> getInputIODirectives(const AstRelation* rel, IODirectives& ioDirectives);
-
-    std::vector<IODirectives> getOutputIODirectives(const AstRelation* rel, IODirectives& ioDirectives);
-
     /** create a reference to a RAM relation */
     std::unique_ptr<RamRelationReference> createRelationReference(const std::string name, const size_t arity,
             const size_t numberOfHeights, const std::vector<std::string> attributeNames,
