@@ -457,6 +457,26 @@ function main() {
     # stop the kafka broker
     ensure_docker_compose_is_down "${KAFKA_DOCKER_PATH}"
 
+    # run the testsuite
+
+    # @TODO (lh): get testing right here
+    local SOUFFLE_CATEGORY="FastEvaluation"
+    local SOUFFLE_CONFS=""
+    SOUFFLE_CONFS+="-j8"
+    SOUFFLE_CONFS+=",-j8 -c"
+    SOUFFLE_CONFS+=",-j8 -c -efile"
+    # @TODO (lh): SOUFFLE_CONFS+=",-j8 -c -ekafka"
+    SOUFFLE_CONFS+=",-j8 --custom=use-general"
+    SOUFFLE_CONFS+=",-j8 -c --custom=use-general"
+    SOUFFLE_CONFS+=",-j8 -c -efile --custom=use-general"
+    # @TODO (lh): SOUFFLE_CONFS+=",-j8 -c -ekafka --custom=use-general"
+    # @TODO (lh): SOUFFLE_CONFS+=",-j8 --custom=use-general,use-general-producers"
+    # @TODO (lh): SOUFFLE_CONFS+=",-j8 -c --custom=use-general,use-general-producers"
+    # @TODO (lh): SOUFFLE_CONFS+=",-j8 -c -efile --custom=use-general,use-general-producers"
+    # @TODO (lh): SOUFFLE_CONFS+=",-j8 -c -ekafka --custom=use-general,use-general-producers"
+    # @TODO (lh): SOUFFLE_CONFS+=",-j8 -c -ekafka --custom=use-general,use-general-producers,use-general-consumers"
+    SOUFFLE_CATEGORY="${SOUFFLE_CATEGORY}" SOUFFLE_CONFS="${SOUFLE_CONFS}" make check -j8
+
     exit 0
 
 }

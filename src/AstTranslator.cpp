@@ -1971,6 +1971,7 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
         appendStmt(res, std::make_unique<RamStratum>(std::move(current), (size_t)-1));
     }
 
+    std::size_t sccIndex = 0;
     // iterate over each SCC according to the topological order
     for (const auto& scc : sccOrder.order()) {
         // make a new ram statement for the current SCC
@@ -1992,7 +1993,8 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
                 sccGraph.getInternalNonOutputRelationsWithExternalSuccessors(scc);
 
         // make a variable for all relations that are expired at the current SCC
-        const auto& internExps = expirySchedule.at(scc).expired();
+        const auto& internExps = expirySchedule.at(sccIndex).expired();
+        sccIndex++;
 
         {
             if (!Global::config().has("engine")) {
