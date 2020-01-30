@@ -1923,27 +1923,30 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
         // iterate over each scc and load all input relations
         for (const auto& scc : sccOrder.order()) {
             // get all input relations of the current scc
-            const auto& inputRelations = sccGraph.getInternalInputRelations(scc);
+            const auto& internIns = sccGraph.getInternalInputRelations(scc);
 
             // get all output relations of the current scc
-            const auto& outputRelations = sccGraph.getInternalOutputRelations(scc);
+            const auto& internOuts = sccGraph.getInternalOutputRelations(scc);
 
             // make load statements for each input relation
-            for (const auto& inputRelation : inputRelations) {
-                makeRamLoad(current, masterScc, inputRelation, "fact-dir", ".facts", "default", "file");
+            for (const auto& relation : internIns) {
+                makeRamLoad(current, masterScc, relation, "fact-dir", ".facts", "default", "file");
             }
 
             // make store statements for each input relation
-            for (const AstRelation* inputRelation : inputRelations) {
-                if (outputRelations.count(inputRelation)) {
-                    makeRamStore(current, masterScc, inputRelation, "output-dir", ".csv");
+            for (const AstRelation* relation : internIns) {
+                if (internOuts.count(relation)) {
+                    makeRamStore(current, masterScc, relation, "output-dir", ".csv");
+                if (Global::config().get("engine") == "kafka" && internIns.count(relation) && relation->getClauses().empty()) {
+                    makeRamStore(current, masterScc, relation, "output-dir", ".facts", "null-payload");
+                }
                 } else {
-                    makeRamStore(current, masterScc, inputRelation, "output-dir", ".facts");
+                    makeRamStore(current, masterScc, relation, "output-dir", ".facts");
+                if (Global::config().get("engine") == "kafka" && internIns.count(relation) && relation->getClauses().empty()) {
+                    makeRamStore(current, masterScc, relation, "output-dir", ".facts", "null-payload");
+                }
                 }
             }
-
-            // @TODO (lh): send halts for all input relations that have no facts and do not occur as a head,
-            // also skip their strata
         }
 
         if (Global::config().get("engine") != "file") {
@@ -1953,16 +1956,16 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
             // iterate over each scc and store all output relations
             for (const auto& scc : sccOrder.order()) {
                 // get all output relations of the current scc
-                const auto& outputRelations = sccGraph.getInternalOutputRelations(scc);
+                const auto& internOuts = sccGraph.getInternalOutputRelations(scc);
 
                 // make load statements for each output relation to consume with kafka
-                for (const auto& outputRelation : outputRelations) {
-                    makeRamLoad(current, masterScc, outputRelation, "output-dir", ".csv", "null-payload");
+                for (const auto& relation : internOuts) {
+                    makeRamLoad(current, masterScc, relation, "output-dir", ".csv", "null-payload");
                 }
 
                 // make store statements for each output relation
-                for (const auto& outputRelation : outputRelations) {
-                    makeRamStore(current, masterScc, outputRelation, "output-dir", ".csv", "default", "file");
+                for (const auto& relation : internOuts) {
+                    makeRamStore(current, masterScc, relation, "output-dir", ".csv", "default", "file");
                 }
             }
         }
@@ -2009,10 +2012,12 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
             } else {
                 // load all input relations
                 for (const AstRelation* relation : internIns) {
-                    if (internOuts.count(relation)) {
-                        makeRamLoad(current, scc, relation, "output-dir", ".csv");
-                    } else {
-                        makeRamLoad(current, scc, relation, "output-dir", ".facts");
+                    if (!relation->getClauses().empty()) {
+                        if (internOuts.count(relation)) {
+                            makeRamLoad(current, scc, relation, "output-dir", ".csv");
+                        } else {
+                            makeRamLoad(current, scc, relation, "output-dir", ".facts");
+                        }
                     }
                 }
                 // load all external aggregated or negated predecessor relations
@@ -2073,11 +2078,15 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
             if (Global::config().get("engine") == "kafka") {
                 // send halts for all internal relations
                 for (const auto& relation : internNonOutsWithExternSuccs) {
-                    makeRamStore(current, scc, relation, "output-dir", ".facts", "null-payload");
+                    if (!(internIns.count(relation) && relation->getClauses().empty())) {
+                        makeRamStore(current, scc, relation, "output-dir", ".facts", "null-payload");
+                    }
                 }
                 // send halts for all output relations
                 for (const auto& relation : internOuts) {
-                    makeRamStore(current, scc, relation, "output-dir", ".csv", "null-payload");
+                    if (!(internIns.count(relation) && relation->getClauses().empty())) {
+                        makeRamStore(current, scc, relation, "output-dir", ".csv", "null-payload");
+                    }
                 }
             }
         }

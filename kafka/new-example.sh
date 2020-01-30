@@ -412,6 +412,8 @@ function main() {
     # set the executable for the test case
     local EXE="${TESTSUITE_DIR}/${TEST_CASE}/$(basename ${TEST_CASE})"
 
+    # @@@TODO: see if you can get this working with --use-general-producers and no --use-general
+
     # run tests for no -e
 
     # normal seminaive evaluation
