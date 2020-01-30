@@ -1397,38 +1397,27 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
         updateTable->add(std::move(updateRelTable));
     }
 
-    if (Global::config().has("use-general")) {
+    if (Global::config().has("use-general-consumers")) {
         for (const AstRelation* rel : externPreds) {
             if (!externAggNegPreds.count(rel)) {
-                std::unique_ptr<RamStatement> updateRelTable;
-                if (Global::config().has("use-general-consumers")) {
-                    std::vector<std::unique_ptr<RamExpression>> nullPayload;
-                    nullPayload.push_back(std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
-                    for (std::size_t i = 1; i < rel->getArity(); ++i) {
-                        nullPayload.push_back(
-                                std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
-                    }
-                    appendStmt(updateRelTable,
-                            std::make_unique<RamLoop>(
-                                    std::make_unique<RamExit>(std::make_unique<RamExistenceCheck>(
-                                            std::unique_ptr<RamRelationReference>(relNew[rel]->clone()),
-                                            std::move(nullPayload))),
-                                    genMerge(rrel[rel].get(), relNew[rel].get()),
-                                    std::make_unique<RamSwap>(
-                                            std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()),
-                                            std::unique_ptr<RamRelationReference>(relNew[rel]->clone())),
-                                    std::make_unique<RamClear>(
-                                            std::unique_ptr<RamRelationReference>(relNew[rel]->clone())),
-                                    std::make_unique<RamExit>(std::make_unique<RamTrue>())));
-                } else {
-                    /* Generate clear operations for new relations. */
-                    appendStmt(updateRelTable,
-                            std::make_unique<RamClear>(
-                                    std::unique_ptr<RamRelationReference>(relNew[rel]->clone())));
+                std::vector<std::unique_ptr<RamExpression>> nullPayload;
+                nullPayload.push_back(std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
+                for (std::size_t i = 1; i < rel->getArity(); ++i) {
+                    nullPayload.push_back(
+                            std::make_unique<RamNumber>(std::numeric_limits<RamDomain>::max()));
                 }
-
-                /* Add update operations of relations to parallel statements */
-                updateTable->add(std::move(updateRelTable));
+                updateTable->add(
+                        std::make_unique<RamLoop>(
+                                std::make_unique<RamExit>(std::make_unique<RamExistenceCheck>(
+                                        std::unique_ptr<RamRelationReference>(relNew[rel]->clone()),
+                                        std::move(nullPayload))),
+                                genMerge(rrel[rel].get(), relNew[rel].get()),
+                                std::make_unique<RamSwap>(
+                                        std::unique_ptr<RamRelationReference>(relDelta[rel]->clone()),
+                                        std::unique_ptr<RamRelationReference>(relNew[rel]->clone())),
+                                std::make_unique<RamClear>(
+                                        std::unique_ptr<RamRelationReference>(relNew[rel]->clone())),
+                                std::make_unique<RamExit>(std::make_unique<RamTrue>())));
             }
         }
     }
