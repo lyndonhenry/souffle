@@ -396,12 +396,11 @@ function ensure_testsuite_passes() {
     SOUFFLE_CONFS+=",-j${JOBS} -c --custom=use-general"
     SOUFFLE_CONFS+=",-j${JOBS} -c -efile --custom=use-general"
     # @TODO (lh): SOUFFLE_CONFS+=",-j8 -c -ekafka --custom=use-general"
-    # @TODO (lh): SOUFFLE_CONFS+=",-j8 --custom=use-general,use-general-producers"
-    # @TODO (lh): SOUFFLE_CONFS+=",-j8 -c --custom=use-general,use-general-producers"
-    # @TODO (lh): SOUFFLE_CONFS+=",-j8 -c -efile --custom=use-general,use-general-producers"
-    # @TODO (lh): SOUFFLE_CONFS+=",-j8 -c -ekafka --custom=use-general,use-general-producers"
-    # @TODO (lh): SOUFFLE_CONFS+=",-j8 -c -ekafka --custom=use-general,use-general-producers,use-general-consumers"
-    # @TODO (lh): double check if the export statements are necessary here
+    SOUFFLE_CONFS+=",-j8 --custom=use-general_use-general-producers"
+    SOUFFLE_CONFS+=",-j8 -c --custom=use-general_use-general-producers"
+    SOUFFLE_CONFS+=",-j8 -c -efile --custom=use-general_use-general-producers"
+    # @TODO (lh): SOUFFLE_CONFS+=",-j8 -c -ekafka --custom=use-general_use-general-producers"
+    # @TODO (lh): SOUFFLE_CONFS+=",-j8 -c -ekafka --custom=use-general_use-general-producers_use-general-consumers"
     export SOUFFLE_CATEGORY="${SOUFFLE_CATEGORY}"
     export SOUFFLE_CONFS="${SOUFFLE_CONFS}"
     make clean
@@ -457,7 +456,7 @@ function main() {
     # generalized seminaive evaluation
     ensure_test_case_passes "${TEST_CASE}" --custom=use-general
     # generalized seminaive evaluation with output relations written to files inside fixpoint loop
-    ensure_test_case_passes "${TEST_CASE}" --custom=use-general,use-general-producers
+    ensure_test_case_passes "${TEST_CASE}" --custom=use-general_use-general-producers
 
     # run tests for -efile
     
@@ -466,7 +465,7 @@ function main() {
     # generalized seminaive evaluation with intermediate results written to and read from files outside of fixpoint loop
     ensure_test_case_passes "${TEST_CASE}" "-efile --custom=use-general"
     # generalized seminaive evaluation with intermediate results read from files outside of fixpoint loop and written to files inside fixpoint loop
-    ensure_test_case_passes "${TEST_CASE}" "-efile --custom=use-general,use-general-producers"
+    ensure_test_case_passes "${TEST_CASE}" "-efile --custom=use-general_use-general-producers"
 
     # run tests for -ekafka
 
@@ -475,9 +474,9 @@ function main() {
     # generalized seminaive evaluation with intermediate results produced to and consumed from kafka topics outside of fixpoint loop
     ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka --custom=use-general"
     # generalized seminaive evaluation with intermediate results consumed from kafka topics outside of fixpoint loop and produced to kafka topics inside of fixpoint loop
-    ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka --custom=use-general,use-general-producers"
+    ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka --custom=use-general_use-general-producers"
     # generalized seminaive evaluation with intermediate results produced to and consumed from kafka topics inside of fixpoint loop
-    ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka --custom=use-general,use-general-producers,use-general-consumers"
+    ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka --custom=use-general_use-general-producers_use-general-consumers"
 
     # prompt the user to continue with cleanup
     read -p "Continue?"

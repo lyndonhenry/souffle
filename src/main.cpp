@@ -203,7 +203,8 @@ int main(int argc, char** argv) {
         // ------ command line arguments -------------
 
         // @TODO (lh): remove this option handling when kafka implementation complete
-        for (const auto& flag : splitString(Global::config().get("custom"), ',')) {
+        // @TODO (lh): maybe change the delimiter here, can't use ',' due to testsuite SOUFFLE_CONFS
+        for (const auto& flag : splitString(Global::config().get("custom"), '_')) {
             Global::config().set(flag, "true");
         }
 
