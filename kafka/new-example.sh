@@ -2,18 +2,6 @@
 
 set -oue pipefail
 
-function ensure_kafka_topic_created() {
-    local KAFKA_HOST="${1}"
-    local TOPIC="${2}"
-    kafka-topics.sh --create --bootstrap-server "${KAFKA_HOST}" --topic "${TOPIC}" --replication-factor 1 --partitions 1  || :
-}
-
-function ensure_kafka_topic_deleted() {
-    local KAFKA_HOST="${1}"
-    local TOPIC="${2}"
-    kafka-topics.sh --delete --bootstrap-server "${KAFKA_HOST}" --topic "${TOPIC}" || :
-}
-
 function for_each() {
     local f="${1}"
     local xs="${@:2}"
@@ -333,18 +321,28 @@ function ensure_kafka_test_case_passes() {
     local JSON_DATA="$(${PWD}/src/souffle ${EXE}.dl --show=topsort-info)"
     local RELATION_NAMES="$(echo ${JSON_DATA} | jq -r '.RelationNames | .[]')" 
     local STRATUM_NAMES="$(echo ${JSON_DATA} | jq -r '.StratumNames | .[]')"
-
-    # @TODO (lh): move topic creation and/or deletion to C++ code so testing is possible
-
     # ensure that all program specific topics are initially empty by deleting them
-    for_each_async "ensure_kafka_topic_deleted ${KAFKA_HOST}" ${RELATION_NAMES}
-    wait
+    local EXE_EXTRA_ARGS=""
+    EXE_EXTRA_ARGS+=" -Xmetadata.broker.list=${KAFKA_HOST} "
+    EXE_EXTRA_ARGS+=" -Xcustom.create-topics=false "
+    EXE_EXTRA_ARGS+=" -Xcustom.run-program=false "
+    EXE_EXTRA_ARGS+=" -Xcustom.delete-topics=true "
+    ${EXE} ${EXE_ARGS} ${EXE_EXTRA_ARGS}
     sleep 1s
     # ensure that all program specific topics exist
-    for_each_async "ensure_kafka_topic_created ${KAFKA_HOST}" ${RELATION_NAMES}
-    wait
+    local EXE_EXTRA_ARGS=""
+    EXE_EXTRA_ARGS+=" -Xmetadata.broker.list=${KAFKA_HOST} "
+    EXE_EXTRA_ARGS+=" -Xcustom.create-topics=true "
+    EXE_EXTRA_ARGS+=" -Xcustom.run-program=false "
+    EXE_EXTRA_ARGS+=" -Xcustom.delete-topics=false "
+    ${EXE} ${EXE_ARGS} ${EXE_EXTRA_ARGS}
     # run all program strata as subprograms
-    for_each_async "${EXE} ${EXE_ARGS} -Xmetadata.broker.list=${KAFKA_HOST} -i" -2 -3 ${STRATUM_NAMES}
+    local EXE_EXTRA_ARGS=""
+    EXE_EXTRA_ARGS+=" -Xmetadata.broker.list=${KAFKA_HOST} "
+    EXE_EXTRA_ARGS+=" -Xcustom.create-topics=false "
+    EXE_EXTRA_ARGS+=" -Xcustom.run-program=true "
+    EXE_EXTRA_ARGS+=" -Xcustom.delete-topics=false "
+    for_each_async "${EXE} ${EXE_ARGS} ${EXE_EXTRA_ARGS} -i" -2 -3 ${STRATUM_NAMES}
     wait
     # show the line count of the actual output files, the user should compare this to the expected produced above
     wc -l "${TEST_CASE_ROOT}"/*.csv > "${TEST_CASE_ROOT}"/actual.txt 
@@ -429,8 +427,7 @@ function main() {
     local TESTSUITE_DIR="${PWD}/tests/testsuite.dir"
 
     # set the test case used by this script
-    # @TODO (lh): local TEST_CASE="example/input_output_numbers"
-    local TEST_CASE="evaluation/binop"
+    local TEST_CASE="example/input_output_numbers"
 
     # make a temp directory for dependencies
     local TMP_DIRECTORY="/tmp/souffle"
@@ -445,25 +442,23 @@ function main() {
     # ensure that souffle is built for kafka
     ensure_souffle_is_built_for_kafka "${PWD}"
 
-    # @@@TODO: see if you can get this working with --use-general-producers and no --use-general
-
     # run tests for no -e
 
     # normal seminaive evaluation
-    ensure_test_case_passes "${TEST_CASE}"
+    #ensure_test_case_passes "${TEST_CASE}"
     # generalized seminaive evaluation
-    ensure_test_case_passes "${TEST_CASE}" --custom=use-general
+    #ensure_test_case_passes "${TEST_CASE}" --custom=use-general
     # generalized seminaive evaluation with output relations written to files inside fixpoint loop
-    ensure_test_case_passes "${TEST_CASE}" --custom=use-general_use-general-producers
+    #ensure_test_case_passes "${TEST_CASE}" --custom=use-general_use-general-producers
 
     # run tests for -efile
     
     # normal seminaive evaluation with intermediate results written to and read from files
-    ensure_test_case_passes "${TEST_CASE}" "-efile"
+    #ensure_test_case_passes "${TEST_CASE}" "-efile"
     # generalized seminaive evaluation with intermediate results written to and read from files outside of fixpoint loop
-    ensure_test_case_passes "${TEST_CASE}" "-efile --custom=use-general"
+    #ensure_test_case_passes "${TEST_CASE}" "-efile --custom=use-general"
     # generalized seminaive evaluation with intermediate results read from files outside of fixpoint loop and written to files inside fixpoint loop
-    ensure_test_case_passes "${TEST_CASE}" "-efile --custom=use-general_use-general-producers"
+    #ensure_test_case_passes "${TEST_CASE}" "-efile --custom=use-general_use-general-producers"
 
     # run tests for -ekafka
 
@@ -473,9 +468,6 @@ function main() {
 
     # start the kafka broker
     ensure_docker_compose_is_up "${KAFKA_DOCKER_PATH}"
-
-    # ensure that the debugging topic exists
-    ensure_kafka_topic_created ${KAFKA_HOST} _DEBUG_
 
     # normal seminaive evaluation with intermediate results produced to and consumed from kafka topics
     ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka" 

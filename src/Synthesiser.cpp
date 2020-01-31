@@ -2265,19 +2265,20 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
            << Global::config().get("version") << R"_(");)_" << '\n';
     }
 
+
+    if (Global::config().get("engine") == "kafka") {
     os << "{" << std::endl;
-
-    if (Global::config().get("engine") == "kafka") {
         os << "auto& kafka = souffle::kafka::Kafka::getInstance();" << std::endl;
-        os << "if (kafka.beginClient(opt.getExtraOptions())) {" << std::endl;
+        os << "kafka.withSouffleProgram(obj);" << std::endl;
+        os << "kafka.beginClient(opt.getExtraOptions());" << std::endl;
+        os << "if (kafka.runSouffleProgram()) {" << std::endl;
+        os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), opt.getStratumIndex());" << std::endl;
+        os << "}" << std::endl;
+        os << "kafka.endClient();" << std::endl;
+        os << "}" << std::endl;
+    } else {
+        os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), opt.getStratumIndex());" << std::endl;
     }
-
-    os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), opt.getStratumIndex());" << std::endl;
-
-    if (Global::config().get("engine") == "kafka") {
-        os << "}" << std::endl << "kafka.endClient();" << std::endl;
-    }
-    os << "}" << std::endl;
 
     if (Global::config().get("provenance") == "explain") {
         os << "explain(obj, false, false);\n";

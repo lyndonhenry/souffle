@@ -14,6 +14,8 @@
 
 #pragma once
 
+#include "SouffleInterface.h"
+
 #include <librdkafka/rdkafkacpp.h>
 
 #include <atomic>
@@ -266,6 +268,14 @@ private:
     RdKafka::Consumer* consumer_;
     std::unordered_map<std::string, RdKafka::Topic*> producerTopics_;
     std::unordered_map<std::string, RdKafka::Topic*> consumerTopics_;
+    std::unordered_map<std::string, std::string> customConf_ = {
+        {"bootstrap-server", "localhost:9092"},
+        {"create-topics", "true"},
+        {"run-program", "true"},
+        {"delete-topics", "true"}
+    };
+    std::vector<std::string> topicNames_;
+
 #ifdef KAFKA_DEBUG
     RdKafka::Topic* debugTopic_;
 #endif
@@ -288,13 +298,25 @@ public:
 
 public:
     void beginClient(const std::unordered_map<std::string, std::string>& globalConf) {
+        // @TODO (lh): get everything working with topic creation and deletion for testsuite
         detail::KafkaHelper::unthrowException();
         detail::KafkaHelper::setSigintAndSigterm();
         globalConf_ = detail::KafkaHelper::createGlobalConf();
-        topicConf_ = detail::KafkaHelper::createTopicConf();
         for (auto it = globalConf.begin(); it != globalConf.end(); ++it) {
-            detail::KafkaHelper::setConf(globalConf_, it->first, it->second);
+            const std::string prefix = "custom.";
+            if (it->first.rfind(prefix, 0) == 0) {
+                const auto suffix = std::string(it->first.begin() + prefix.size(), it->first.end());
+                customConf_[suffix] = it->second;
+            } else {
+                detail::KafkaHelper::setConf(globalConf_, it->first, it->second);
+            }
         }
+        if (customConf_.at("create-topics") == "true") {
+            for (const auto& topicName : topicNames_) {
+                createTopic(topicName, customConf_.at("bootstrap-server"));
+            }
+        }
+        topicConf_ = detail::KafkaHelper::createTopicConf();
         // TODO (lyndonhenry): remove callbacks for efficiency if possible, ensure polling is still correct
         detail::KafkaHelper::setEventCb(globalConf_, &eventCb_);
         detail::KafkaHelper::setDeliveryReportCb(globalConf_, &deliveryReportCb_);
@@ -317,6 +339,12 @@ public:
         detail::KafkaHelper::waitDestroyed();
         delete globalConf_;
         delete topicConf_;
+        if (customConf_.at("delete-topics") == "true") {
+            for (const auto& topicName : topicNames_) {
+                // @TODO (lh): assumes there is only one broker, maybe only use the first or set by input parameter
+                deleteTopic(topicName, customConf_.at("bootstrap-server"));
+            }
+        }
     }
 #ifdef KAFKA_DEBUG
     template <typename T>
@@ -400,17 +428,32 @@ public:
     void pollProducerUntilEmpty() {
         detail::KafkaHelper::pollProducerUntilEmpty(producer_);
     }
+    void withSouffleProgram(const SouffleProgram& souffleProgram) {
+        #ifdef KAFKA_DEBUG
+        topicNames_.push_back("_DEBUG_");
+        #endif
+        for (const auto& relation : souffleProgram.getAllRelations()) {
+            topicNames_.push_back(relation->getName());
+        }
+    }
+    bool runSouffleProgram() {
+        return customConf_.at("run-program") == "true";
+    }
+private:
     static void createTopic(const std::string& topicName, const std::string& bootstrapServer) {
-        // @TODO (lh): use a -X (or maybe -Y, same for consumer timeout) to specify whether to just create the topics, just delete the topics, or just run the program in the generated code, by default create all topics before and delete after
-        // @TODO (lh): test and use this to replace the bash script and use the testsuite
         std::stringstream stringstream;
         stringstream << "kafka-topics.sh --create --bootstrap-server \"" << bootstrapServer << "\" --topic \""<< topicName << "\" --replication-factor 1 --partitions 1";
+        #ifdef KAFKA_DEBUG
+        std::cout << stringstream.str() << std::endl;
+        #endif
         system(stringstream.str().c_str());
     }
     static void deleteTopic(const std::string& topicName, const std::string& bootstrapServer = "localhost") {
-        // @TODO (lh): test and use this to replace the bash script and use the testsuite
         std::stringstream stringstream;
         stringstream << "kafka-topics.sh --delete --bootstrap-server \"" << bootstrapServer << "\" --topic \""<< topicName << "\"";
+        #ifdef KAFKA_DEBUG
+        std::cout << stringstream.str() << std::endl;
+        #endif
         system(stringstream.str().c_str());
 
     }
