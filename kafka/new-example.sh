@@ -344,7 +344,7 @@ function ensure_kafka_test_case_passes() {
     for_each_async "ensure_kafka_topic_created ${KAFKA_HOST}" ${RELATION_NAMES}
     wait
     # run all program strata as subprograms
-    for_each_async "${EXE} ${EXE_ARGS} -Xmetadata.broker.list=${KAFKA_HOST} -i" -1 ${STRATUM_NAMES}
+    for_each_async "${EXE} ${EXE_ARGS} -Xmetadata.broker.list=${KAFKA_HOST} -i" -2 -3 ${STRATUM_NAMES}
     wait
     # show the line count of the actual output files, the user should compare this to the expected produced above
     wc -l "${TEST_CASE_ROOT}"/*.csv > "${TEST_CASE_ROOT}"/actual.txt 

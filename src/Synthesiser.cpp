@@ -1886,7 +1886,7 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
 
     // -- run function --
     os << "private:\nvoid runFunction(std::string inputDirectory = \".\", "
-          "std::string outputDirectory = \".\", size_t stratumIndex = (size_t) -2, bool performIO = false) "
+          "std::string outputDirectory = \".\", size_t stratumIndex = (size_t) -1, bool performIO = false) "
           "{\n";
 
     os << "SignalHandler::instance()->set();\n";
@@ -1963,8 +1963,8 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
             {
                 // @TODO (lh): fix up the -1 and -2 stuff, make it work so kafka does not need to be run with
                 // -i
-                const size_t startStratum = (Global::config().has("engine")) ? (size_t)-1 : 0;
-                os << "case (size_t) -2:\ngoto STRATUM_" << startStratum << ";\nbreak;\n";
+                const size_t startStratum = (Global::config().has("engine")) ? (size_t)-2 : 0;
+                os << "case (size_t) -1:\ngoto STRATUM_" << startStratum << ";\nbreak;\n";
             }
             os << ss.str();
             os << "}\n";
@@ -1983,7 +1983,7 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
         emitCode(os, stratum.getBody());
         os << "}();\n";
         if (Global::config().has("engine")) {
-            os << "if (stratumIndex != (size_t) -2) goto EXIT;\n";
+            os << "if (stratumIndex != (size_t) -1) goto EXIT;\n";
         }
         os << "/* END STRATUM " << stratum.getIndex() << " */\n";
     });
@@ -2015,10 +2015,10 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
     os << "}\n";  // end of runFunction() method
 
     // add methods to run with and without performing IO (mainly for the interface)
-    os << "public:\nvoid run(size_t stratumIndex = (size_t) -2) override { runFunction(\".\", \".\", "
+    os << "public:\nvoid run(size_t stratumIndex = (size_t) -1) override { runFunction(\".\", \".\", "
           "stratumIndex, false); }\n";
     os << "public:\nvoid runAll(std::string inputDirectory = \".\", std::string outputDirectory = \".\", "
-          "size_t stratumIndex = (size_t) -2) "
+          "size_t stratumIndex = (size_t) -1) "
           "override { ";
     if (Global::config().has("live-profile")) {
         os << "std::thread profiler([]() { profile::Tui().runProf(); });\n";

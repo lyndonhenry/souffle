@@ -662,7 +662,7 @@ public:
     /**
      * Execute the souffle program, without any loads or stores.
      */
-    virtual void run(size_t stratumIndex = -2) {}
+    virtual void run(size_t stratumIndex = -1) {}
 
     /**
      * Execute program, loading inputs and storing outputs as required.
@@ -673,7 +673,7 @@ public:
      * To view the generated C++ code, run Souffle with the `-g` option.
      */
     virtual void runAll(std::string inputDirectory = ".", std::string outputDirectory = ".",
-            size_t stratumIndex = -2) = 0;
+            size_t stratumIndex = -1) = 0;
 
     /**
      * Read all input relations from the given directory. If no directory is given, the

@@ -86,7 +86,7 @@ protected:
 public:
     // all argument constructor
     CmdOptions(const char* s, const char* id, const char* od, bool pe, const char* pfn, size_t nj,
-            size_t si = (size_t)-2,
+            size_t si = (size_t)-1,
             std::unordered_map<std::string, std::string> eo = std::unordered_map<std::string, std::string>())
             : src(s), input_dir(id), output_dir(od), profiling(pe), profile_name(pfn), num_jobs(nj),
               stratumIndex(si), extraOptions(eo) {}

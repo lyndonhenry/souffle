@@ -1911,7 +1911,7 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
     };
 
     if (Global::config().has("engine")) {
-        std::size_t masterScc = -1;
+        std::size_t masterScc = -2;
 
         // make a new ram statement for the master stratum
         std::unique_ptr<RamStatement> current;
@@ -1947,27 +1947,6 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
             }
         }
 
-        if (Global::config().get("engine") != "file") {
-            // @TODO (lh): this is a hack for now to avoid duplicates with -efile and --use-general-producers,
-            // should also be consuming in a non-blocking loop if using kafka and general consumers here
-
-            // iterate over each scc and store all output relations
-            for (const auto& scc : sccOrder.order()) {
-                // get all output relations of the current scc
-                const auto& internOuts = sccGraph.getInternalOutputRelations(scc);
-
-                // make load statements for each output relation to consume with kafka
-                for (const auto& relation : internOuts) {
-                    makeRamLoad(current, masterScc, relation, "output-dir", ".csv", "null-payload");
-                }
-
-                // make store statements for each output relation
-                for (const auto& relation : internOuts) {
-                    makeRamStore(current, masterScc, relation, "output-dir", ".csv", "default", "file");
-                }
-            }
-        }
-
         // ensure that current exists, i.e. there is at least one output or printSize relation in the
         // program
         // @TODO (lh): avoid this cheap hack
@@ -1976,7 +1955,7 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
         }
 
         // append the master stratum
-        appendStmt(res, std::make_unique<RamStratum>(std::move(current), (size_t)-1));
+        appendStmt(res, std::make_unique<RamStratum>(std::move(current), masterScc));
     }
 
     std::size_t sccIndex = 0;
@@ -2119,6 +2098,44 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
             // append the current SCC as a stratum to the sequence
             appendStmt(res, std::make_unique<RamStratum>(std::move(current), scc));
         }
+    }
+
+    if (Global::config().has("engine")) {
+        std::size_t masterScc = -3;
+
+        // make a new ram statement for the master stratum
+        std::unique_ptr<RamStatement> current;
+
+        if (Global::config().get("engine") != "file") {
+            // @TODO (lh): this is a hack for now to avoid duplicates with -efile and --use-general-producers,
+            // should also be consuming in a non-blocking loop if using kafka and general consumers here
+
+            // iterate over each scc and store all output relations
+            for (const auto& scc : sccOrder.order()) {
+                // get all output relations of the current scc
+                const auto& internOuts = sccGraph.getInternalOutputRelations(scc);
+
+                // make load statements for each output relation to consume with kafka
+                for (const auto& relation : internOuts) {
+                    makeRamLoad(current, masterScc, relation, "output-dir", ".csv", "null-payload");
+                }
+
+                // make store statements for each output relation
+                for (const auto& relation : internOuts) {
+                    makeRamStore(current, masterScc, relation, "output-dir", ".csv", "default", "file");
+                }
+            }
+        }
+
+        // ensure that current exists, i.e. there is at least one output or printSize relation in the
+        // program
+        // @TODO (lh): avoid this cheap hack
+        if (!current) {
+            current = std::make_unique<RamLoop>(std::make_unique<RamExit>(std::make_unique<RamTrue>()));
+        }
+
+        // append the master stratum
+        appendStmt(res, std::make_unique<RamStratum>(std::move(current), masterScc));
     }
 
     // add main timer if profiling
