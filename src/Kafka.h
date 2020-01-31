@@ -19,6 +19,9 @@
 #include <atomic>
 #include <cassert>
 #include <csignal>
+#include <cstdlib>
+#include <sstream>
+#include <unordered_map>
 
 namespace souffle {
 namespace kafka {
@@ -396,6 +399,20 @@ public:
     }
     void pollProducerUntilEmpty() {
         detail::KafkaHelper::pollProducerUntilEmpty(producer_);
+    }
+    static void createTopic(const std::string& topicName, const std::string& bootstrapServer) {
+        // @TODO (lh): use a -X (or maybe -Y, same for consumer timeout) to specify whether to just create the topics, just delete the topics, or just run the program in the generated code, by default create all topics before and delete after
+        // @TODO (lh): test and use this to replace the bash script and use the testsuite
+        std::stringstream stringstream;
+        stringstream << "kafka-topics.sh --create --bootstrap-server \"" << bootstrapServer << "\" --topic \""<< topicName << "\" --replication-factor 1 --partitions 1";
+        system(stringstream.str().c_str());
+    }
+    static void deleteTopic(const std::string& topicName, const std::string& bootstrapServer = "localhost") {
+        // @TODO (lh): test and use this to replace the bash script and use the testsuite
+        std::stringstream stringstream;
+        stringstream << "kafka-topics.sh --delete --bootstrap-server \"" << bootstrapServer << "\" --topic \""<< topicName << "\"";
+        system(stringstream.str().c_str());
+
     }
 };
 }  // namespace kafka

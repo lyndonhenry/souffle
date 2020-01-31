@@ -1242,7 +1242,7 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                 makeRamLoad(preamble, scc, relation, "output-dir", ".csv", "null-payload",
                         (hasEngine) ? getEngine : "file",
                         std::unique_ptr<RamRelationReference>(relDelta[relation]->clone()));
-                // @@@TODO (lh)
+                // @@@TODO (lh): really only should do this if relation occurs two or more times in a rule body, also should add clear statements also
                 appendStmt(preamble, std::make_unique<RamSequence>(genMerge(rrel[relation].get(), relDelta[relation].get())));
             }
 
@@ -1254,7 +1254,7 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                 makeRamLoad(preamble, scc, relation, "output-dir", ".facts", "null-payload",
                         hasEngine ? getEngine : "file",
                         std::unique_ptr<RamRelationReference>(relDelta[relation]->clone()));
-                // @@@TODO (lh)
+                // @@@TODO (lh): really only should do this if relation occurs two or more times in a rule body, also should add clear statements also
                 appendStmt(preamble, std::make_unique<RamSequence>(genMerge(rrel[relation].get(), relDelta[relation].get())));
             }
         }
