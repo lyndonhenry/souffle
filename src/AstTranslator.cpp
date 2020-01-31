@@ -1242,10 +1242,11 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                 makeRamLoad(preamble, scc, relation, "output-dir", ".csv", "null-payload",
                         (hasEngine) ? getEngine : "file",
                         std::unique_ptr<RamRelationReference>(relDelta[relation]->clone()));
-                // @@@TODO (lh): really only should do this if relation occurs two or more times in a rule body, also should add clear statements also
-                appendStmt(preamble, std::make_unique<RamSequence>(genMerge(rrel[relation].get(), relDelta[relation].get())));
+                // @@@TODO (lh): really only should do this if relation occurs two or more times in a rule
+                // body, also should add clear statements also
+                appendStmt(preamble, std::make_unique<RamSequence>(
+                                             genMerge(rrel[relation].get(), relDelta[relation].get())));
             }
-
         }
         // load all external non-output predecessor relations from the output dir with a .facts
         // extension
@@ -1254,8 +1255,10 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                 makeRamLoad(preamble, scc, relation, "output-dir", ".facts", "null-payload",
                         hasEngine ? getEngine : "file",
                         std::unique_ptr<RamRelationReference>(relDelta[relation]->clone()));
-                // @@@TODO (lh): really only should do this if relation occurs two or more times in a rule body, also should add clear statements also
-                appendStmt(preamble, std::make_unique<RamSequence>(genMerge(rrel[relation].get(), relDelta[relation].get())));
+                // @@@TODO (lh): really only should do this if relation occurs two or more times in a rule
+                // body, also should add clear statements also
+                appendStmt(preamble, std::make_unique<RamSequence>(
+                                             genMerge(rrel[relation].get(), relDelta[relation].get())));
             }
         }
     }
@@ -1933,16 +1936,18 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
             for (const AstRelation* relation : internIns) {
                 if (internOuts.count(relation)) {
                     makeRamStore(current, masterScc, relation, "output-dir", ".csv");
-                    if (Global::config().get("engine") == "kafka" && internIns.count(relation) &&
+                    // @TODO (lh)
+                    /*if (Global::config().get("engine") == "kafka" && internIns.count(relation) &&
                             relation->getClauses().empty()) {
                         makeRamStore(current, masterScc, relation, "output-dir", ".facts", "null-payload");
-                    }
+                    }*/
                 } else {
                     makeRamStore(current, masterScc, relation, "output-dir", ".facts");
-                    if (Global::config().get("engine") == "kafka" && internIns.count(relation) &&
+                    // @TODO (lh)
+                    /*if (Global::config().get("engine") == "kafka" && internIns.count(relation) &&
                             relation->getClauses().empty()) {
                         makeRamStore(current, masterScc, relation, "output-dir", ".facts", "null-payload");
-                    }
+                    }*/
                 }
             }
         }
@@ -1994,13 +1999,19 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
             } else {
                 // load all input relations
                 for (const AstRelation* relation : internIns) {
-                    if (!relation->getClauses().empty()) {
+                    if (internOuts.count(relation)) {
+                        makeRamLoad(current, scc, relation, "output-dir", ".csv");
+                    } else {
+                        makeRamLoad(current, scc, relation, "output-dir", ".facts");
+                    }
+                    // @TODO (lh)
+                    /*if (!relation->getClauses().empty()) {
                         if (internOuts.count(relation)) {
                             makeRamLoad(current, scc, relation, "output-dir", ".csv");
                         } else {
                             makeRamLoad(current, scc, relation, "output-dir", ".facts");
                         }
-                    }
+                    }*/
                 }
                 // load all external aggregated or negated predecessor relations
                 for (const auto& relation : externAggNegPreds) {
@@ -2040,35 +2051,39 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
         appendStmt(current, std::move(bodyStatement));
 
         if (!Global::config().has("use-general-producers")) {
-                // if a communication engine is enabled...
-                if (Global::config().has("engine")) {
-                    // store all internal non-output relations with external successors to the output dir
-                    // with a .facts extension
-                    for (const auto& relation : internNonOutsWithExternSuccs) {
-                        makeRamStore(current, scc, relation, "output-dir", ".facts");
-                    }
-                }
-
-                // store all internal output relations to the output dir with a .csv extension
-                for (const auto& relation : internOuts) {
-                    makeRamStore(current, scc, relation, "output-dir", ".csv");
-                }
-        }
-            // if a communication engine is enabled and is kafka...
-            if (Global::config().get("engine") == "kafka") {
-                // send halts for all internal relations
+            // if a communication engine is enabled...
+            if (Global::config().has("engine")) {
+                // store all internal non-output relations with external successors to the output dir
+                // with a .facts extension
                 for (const auto& relation : internNonOutsWithExternSuccs) {
-                    if (!(internIns.count(relation) && relation->getClauses().empty())) {
-                        makeRamStore(current, scc, relation, "output-dir", ".facts", "null-payload");
-                    }
-                }
-                // send halts for all output relations
-                for (const auto& relation : internOuts) {
-                    if (!(internIns.count(relation) && relation->getClauses().empty())) {
-                        makeRamStore(current, scc, relation, "output-dir", ".csv", "null-payload");
-                    }
+                    makeRamStore(current, scc, relation, "output-dir", ".facts");
                 }
             }
+
+            // store all internal output relations to the output dir with a .csv extension
+            for (const auto& relation : internOuts) {
+                makeRamStore(current, scc, relation, "output-dir", ".csv");
+            }
+        }
+        // if a communication engine is enabled and is kafka...
+        if (Global::config().get("engine") == "kafka") {
+            // send halts for all internal relations
+            for (const auto& relation : internNonOutsWithExternSuccs) {
+                makeRamStore(current, scc, relation, "output-dir", ".facts", "null-payload");
+                // @TODO (lh)
+                /*if (!(internIns.count(relation) && relation->getClauses().empty())) {
+                    makeRamStore(current, scc, relation, "output-dir", ".facts", "null-payload");
+                }*/
+            }
+            // send halts for all output relations
+            for (const auto& relation : internOuts) {
+                makeRamStore(current, scc, relation, "output-dir", ".csv", "null-payload");
+                // @TODO (lh)
+                /*if (!(internIns.count(relation) && relation->getClauses().empty())) {
+                    makeRamStore(current, scc, relation, "output-dir", ".csv", "null-payload");
+                }*/
+            }
+        }
 
         // if provenance is not enabled...
         if (!Global::config().has("provenance")) {

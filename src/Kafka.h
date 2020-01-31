@@ -268,12 +268,8 @@ private:
     RdKafka::Consumer* consumer_;
     std::unordered_map<std::string, RdKafka::Topic*> producerTopics_;
     std::unordered_map<std::string, RdKafka::Topic*> consumerTopics_;
-    std::unordered_map<std::string, std::string> customConf_ = {
-        {"bootstrap-server", "localhost:9092"},
-        {"create-topics", "true"},
-        {"run-program", "true"},
-        {"delete-topics", "true"}
-    };
+    std::unordered_map<std::string, std::string> customConf_ = {{"bootstrap-server", "localhost:9092"},
+            {"create-topics", "true"}, {"run-program", "true"}, {"delete-topics", "true"}};
     std::vector<std::string> topicNames_;
 
 #ifdef KAFKA_DEBUG
@@ -341,7 +337,8 @@ public:
         delete topicConf_;
         if (customConf_.at("delete-topics") == "true") {
             for (const auto& topicName : topicNames_) {
-                // @TODO (lh): assumes there is only one broker, maybe only use the first or set by input parameter
+                // @TODO (lh): assumes there is only one broker, maybe only use the first or set by input
+                // parameter
                 deleteTopic(topicName, customConf_.at("bootstrap-server"));
             }
         }
@@ -429,9 +426,9 @@ public:
         detail::KafkaHelper::pollProducerUntilEmpty(producer_);
     }
     void withSouffleProgram(const SouffleProgram& souffleProgram) {
-        #ifdef KAFKA_DEBUG
+#ifdef KAFKA_DEBUG
         topicNames_.push_back("_DEBUG_");
-        #endif
+#endif
         for (const auto& relation : souffleProgram.getAllRelations()) {
             topicNames_.push_back(relation->getName());
         }
@@ -439,23 +436,25 @@ public:
     bool runSouffleProgram() {
         return customConf_.at("run-program") == "true";
     }
+
 private:
     static void createTopic(const std::string& topicName, const std::string& bootstrapServer) {
         std::stringstream stringstream;
-        stringstream << "kafka-topics.sh --create --bootstrap-server \"" << bootstrapServer << "\" --topic \""<< topicName << "\" --replication-factor 1 --partitions 1";
-        #ifdef KAFKA_DEBUG
+        stringstream << "kafka-topics.sh --create --bootstrap-server \"" << bootstrapServer << "\" --topic \""
+                     << topicName << "\" --replication-factor 1 --partitions 1";
+#ifdef KAFKA_DEBUG
         std::cout << stringstream.str() << std::endl;
-        #endif
+#endif
         system(stringstream.str().c_str());
     }
     static void deleteTopic(const std::string& topicName, const std::string& bootstrapServer = "localhost") {
         std::stringstream stringstream;
-        stringstream << "kafka-topics.sh --delete --bootstrap-server \"" << bootstrapServer << "\" --topic \""<< topicName << "\"";
-        #ifdef KAFKA_DEBUG
+        stringstream << "kafka-topics.sh --delete --bootstrap-server \"" << bootstrapServer << "\" --topic \""
+                     << topicName << "\"";
+#ifdef KAFKA_DEBUG
         std::cout << stringstream.str() << std::endl;
-        #endif
+#endif
         system(stringstream.str().c_str());
-
     }
 };
 }  // namespace kafka

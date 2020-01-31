@@ -397,9 +397,9 @@ function ensure_testsuite_passes() {
     SOUFFLE_CONFS+=",-j${JOBS} -c --custom=use-general"
     SOUFFLE_CONFS+=",-j${JOBS} -c -efile --custom=use-general"
     # @TODO (lh): SOUFFLE_CONFS+=",-j8 -c -ekafka --custom=use-general"
-    SOUFFLE_CONFS+=",-j8 --custom=use-general_use-general-producers"
-    SOUFFLE_CONFS+=",-j8 -c --custom=use-general_use-general-producers"
-    SOUFFLE_CONFS+=",-j8 -c -efile --custom=use-general_use-general-producers"
+    SOUFFLE_CONFS+=",-j${JOBS} --custom=use-general_use-general-producers"
+    SOUFFLE_CONFS+=",-j${JOBS} -c --custom=use-general_use-general-producers"
+    SOUFFLE_CONFS+=",-j${JOBS} -c -efile --custom=use-general_use-general-producers"
     # @TODO (lh): SOUFFLE_CONFS+=",-j8 -c -ekafka --custom=use-general_use-general-producers"
     # @TODO (lh): SOUFFLE_CONFS+=",-j8 -c -ekafka --custom=use-general_use-general-producers_use-general-consumers"
     export SOUFFLE_CATEGORY="${SOUFFLE_CATEGORY}"
@@ -445,20 +445,20 @@ function main() {
     # run tests for no -e
 
     # normal seminaive evaluation
-    #ensure_test_case_passes "${TEST_CASE}"
+    ensure_test_case_passes "${TEST_CASE}"
     # generalized seminaive evaluation
-    #ensure_test_case_passes "${TEST_CASE}" --custom=use-general
+    ensure_test_case_passes "${TEST_CASE}" --custom=use-general
     # generalized seminaive evaluation with output relations written to files inside fixpoint loop
-    #ensure_test_case_passes "${TEST_CASE}" --custom=use-general_use-general-producers
+    ensure_test_case_passes "${TEST_CASE}" --custom=use-general_use-general-producers
 
     # run tests for -efile
     
     # normal seminaive evaluation with intermediate results written to and read from files
-    #ensure_test_case_passes "${TEST_CASE}" "-efile"
+    ensure_test_case_passes "${TEST_CASE}" "-efile"
     # generalized seminaive evaluation with intermediate results written to and read from files outside of fixpoint loop
-    #ensure_test_case_passes "${TEST_CASE}" "-efile --custom=use-general"
+    ensure_test_case_passes "${TEST_CASE}" "-efile --custom=use-general"
     # generalized seminaive evaluation with intermediate results read from files outside of fixpoint loop and written to files inside fixpoint loop
-    #ensure_test_case_passes "${TEST_CASE}" "-efile --custom=use-general_use-general-producers"
+    ensure_test_case_passes "${TEST_CASE}" "-efile --custom=use-general_use-general-producers"
 
     # run tests for -ekafka
 
@@ -478,11 +478,11 @@ function main() {
     # generalized seminaive evaluation with intermediate results produced to and consumed from kafka topics inside of fixpoint loop
     ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka --custom=use-general_use-general-producers_use-general-consumers"
 
-    # stop the kafka broker
-    ensure_docker_compose_is_down "${KAFKA_DOCKER_PATH}"
-
     # run the testsuite
     ensure_testsuite_passes
+
+    # stop the kafka broker
+    ensure_docker_compose_is_down "${KAFKA_DOCKER_PATH}"
 
     exit 0
 
