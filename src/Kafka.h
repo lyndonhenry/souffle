@@ -298,6 +298,9 @@ public:
         detail::KafkaHelper::unthrowException();
         detail::KafkaHelper::setSigintAndSigterm();
         globalConf_ = detail::KafkaHelper::createGlobalConf();
+        if (!globalConf.count("metadata.broker.list")) {
+            detail::KafkaHelper::setConf(globalConf_, "metadata.broker.list", "localhost:9092");
+        }
         for (auto it = globalConf.begin(); it != globalConf.end(); ++it) {
             const std::string prefix = "custom.";
             if (it->first.rfind(prefix, 0) == 0) {
