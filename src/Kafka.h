@@ -20,6 +20,7 @@
 
 #include <atomic>
 #include <cassert>
+#include <chrono>
 #include <csignal>
 #include <cstdlib>
 #include <sstream>
@@ -253,7 +254,6 @@ public:
 }  // namespace kafka
 }  // namespace souffle
 
-#define KAFKA_DEBUG
 
 namespace souffle {
 namespace kafka {
@@ -268,13 +268,18 @@ private:
     RdKafka::Consumer* consumer_;
     std::unordered_map<std::string, RdKafka::Topic*> producerTopics_;
     std::unordered_map<std::string, RdKafka::Topic*> consumerTopics_;
-    std::unordered_map<std::string, std::string> customConf_ = {{"bootstrap-server", "localhost:9092"},
-            {"create-topics", "true"}, {"run-program", "true"}, {"delete-topics", "true"}};
+    std::unordered_map<std::string, std::string> customConf_ = {
+        {"bootstrap-server", "localhost:9092"},
+        {"create-topics", "true"}, 
+        {"run-program", "true"}, 
+        // @TODO (lh): choose if to delete topics by default, don't do here for speed and debugging
+        {"delete-topics", "false"}, 
+        {"unique-id", [](){ return std::to_string(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count()) + "."; }()},
+        {"use-kafkacat", "true"}
+        };
     std::vector<std::string> topicNames_;
+    std::string uniqueId_;
 
-#ifdef KAFKA_DEBUG
-    RdKafka::Topic* debugTopic_;
-#endif
 private:
     explicit Kafka() {}
 
@@ -310,6 +315,7 @@ public:
                 detail::KafkaHelper::setConf(globalConf_, it->first, it->second);
             }
         }
+        uniqueId_ = customConf_.at("unique-id");
         if (customConf_.at("create-topics") == "true") {
             for (const auto& topicName : topicNames_) {
                 createTopic(topicName, customConf_.at("bootstrap-server"));
@@ -324,15 +330,9 @@ public:
         consumer_ = detail::KafkaHelper::createConsumer(globalConf_);
         producerTopics_ = std::unordered_map<std::string, RdKafka::Topic*>();
         consumerTopics_ = std::unordered_map<std::string, RdKafka::Topic*>();
-#ifdef KAFKA_DEBUG
-        debugTopic_ = detail::KafkaHelper::createTopic(topicConf_, producer_, "_DEBUG_");
-#endif
     }
     void endClient() {
         detail::KafkaHelper::pollProducerUntilEmpty(producer_);
-#ifdef KAFKA_DEBUG
-        delete debugTopic_;
-#endif
         delete producer_;
         delete consumer_;
         detail::KafkaHelper::waitDestroyed();
@@ -346,19 +346,6 @@ public:
             }
         }
     }
-#ifdef KAFKA_DEBUG
-    template <typename T>
-    void debug(std::stringstream& stringstream, const std::vector<T>& payload) {
-        stringstream << payload.size();
-        for (const auto& element : payload) {
-            stringstream << " " << element;
-        }
-        const std::string str = stringstream.str();
-        const char* cstr = str.c_str();
-        std::vector<char> debugPayload(cstr, cstr + str.size());
-        detail::KafkaHelper::produceProducer(producer_, debugTopic_, debugPayload);
-    }
-#endif
     bool hasProductionBegun(const std::string& topicName) const {
         return producerTopics_.find(topicName) != producerTopics_.end();
     }
@@ -368,7 +355,7 @@ public:
     }
     void beginProduction(const std::string& topicName) {
         if (!hasProductionBegun(topicName) || hasProductionEnded(topicName)) {
-            producerTopics_[topicName] = detail::KafkaHelper::createTopic(topicConf_, producer_, topicName);
+            producerTopics_[topicName] = detail::KafkaHelper::createTopic(topicConf_, producer_, uniqueId_ + topicName);
         }
     }
     void endProduction(const std::string& topicName) {
@@ -384,7 +371,7 @@ public:
     }
     void beginConsumption(const std::string& topicName) {
         if (!hasConsumptionBegun(topicName) || hasConsumptionEnded(topicName)) {
-            consumerTopics_[topicName] = detail::KafkaHelper::createTopic(topicConf_, consumer_, topicName);
+            consumerTopics_[topicName] = detail::KafkaHelper::createTopic(topicConf_, consumer_, uniqueId_ + topicName);
             detail::KafkaHelper::startConsumer(consumer_, consumerTopics_.at(topicName));
         }
     }
@@ -397,13 +384,6 @@ public:
     void produce(const std::string& topicName, std::vector<T>& payload) {
         RdKafka::Topic* topic = producerTopics_.at(topicName);
         assert(topic);
-#ifdef KAFKA_DEBUG
-        {
-            std::stringstream stringstream;
-            stringstream << producer_->name() << " " << topic->name() << " ";
-            debug(stringstream, payload);
-        }
-#endif
         detail::KafkaHelper::produceProducer(producer_, topic, payload);
     }
     template <typename T>
@@ -411,13 +391,6 @@ public:
         RdKafka::Topic* topic = consumerTopics_.at(topicName);
         assert(topic);
         detail::KafkaHelper::consumeConsumer(consumer_, topic, payload, timeoutMs);
-#ifdef KAFKA_DEBUG
-        {
-            std::stringstream stringstream;
-            stringstream << consumer_->name() << " " << topic->name() << " ";
-            debug(stringstream, payload);
-        }
-#endif
     }
     void pollProducer(const int timeoutMs = 1000) {
         detail::KafkaHelper::pollHandle(producer_, timeoutMs);
@@ -429,9 +402,6 @@ public:
         detail::KafkaHelper::pollProducerUntilEmpty(producer_);
     }
     void withSouffleProgram(const SouffleProgram& souffleProgram) {
-#ifdef KAFKA_DEBUG
-        topicNames_.push_back("_DEBUG_");
-#endif
         for (const auto& relation : souffleProgram.getAllRelations()) {
             topicNames_.push_back(relation->getName());
         }
@@ -441,22 +411,20 @@ public:
     }
 
 private:
-    static void createTopic(const std::string& topicName, const std::string& bootstrapServer) {
+    void createTopic(const std::string& topicName, const std::string& bootstrapServer) {
         std::stringstream stringstream;
-        stringstream << "kafka-topics.sh --create --bootstrap-server \"" << bootstrapServer << "\" --topic \""
+        if (customConf_.at("use-kafkacat") == "true") {
+            stringstream << "kafkacat -b \"" << bootstrapServer << "\" -t \"" << uniqueId_ << topicName << "\" > /dev/null 2>&1";
+        } else {
+        stringstream << "kafka-topics.sh --create --bootstrap-server \"" << bootstrapServer << "\" --topic \"" << uniqueId_ 
                      << topicName << "\" --replication-factor 1 --partitions 1 > /dev/null 2>&1";
-#ifdef KAFKA_DEBUG
-        // @TODO (lh): std::cout << stringstream.str() << std::endl;
-#endif
+        }
         system(stringstream.str().c_str());
     }
-    static void deleteTopic(const std::string& topicName, const std::string& bootstrapServer = "localhost") {
+    void deleteTopic(const std::string& topicName, const std::string& bootstrapServer = "localhost") {
         std::stringstream stringstream;
-        stringstream << "kafka-topics.sh --delete --bootstrap-server \"" << bootstrapServer << "\" --topic \""
+        stringstream << "kafka-topics.sh --delete --bootstrap-server \"" << bootstrapServer << "\" --topic \"" << uniqueId_
                      << topicName << "\" > /dev/null 2>&1";
-#ifdef KAFKA_DEBUG
-        // @TODO (lh): std::cout << stringstream.str() << std::endl;
-#endif
         system(stringstream.str().c_str());
     }
 };

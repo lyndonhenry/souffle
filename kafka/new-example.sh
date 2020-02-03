@@ -408,7 +408,7 @@ function ensure_testsuite_passes() {
     ./bootstrap
     SOUFFLE_CATEGORY=${SOUFFLE_CATEGORY} SOUFFLE_CONFS=${SOUFFLE_CONFS} ./configure --enable-kafka
     make -j${JOBS}
-    TESTSUITEFLAGS="-j1" make check -j${JOBS}
+    TESTSUITEFLAGS="-j${JOBS}" make check -j${JOBS}
 }
 
 function ensure_sudo_permissions() {
