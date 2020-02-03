@@ -74,7 +74,8 @@ protected:
      */
     size_t stratumIndex;
 
-    // @TODO (lh): document and suport Kafka config properties/extra options better here
+    // @TODO (lh): document and suport Kafka config properties/extra options be# @TODO (lh): 
+
     // @TODO (lh): have everything on this branch go through --custom/-X or --experimental/-X in both compiled and regular souffle, remove stratum index and engine option
 
     /**
