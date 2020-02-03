@@ -202,6 +202,8 @@ int main(int argc, char** argv) {
 
         // ------ command line arguments -------------
 
+        // @TODO (lh): change option handling and make all tests pass
+
         // @TODO (lh): remove this option handling when kafka implementation complete
         // @TODO (lh): maybe change the delimiter here, can't use ',' due to testsuite SOUFFLE_CONFS
         for (const auto& flag : splitString(Global::config().get("custom"), '_')) {

@@ -427,7 +427,8 @@ function main() {
     local TESTSUITE_DIR="${PWD}/tests/testsuite.dir"
 
     # set the test case used by this script
-    local TEST_CASE="example/input_output_numbers"
+    # @TODO (lh): local TEST_CASE="example/input_output_numbers"
+    local TEST_CASE="evaluation/aggregates2"
 
     # make a temp directory for dependencies
     local TMP_DIRECTORY="/tmp/souffle"
@@ -445,20 +446,20 @@ function main() {
     # run tests for no -e
 
     # normal seminaive evaluation
-    ensure_test_case_passes "${TEST_CASE}"
+    # @TODO ensure_test_case_passes "${TEST_CASE}"
     # generalized seminaive evaluation
-    ensure_test_case_passes "${TEST_CASE}" --custom=use-general
+    # @TODO ensure_test_case_passes "${TEST_CASE}" --custom=use-general
     # generalized seminaive evaluation with output relations written to files inside fixpoint loop
-    ensure_test_case_passes "${TEST_CASE}" --custom=use-general_use-general-producers
+    # @TODO ensure_test_case_passes "${TEST_CASE}" --custom=use-general_use-general-producers
 
     # run tests for -efile
     
     # normal seminaive evaluation with intermediate results written to and read from files
-    ensure_test_case_passes "${TEST_CASE}" "-efile"
+    # @TODO ensure_test_case_passes "${TEST_CASE}" "-efile"
     # generalized seminaive evaluation with intermediate results written to and read from files outside of fixpoint loop
-    ensure_test_case_passes "${TEST_CASE}" "-efile --custom=use-general"
+    # @TODO ensure_test_case_passes "${TEST_CASE}" "-efile --custom=use-general"
     # generalized seminaive evaluation with intermediate results read from files outside of fixpoint loop and written to files inside fixpoint loop
-    ensure_test_case_passes "${TEST_CASE}" "-efile --custom=use-general_use-general-producers"
+    # @TODO ensure_test_case_passes "${TEST_CASE}" "-efile --custom=use-general_use-general-producers"
 
     # run tests for -ekafka
 
@@ -489,9 +490,9 @@ function main() {
 }
 
 # @TODO (lh)
-ensure_docker_compose_is_down "${PWD}/kafka"
-ensure_docker_compose_is_up "${PWD}/kafka"
-export PATH="/tmp/souffle/kafka_2.12-2.3.1/bin:${PATH}"
-ensure_testsuite_passes
+#ensure_docker_compose_is_down "${PWD}/kafka"
+#ensure_docker_compose_is_up "${PWD}/kafka"
+#export PATH="/tmp/souffle/kafka_2.12-2.3.1/bin:${PATH}"
+#ensure_testsuite_passes
 
 main ${@:-}
