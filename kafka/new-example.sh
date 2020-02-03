@@ -392,7 +392,7 @@ function ensure_testsuite_passes() {
     SOUFFLE_CONFS+="-j${JOBS}"
     SOUFFLE_CONFS+=",-j${JOBS} -c"
     SOUFFLE_CONFS+=",-j${JOBS} -c -efile"
-    SOUFFLE_CONFS+="-j${JOBS} -c -ekafka"
+    SOUFFLE_CONFS+=",-j${JOBS} -c -ekafka"
     SOUFFLE_CONFS+=",-j${JOBS} --custom=use-general"
     SOUFFLE_CONFS+=",-j${JOBS} -c --custom=use-general"
     SOUFFLE_CONFS+=",-j${JOBS} -c -efile --custom=use-general"
