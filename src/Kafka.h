@@ -444,7 +444,7 @@ private:
     static void createTopic(const std::string& topicName, const std::string& bootstrapServer) {
         std::stringstream stringstream;
         stringstream << "kafka-topics.sh --create --bootstrap-server \"" << bootstrapServer << "\" --topic \""
-                     << topicName << "\" --replication-factor 1 --partitions 1 &> /dev/null";
+                     << topicName << "\" --replication-factor 1 --partitions 1 > /dev/null 2>&1";
 #ifdef KAFKA_DEBUG
         // @TODO (lh): std::cout << stringstream.str() << std::endl;
 #endif
@@ -453,7 +453,7 @@ private:
     static void deleteTopic(const std::string& topicName, const std::string& bootstrapServer = "localhost") {
         std::stringstream stringstream;
         stringstream << "kafka-topics.sh --delete --bootstrap-server \"" << bootstrapServer << "\" --topic \""
-                     << topicName << "\" &> /dev/null";
+                     << topicName << "\" > /dev/null 2>&1";
 #ifdef KAFKA_DEBUG
         // @TODO (lh): std::cout << stringstream.str() << std::endl;
 #endif
