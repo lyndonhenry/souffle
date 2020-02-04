@@ -38,8 +38,8 @@ private:
 
 public:
     ReadStreamKafka(const std::vector<bool>& symbolMask, SymbolTable& symbolTable,
-            const IODirectives& ioDirectives, const size_t numberOfHeights = 0, const bool provenance = false)
-            : ReadStream(symbolMask, symbolTable, provenance, numberOfHeights),
+            const IODirectives& ioDirectives, const size_t auxiliaryArity = 0, const bool provenance = false)
+            : ReadStream(symbolMask, symbolTable, auxiliaryArity),
               relationName_(ioDirectives.getRelationNameSuffix()), kafka_(kafka::Kafka::getInstance()),
               index_(0) {}
     virtual ~ReadStreamKafka() = default;
@@ -112,8 +112,8 @@ class ReadStreamKafkaDefault : public ReadStreamKafka {
 
 public:
     ReadStreamKafkaDefault(const std::vector<bool>& symbolMask, SymbolTable& symbolTable,
-            const IODirectives& ioDirectives, const size_t numberOfHeights = 0, const bool provenance = false)
-            : ReadStreamKafka(symbolMask, symbolTable, ioDirectives, numberOfHeights, provenance) {}
+            const IODirectives& ioDirectives, const size_t auxiliaryArity = 0, const bool provenance = false)
+            : ReadStreamKafka(symbolMask, symbolTable, ioDirectives, auxiliaryArity, provenance) {}
     virtual ~ReadStreamKafkaDefault() = default;
 
 private:
@@ -128,8 +128,8 @@ private:
 class ReadStreamKafkaNullPayload : public ReadStreamKafka {
 public:
     ReadStreamKafkaNullPayload(const std::vector<bool>& symbolMask, SymbolTable& symbolTable,
-            const IODirectives& ioDirectives, const size_t numberOfHeights = 0, const bool provenance = false)
-            : ReadStreamKafka(symbolMask, symbolTable, ioDirectives, numberOfHeights, provenance) {}
+            const IODirectives& ioDirectives, const size_t auxiliaryArity = 0, const bool provenance = false)
+            : ReadStreamKafka(symbolMask, symbolTable, ioDirectives, auxiliaryArity, provenance) {}
     virtual ~ReadStreamKafkaNullPayload() = default;
 
 private:
@@ -145,8 +145,8 @@ private:
 class ReadStreamKafkaWithTimeout : public ReadStreamKafka {
 public:
     ReadStreamKafkaWithTimeout(const std::vector<bool>& symbolMask, SymbolTable& symbolTable,
-            const IODirectives& ioDirectives, const size_t numberOfHeights = 0, const bool provenance = false)
-            : ReadStreamKafka(symbolMask, symbolTable, ioDirectives, numberOfHeights, provenance) {}
+            const IODirectives& ioDirectives, const size_t auxiliaryArity = 0, const bool provenance = false)
+            : ReadStreamKafka(symbolMask, symbolTable, ioDirectives, auxiliaryArity, provenance) {}
     virtual ~ReadStreamKafkaWithTimeout() = default;
 
 private:
@@ -195,19 +195,19 @@ private:
 class ReadStreamKafkaFactory : public ReadStreamFactory {
 public:
     std::unique_ptr<ReadStream> getReader(const std::vector<bool>& symbolMask, SymbolTable& symbolTable,
-            const IODirectives& ioDirectives, const bool provenance, const size_t numberOfHeights) override {
+            const IODirectives& ioDirectives, const size_t auxiliaryArity) override {
         if (ioDirectives.get("kafka") == "default") {
             // if (fact-dir, .facts, slave)
             return std::make_unique<ReadStreamKafkaDefault>(
-                    symbolMask, symbolTable, ioDirectives, numberOfHeights, provenance);
+                    symbolMask, symbolTable, ioDirectives, auxiliaryArity, provenance);
         } else if (ioDirectives.get("kafka") == "null-payload") {
             // if (output-dir, .facts, slave) or (output-dir, .csv, slave) or (output-dir, .csv, master)
             return std::make_unique<ReadStreamKafkaNullPayload>(
-                    symbolMask, symbolTable, ioDirectives, numberOfHeights, provenance);
+                    symbolMask, symbolTable, ioDirectives, auxiliaryArity, provenance);
         } else if (ioDirectives.get("kafka") == "with-timeout") {
             // if using non-blocking consumers in fixpoint loop
             return std::make_unique<ReadStreamKafkaWithTimeout>(
-                    symbolMask, symbolTable, ioDirectives, numberOfHeights, provenance);
+                    symbolMask, symbolTable, ioDirectives, auxiliaryArity, provenance);
         } else {
             assert(false);
         }

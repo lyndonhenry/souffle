@@ -37,7 +37,7 @@ protected:
 public:
     WriteStreamKafka(const std::vector<bool>& symbolMask, const SymbolTable& symbolTable,
             const IODirectives& ioDirectives, const size_t numberOfHeights = 0, const bool provenance = false)
-            : WriteStream(symbolMask, symbolTable, provenance, numberOfHeights),
+            : WriteStream(symbolMask, symbolTable, numberOfHeights),
               relationName_(ioDirectives.getRelationNameSuffix()), kafka_(kafka::Kafka::getInstance()) {}
     virtual ~WriteStreamKafka() = default;
 
@@ -126,7 +126,7 @@ class WriteStreamKafkaFactory : public WriteStreamFactory {
 
 public:
     std::unique_ptr<WriteStream> getWriter(const std::vector<bool>& symbolMask,
-            const SymbolTable& symbolTable, const IODirectives& ioDirectives, const bool provenance,
+            const SymbolTable& symbolTable, const IODirectives& ioDirectives,
             const size_t numberOfHeights) override {
         if (ioDirectives.get("kafka") == "default") {
             // if (fact-dir, .facts, master)
