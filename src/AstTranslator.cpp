@@ -135,7 +135,7 @@ void AstTranslator::makeRamLoad(std::unique_ptr<RamStatement>& current, std::siz
             // load intermediate relations from correct files
             if (ioDirective.getIOType() == "file") {
                 // set filename by relation if not given, or if relation is intermediate
-                if (!ioDirective.has("filename") || ioDirective.get("intermediate") == "true") {
+                if (!ioDirective.has("filename") || (ioDirective.has("intermediate") && ioDirective.get("intermediate") == "true")) {
                     ioDirective.setFileName(ioDirective.getRelationName() + ioDirective.get("extension"));
                 }
 
@@ -256,7 +256,7 @@ void AstTranslator::makeRamStore(std::unique_ptr<RamStatement>& current, std::si
             // load intermediate relations from correct files
             if (ioDirective.getIOType() == "file") {
                 // set filename by relation if not given, or if relation is intermediate
-                if (!ioDirective.has("filename") || ioDirective.get("intermediate") == "true") {
+                if (!ioDirective.has("filename") || (ioDirective.has("intermediate") && ioDirective.get("intermediate") == "true")) {
                     ioDirective.setFileName(ioDirective.getRelationName() + ioDirective.get("extension"));
                 }
 
