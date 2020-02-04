@@ -90,7 +90,7 @@ public:
 class WriteStreamKafkaDefault : public WriteStreamKafka {
 public:
     WriteStreamKafkaDefault(const std::vector<bool>& symbolMask, const SymbolTable& symbolTable,
-            const IODirectives& ioDirectives, const size_t auxiliaryArity = 0) {
+            const IODirectives& ioDirectives, const size_t auxiliaryArity = 0) 
             : WriteStreamKafka(symbolMask, symbolTable, ioDirectives, auxiliaryArity) {}
     virtual ~WriteStreamKafkaDefault() = default;
 
@@ -131,11 +131,11 @@ public:
         if (ioDirectives.get("kafka") == "default") {
             // if (fact-dir, .facts, master)
             return std::make_unique<WriteStreamKafkaDefault>(
-                    symbolMask, symbolTable, ioDirectives, auxiliaryArity, provenance);
+                    symbolMask, symbolTable, ioDirectives, auxiliaryArity);
         } else if (ioDirectives.get("kafka") == "null-payload") {
             // if (output-dir, .facts, slave) or (output-dir, .csv, slave)
             return std::make_unique<WriteStreamKafkaNullPayload>(
-                    symbolMask, symbolTable, ioDirectives, auxiliaryArity, provenance);
+                    symbolMask, symbolTable, ioDirectives, auxiliaryArity);
         } else {
             assert(false);
         }
