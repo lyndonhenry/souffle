@@ -270,10 +270,10 @@ private:
     std::unordered_map<std::string, RdKafka::Topic*> consumerTopics_;
     std::unordered_map<std::string, std::string> customConf_ = {
         {"bootstrap-server", "localhost:9092"},
-        {"create-topics", "true"}, 
-        {"run-program", "true"}, 
+        {"create-topics", "true"},
+        {"run-program", "true"},
         // @TODO (lh): choose if to delete topics by default, don't do here for speed and debugging
-        {"delete-topics", "false"}, 
+        {"delete-topics", "false"},
         {"unique-id", [](){ return std::to_string(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count()) + "."; }()},
         {"use-kafkacat", "true"}
         };
@@ -416,7 +416,7 @@ private:
         if (customConf_.at("use-kafkacat") == "true") {
             stringstream << "kafkacat -b \"" << bootstrapServer << "\" -t \"" << uniqueId_ << topicName << "\" > /dev/null 2>&1";
         } else {
-        stringstream << "kafka-topics.sh --create --bootstrap-server \"" << bootstrapServer << "\" --topic \"" << uniqueId_ 
+        stringstream << "kafka-topics.sh --create --bootstrap-server \"" << bootstrapServer << "\" --topic \"" << uniqueId_
                      << topicName << "\" --replication-factor 1 --partitions 1 > /dev/null 2>&1";
         }
         system(stringstream.str().c_str());

@@ -38,7 +38,7 @@ private:
 
 public:
     ReadStreamKafka(const std::vector<bool>& symbolMask, SymbolTable& symbolTable,
-            const IODirectives& ioDirectives, const size_t auxiliaryArity = 0, const bool provenance = false)
+            const IODirectives& ioDirectives, const size_t auxiliaryArity = 0)
             : ReadStream(symbolMask, symbolTable, auxiliaryArity),
               relationName_(ioDirectives.getRelationNameSuffix()), kafka_(kafka::Kafka::getInstance()),
               index_(0) {}
@@ -112,8 +112,8 @@ class ReadStreamKafkaDefault : public ReadStreamKafka {
 
 public:
     ReadStreamKafkaDefault(const std::vector<bool>& symbolMask, SymbolTable& symbolTable,
-            const IODirectives& ioDirectives, const size_t auxiliaryArity = 0, const bool provenance = false)
-            : ReadStreamKafka(symbolMask, symbolTable, ioDirectives, auxiliaryArity, provenance) {}
+            const IODirectives& ioDirectives, const size_t auxiliaryArity = 0)
+            : ReadStreamKafka(symbolMask, symbolTable, ioDirectives, auxiliaryArity) {}
     virtual ~ReadStreamKafkaDefault() = default;
 
 private:
@@ -128,8 +128,8 @@ private:
 class ReadStreamKafkaNullPayload : public ReadStreamKafka {
 public:
     ReadStreamKafkaNullPayload(const std::vector<bool>& symbolMask, SymbolTable& symbolTable,
-            const IODirectives& ioDirectives, const size_t auxiliaryArity = 0, const bool provenance = false)
-            : ReadStreamKafka(symbolMask, symbolTable, ioDirectives, auxiliaryArity, provenance) {}
+            const IODirectives& ioDirectives, const size_t auxiliaryArity = 0)
+            : ReadStreamKafka(symbolMask, symbolTable, ioDirectives, auxiliaryArity) {}
     virtual ~ReadStreamKafkaNullPayload() = default;
 
 private:
@@ -145,8 +145,8 @@ private:
 class ReadStreamKafkaWithTimeout : public ReadStreamKafka {
 public:
     ReadStreamKafkaWithTimeout(const std::vector<bool>& symbolMask, SymbolTable& symbolTable,
-            const IODirectives& ioDirectives, const size_t auxiliaryArity = 0, const bool provenance = false)
-            : ReadStreamKafka(symbolMask, symbolTable, ioDirectives, auxiliaryArity, provenance) {}
+            const IODirectives& ioDirectives, const size_t auxiliaryArity = 0)
+            : ReadStreamKafka(symbolMask, symbolTable, ioDirectives, auxiliaryArity) {}
     virtual ~ReadStreamKafkaWithTimeout() = default;
 
 private:
@@ -199,15 +199,15 @@ public:
         if (ioDirectives.get("kafka") == "default") {
             // if (fact-dir, .facts, slave)
             return std::make_unique<ReadStreamKafkaDefault>(
-                    symbolMask, symbolTable, ioDirectives, auxiliaryArity, provenance);
+                    symbolMask, symbolTable, ioDirectives, auxiliaryArity);
         } else if (ioDirectives.get("kafka") == "null-payload") {
             // if (output-dir, .facts, slave) or (output-dir, .csv, slave) or (output-dir, .csv, master)
             return std::make_unique<ReadStreamKafkaNullPayload>(
-                    symbolMask, symbolTable, ioDirectives, auxiliaryArity, provenance);
+                    symbolMask, symbolTable, ioDirectives, auxiliaryArity);
         } else if (ioDirectives.get("kafka") == "with-timeout") {
             // if using non-blocking consumers in fixpoint loop
             return std::make_unique<ReadStreamKafkaWithTimeout>(
-                    symbolMask, symbolTable, ioDirectives, auxiliaryArity, provenance);
+                    symbolMask, symbolTable, ioDirectives, auxiliaryArity);
         } else {
             assert(false);
         }

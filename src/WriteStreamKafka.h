@@ -36,8 +36,8 @@ protected:
 
 public:
     WriteStreamKafka(const std::vector<bool>& symbolMask, const SymbolTable& symbolTable,
-            const IODirectives& ioDirectives, const size_t numberOfHeights = 0, const bool provenance = false)
-            : WriteStream(symbolMask, symbolTable, numberOfHeights),
+            const IODirectives& ioDirectives, const size_t auxiliaryArity = 0) 
+            : WriteStream(symbolMask, symbolTable, auxiliaryArity),
               relationName_(ioDirectives.getRelationNameSuffix()), kafka_(kafka::Kafka::getInstance()) {}
     virtual ~WriteStreamKafka() = default;
 
@@ -90,8 +90,8 @@ public:
 class WriteStreamKafkaDefault : public WriteStreamKafka {
 public:
     WriteStreamKafkaDefault(const std::vector<bool>& symbolMask, const SymbolTable& symbolTable,
-            const IODirectives& ioDirectives, const size_t numberOfHeights = 0, const bool provenance = false)
-            : WriteStreamKafka(symbolMask, symbolTable, ioDirectives, numberOfHeights, provenance) {}
+            const IODirectives& ioDirectives, const size_t auxiliaryArity = 0) {
+            : WriteStreamKafka(symbolMask, symbolTable, ioDirectives, auxiliaryArity) {}
     virtual ~WriteStreamKafkaDefault() = default;
 
 private:
@@ -106,8 +106,8 @@ private:
 class WriteStreamKafkaNullPayload : public WriteStreamKafka {
 public:
     WriteStreamKafkaNullPayload(const std::vector<bool>& symbolMask, const SymbolTable& symbolTable,
-            const IODirectives& ioDirectives, const size_t numberOfHeights = 0, const bool provenance = false)
-            : WriteStreamKafka(symbolMask, symbolTable, ioDirectives, numberOfHeights, provenance) {}
+            const IODirectives& ioDirectives, const size_t auxiliaryArity = 0)
+            : WriteStreamKafka(symbolMask, symbolTable, ioDirectives, auxiliaryArity) {}
     virtual ~WriteStreamKafkaNullPayload() = default;
 
 private:
@@ -127,15 +127,15 @@ class WriteStreamKafkaFactory : public WriteStreamFactory {
 public:
     std::unique_ptr<WriteStream> getWriter(const std::vector<bool>& symbolMask,
             const SymbolTable& symbolTable, const IODirectives& ioDirectives,
-            const size_t numberOfHeights) override {
+            const size_t auxiliaryArity) override {
         if (ioDirectives.get("kafka") == "default") {
             // if (fact-dir, .facts, master)
             return std::make_unique<WriteStreamKafkaDefault>(
-                    symbolMask, symbolTable, ioDirectives, numberOfHeights, provenance);
+                    symbolMask, symbolTable, ioDirectives, auxiliaryArity, provenance);
         } else if (ioDirectives.get("kafka") == "null-payload") {
             // if (output-dir, .facts, slave) or (output-dir, .csv, slave)
             return std::make_unique<WriteStreamKafkaNullPayload>(
-                    symbolMask, symbolTable, ioDirectives, numberOfHeights, provenance);
+                    symbolMask, symbolTable, ioDirectives, auxiliaryArity, provenance);
         } else {
             assert(false);
         }
