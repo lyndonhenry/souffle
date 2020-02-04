@@ -36,13 +36,6 @@ class tuple;
 
 /**
  * Object-oriented wrapper class for Souffle's templatized relations.
- *
- * Tuples can be inserted into a relation. To access the stored tuples, iterator_base and iteraor are
- * used. A relation is manipulated by the souffle program (create new relation, load input etc).
- *
- * A relation stores the master-copy collection of tuples and their
- * indices in tables. (check CompiledRelation.h for more details.)
- * Which table is a single link-list structure. (check Table.h for more details.)
  */
 class Relation {
 protected:
@@ -335,14 +328,21 @@ public:
     virtual const char* getAttrName(size_t) const = 0;
 
     /**
-     * Get the arity of a relation.
+     * Return the arity of a relation.
      * For example for a tuple (1 2) the arity is 2 and for a tuple (1 2 3) the arity is 3.
      *
      * @return Arity of a relation (size_t)
      */
     virtual size_t getArity() const = 0;
 
-    virtual size_t getNumberOfHeights() const = 0;
+    /**
+     * Return the number of auxiliary attributes. Auxiliary attributes
+     * are used for provenance and and other alternative evaluation
+     * strategies. They are stored as the last attributes of a tuple.
+     *
+     * @return Number of auxiliary attributes of a relation (size_t)
+     */
+    virtual size_t getAuxiliaryArity() const = 0;
 
     /**
      * Get the symbol table of a relation.

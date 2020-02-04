@@ -19,7 +19,6 @@
 #include "souffle/Brie.h"
 #include "souffle/CompiledIndexUtils.h"
 #include "souffle/CompiledRecord.h"
-#include "souffle/CompiledRelation.h"
 #include "souffle/CompiledTuple.h"
 #include "souffle/IODirectives.h"
 #include "souffle/IOSystem.h"
@@ -29,6 +28,7 @@
 #include "souffle/SignalHandler.h"
 #include "souffle/SouffleInterface.h"
 #include "souffle/SymbolTable.h"
+#include "souffle/Table.h"
 #include "souffle/Util.h"
 #include "souffle/WriteStream.h"
 #ifndef __EMBEDDED_SOUFFLE__
@@ -65,7 +65,7 @@ inline souffle::SouffleProgram* getInstance(const char* p) {
 /**
  * Relation wrapper used internally in the generated Datalog program
  */
-template <uint32_t id, class RelType, class TupleType, size_t Arity, size_t NumberOfHeights>
+template <uint32_t id, class RelType, class TupleType, size_t Arity, size_t NumAuxAttributes>
 class RelationWrapper : public souffle::Relation {
 private:
     RelType& relation;
@@ -147,8 +147,8 @@ public:
     size_t getArity() const override {
         return Arity;
     }
-    size_t getNumberOfHeights() const override {
-        return NumberOfHeights;
+    size_t getAuxiliaryArity() const override {
+        return NumAuxAttributes;
     }
     SymbolTable& getSymbolTable() const override {
         return symTable;
