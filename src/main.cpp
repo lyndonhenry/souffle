@@ -197,10 +197,42 @@ int main(int argc, char** argv) {
                 {"parse-errors", '\5', "", "", false, "Show parsing errors, if any, then exit."},
                 // @TODO (lh): remove this option when kafka implementation complete
                 {"custom", '\7', "FLAGS", "", false, ""},
+                {"experimental", 'X', "OPTIONS", "", false, "Experimental features."},
                 {"help", 'h', "", "", false, "Display this help message."}};
         Global::config().processArgs(argc, argv, header.str(), footer.str(), options);
 
         // ------ command line arguments -------------
+
+{
+    // @TODO (lh)
+
+        for (const auto& option : splitString(Global::config().get("experimental"), '_')) {
+            Global::config().set("experimental." + option, "true");
+        }
+        if (Global::config().has("experimental.use-engine")) {
+            assert(Global::config().has("experimental.use-engine-file") || Global::config().has("experimental.use-engine-kafka"));
+        }
+        if (Global::config().has("experimental.use-engine-file")) {
+            assert(!Global::config().has("experimental.use-engine-kafka"));
+            Global::config().set("experimental.use-engine", "true");
+        }       
+        if (Global::config().has("experimental.use-engine-kafka")) {
+            assert(!Global::config().has("experimental.use-engine-file"));
+            Global::config().set("experimental.use-engine", "true");
+        }       
+        if (Global::config().has("experimental.use-general")) {
+
+        }       
+        if (Global::config().has("experimental.use-general-producers")) {
+            Global::config().set("experimental.use-general", "true");
+        }       
+        if (Global::config().has("experimental.use-general-consumers")) {
+            assert(Global::config().has("experimental.use-engine-kafka"));
+            Global::config().set("experimental.use-general", "true");
+            Global::config().set("experimental.use-general-producers", "true");
+        }       
+}
+
 
         // @TODO (lh): change option handling and make all tests pass
 

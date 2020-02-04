@@ -216,7 +216,7 @@ function ensure_souffle_program_is_built() {
         # show transformed ram
         ${COMMAND} --show=transformed-ram
         # echo the command
-        echo 
+        echo
         echo "${COMMAND}"
         echo
         # run souffle
@@ -256,13 +256,13 @@ function ensure_test_case_passes() {
     # ensute that test case is built
     ensure_souffle_test_case_is_built "${PWD}" "${TEST_CASE}" "${SOUFFLE_ARGS}"
     # show the line count of the expected output files
-    wc -l "${TEST_CASE_ROOT}"/*.csv > "${TEST_CASE_ROOT}"/expected.txt 
+    wc -l "${TEST_CASE_ROOT}"/*.csv > "${TEST_CASE_ROOT}"/expected.txt
     # remove the expected output files, these are overridden by actual outputs on execution
     rm -rf "${TEST_CASE_ROOT}"/*.csv
     # run the program
     ${EXE} ${EXE_ARGS}
     # show the line count of the actual output files, the user should compare this to the expected produced above
-    wc -l "${TEST_CASE_ROOT}"/*.csv > "${TEST_CASE_ROOT}"/actual.txt 
+    wc -l "${TEST_CASE_ROOT}"/*.csv > "${TEST_CASE_ROOT}"/actual.txt
     # diff the actual vs expected output
     if [ "$(diff "${TEST_CASE_ROOT}"/actual.txt "${TEST_CASE_ROOT}"/expected.txt)" ]
     then
@@ -314,12 +314,12 @@ function ensure_kafka_test_case_passes() {
     # ensute that test case is built
     ensure_souffle_test_case_is_built "${PWD}" "${TEST_CASE}" "${SOUFFLE_ARGS}"
     # show the line count of the expected output files
-    wc -l "${TEST_CASE_ROOT}"/*.csv > "${TEST_CASE_ROOT}"/expected.txt 
+    wc -l "${TEST_CASE_ROOT}"/*.csv > "${TEST_CASE_ROOT}"/expected.txt
     # remove the expected output files, these are overridden by actual outputs on execution
     rm -rf "${TEST_CASE_ROOT}"/*.csv
     # extract stratum names and relation names from json metadata
     local JSON_DATA="$(${PWD}/src/souffle ${EXE}.dl --show=topsort-info)"
-    local RELATION_NAMES="$(echo ${JSON_DATA} | jq -r '.RelationNames | .[]')" 
+    local RELATION_NAMES="$(echo ${JSON_DATA} | jq -r '.RelationNames | .[]')"
     local STRATUM_NAMES="$(echo ${JSON_DATA} | jq -r '.StratumNames | .[]')"
     # ensure that all program specific topics are initially empty by deleting them
     local EXE_EXTRA_ARGS=""
@@ -345,7 +345,7 @@ function ensure_kafka_test_case_passes() {
     for_each_async "${EXE} ${EXE_ARGS} ${EXE_EXTRA_ARGS} -i" -2 -3 ${STRATUM_NAMES}
     wait
     # show the line count of the actual output files, the user should compare this to the expected produced above
-    wc -l "${TEST_CASE_ROOT}"/*.csv > "${TEST_CASE_ROOT}"/actual.txt 
+    wc -l "${TEST_CASE_ROOT}"/*.csv > "${TEST_CASE_ROOT}"/actual.txt
     # diff the actual vs expected output
     if [ "$(diff "${TEST_CASE_ROOT}"/actual.txt "${TEST_CASE_ROOT}"/expected.txt)" ]
     then
@@ -453,7 +453,7 @@ function main() {
     # @TODO ensure_test_case_passes "${TEST_CASE}" --custom=use-general_use-general-producers
 
     # run tests for -efile
-    
+
     # normal seminaive evaluation with intermediate results written to and read from files
     # @TODO ensure_test_case_passes "${TEST_CASE}" "-efile"
     # generalized seminaive evaluation with intermediate results written to and read from files outside of fixpoint loop
@@ -471,7 +471,7 @@ function main() {
     ensure_docker_compose_is_up "${KAFKA_DOCKER_PATH}"
 
     # normal seminaive evaluation with intermediate results produced to and consumed from kafka topics
-    ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka" 
+    ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka"
     # generalized seminaive evaluation with intermediate results produced to and consumed from kafka topics outside of fixpoint loop
     ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka --custom=use-general"
     # generalized seminaive evaluation with intermediate results consumed from kafka topics outside of fixpoint loop and produced to kafka topics inside of fixpoint loop
@@ -490,9 +490,9 @@ function main() {
 }
 
 # @TODO (lh)
-#ensure_docker_compose_is_down "${PWD}/kafka"
-#ensure_docker_compose_is_up "${PWD}/kafka"
-#export PATH="/tmp/souffle/kafka_2.12-2.3.1/bin:${PATH}"
-#ensure_testsuite_passes
+ensure_docker_compose_is_down "${PWD}/kafka"
+ensure_docker_compose_is_up "${PWD}/kafka"
+export PATH="/tmp/souffle/kafka_2.12-2.3.1/bin:${PATH}"
+ensure_testsuite_passes
 
 main ${@:-}

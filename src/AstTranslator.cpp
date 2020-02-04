@@ -121,16 +121,14 @@ void AstTranslator::makeRamLoad(std::unique_ptr<RamStatement>& current, std::siz
             ioDirective.set("directory", inputFilePath);
             ioDirective.set("extension", inputFileExt);
             ioDirective.set("stratum", stratumIndex);
-            ioDirective.setIOType(ioType);
+            if (!ioDirective.has("IO")) {
+                ioDirective.setIOType(ioType);
+            }
             ioDirective.set(Global::config().get("engine"), engineConfig);
             // @TODO (lh): refactor this function and add comments
             // set relation name correctly
             ioDirective.setRelationName(getRelationName(relation->getName()));
 
-            // set a default IO type of file and a default filename if not supplied
-            if (!ioDirective.has("IO")) {
-                ioDirective.setIOType("file");
-            }
 
             // load intermediate relations from correct files
             if (ioDirective.getIOType() == "file") {
@@ -242,7 +240,9 @@ void AstTranslator::makeRamStore(std::unique_ptr<RamStatement>& current, std::si
             ioDirective.set("extension", outputFileExt);
             ioDirective.set("stratum", stratumIndex);
             ioDirective.set("append", isAppend);
-            ioDirective.setIOType(ioType);
+            if (!ioDirective.has("IO")) {
+                ioDirective.setIOType(ioType);
+            }
             ioDirective.set(Global::config().get("engine"), engineConfig);
             // @TODO (lh): refactor this function and add comments
             // set relation name correctly
