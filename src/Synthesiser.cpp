@@ -511,6 +511,11 @@ void Synthesiser::emitCode(std::ostream& out, const RamStatement& stmt) {
             PRINT_END_COMMENT(out);
         }
 
+        void visitStratum(const RamStratum& stratum, std::ostream& out) override {
+            PRINT_BEGIN_COMMENT(out);
+            PRINT_END_COMMENT(out);
+        }
+
         // -- operations --
 
         void visitNestedOperation(const RamNestedOperation& nested, std::ostream& out) override {
@@ -1879,7 +1884,7 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
 
     // -- run function --
     os << "private:\nvoid runFunction(std::string inputDirectory = \".\", "
-          "std::string outputDirectory = \".\", bool performIO = false) "
+          "std::string outputDirectory = \".\", size_t stratumIndex = (size_t) -1, bool performIO = false) "
           "{\n";
 
     os << "SignalHandler::instance()->set();\n";
@@ -1919,9 +1924,29 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
         // Store configuration
         os << R"_(ProfileEventSingleton::instance().makeConfigRecord("relationCount", std::to_string()_"
            << relationCount << "));";
+        // Outline stratum records for faster compilation
+        os << "[](){\n";
+
+        // Record relations created in each stratum
+        visitDepthFirst(prog.getMain(), [&](const RamStratum& stratum) {
+            std::map<std::string, size_t> relNames;
+            for (auto rel : prog.getRelations()) {
+                relNames[rel->getName()] = rel->getArity();
+            }
+            for (const auto& cur : relNames) {
+                // Skip temporary relations, marked with '@'
+                if (cur.first[0] == '@') {
+                    continue;
+                }
+                os << "ProfileEventSingleton::instance().makeStratumRecord(" << stratum.getIndex()
+                   << R"_(, "relation", ")_" << cur.first << R"_(", "arity", ")_" << cur.second << R"_(");)_"
+                   << '\n';
+            }
+        });
+        // End stratum record outlining
+        os << "}();\n";
     }
 
-<<<<<<< HEAD
     if (Global::config().has("engine")) {
         std::stringstream ss;
         bool hasAtLeastOneStrata = false;
@@ -1964,10 +1989,6 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
     if (Global::config().has("engine")) {
         os << "EXIT:{}";
     }
-=======
-    // emit code
-    emitCode(os, prog.getMain());
->>>>>>> upstream
 
     if (Global::config().has("profile")) {
         os << "}\n";
@@ -1992,14 +2013,15 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
     os << "}\n";  // end of runFunction() method
 
     // add methods to run with and without performing IO (mainly for the interface)
-    os << "public:\nvoid run() override { runFunction(\".\", \".\", "
-          "false); }\n";
-    os << "public:\nvoid runAll(std::string inputDirectory = \".\", std::string outputDirectory = \".\") "
+    os << "public:\nvoid run(size_t stratumIndex = (size_t) -1) override { runFunction(\".\", \".\", "
+          "stratumIndex, false); }\n";
+    os << "public:\nvoid runAll(std::string inputDirectory = \".\", std::string outputDirectory = \".\", "
+          "size_t stratumIndex = (size_t) -1) "
           "override { ";
     if (Global::config().has("live-profile")) {
         os << "std::thread profiler([]() { profile::Tui().runProf(); });\n";
     }
-    os << "runFunction(inputDirectory, outputDirectory, true);\n";
+    os << "runFunction(inputDirectory, outputDirectory, stratumIndex, true);\n";
     if (Global::config().has("live-profile")) {
         os << "if (profiler.joinable()) { profiler.join(); }\n";
     }
@@ -2237,7 +2259,6 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
         os << R"_(souffle::ProfileEventSingleton::instance().makeConfigRecord("version", ")_"
            << Global::config().get("version") << R"_(");)_" << '\n';
     }
-<<<<<<< HEAD
 
     if (Global::config().get("engine") == "kafka") {
         os << "{" << std::endl;
@@ -2254,9 +2275,6 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
         os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), opt.getStratumIndex());"
            << std::endl;
     }
-=======
-    os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir());\n";
->>>>>>> upstream
 
     if (Global::config().get("provenance") == "explain") {
         os << "explain(obj, false, false);\n";

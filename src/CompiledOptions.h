@@ -69,7 +69,6 @@ protected:
      */
     size_t num_jobs;
 
-<<<<<<< HEAD
     /**
      * index of stratum to be executed
      */
@@ -93,13 +92,6 @@ public:
             std::unordered_map<std::string, std::string> eo = std::unordered_map<std::string, std::string>())
             : src(s), input_dir(id), output_dir(od), profiling(pe), profile_name(pfn), num_jobs(nj),
               stratumIndex(si), extraOptions(eo) {}
-=======
-public:
-    // all argument constructor
-    CmdOptions(const char* s, const char* id, const char* od, bool pe, const char* pfn, size_t nj,
-            size_t si = (size_t)-1)
-            : src(s), input_dir(id), output_dir(od), profiling(pe), profile_name(pfn), num_jobs(nj) {}
->>>>>>> upstream
 
     /**
      * get source code name
@@ -144,7 +136,6 @@ public:
     }
 
     /**
-<<<<<<< HEAD
      * get index of stratum to be executed
      */
     size_t getStratumIndex() const {
@@ -159,8 +150,6 @@ public:
     }
 
     /**
-=======
->>>>>>> upstream
      * Parses the given command line parameters, handles -h help requests or errors
      * and returns whether the parsing was successful or not.
      */
@@ -233,7 +222,6 @@ public:
                     std::cerr << "\nWarning: OpenMP was not enabled in compilation\n\n";
 #endif
                     break;
-<<<<<<< HEAD
                 case 'i':
                     stratumIndex = (size_t)std::stoull(optarg);
                     break;
@@ -256,8 +244,6 @@ public:
                     }
                     extraOptions.insert({key, value});
                 } break;
-=======
->>>>>>> upstream
                 default:
                     printHelpPage(exec_name);
                     return false;
@@ -298,12 +284,9 @@ private:
             std::cerr << "                                    (default: auto)\n";
         }
 #endif
-<<<<<<< HEAD
         std::cerr << "    -i <N>, --index=<N>          -- Specify index of stratum to be executed\n";
         std::cerr << "                                    (or each in order if omitted)\n";
         std::cerr << "    -X <KEY>=<VAL>, --extra=<KEY>=<VAL> -- Specify extra options\n";
-=======
->>>>>>> upstream
         std::cerr << "    -h                           -- prints this help page.\n";
         std::cerr << "--------------------------------------------------------------------\n";
         std::cout << " Copyright (c) 2016-20 The Souffle Developers." << std::endl;

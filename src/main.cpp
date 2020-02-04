@@ -186,6 +186,7 @@ int main(int argc, char** argv) {
                 {"pragma", 'P', "OPTIONS", "", false, "Set pragma options."},
                 {"provenance", 't', "[ none | explain | explore | subtreeHeights ]", "", false,
                         "Enable provenance instrumentation and interaction."},
+                {"engine", 'e', "[ file ]", "", false, "Alternative evaluation strategies."},
                 {"verbose", 'v', "", "", false, "Verbose output."},
                 {"version", '\3', "", "", false, "Version."},
                 {"show", '\4',
@@ -302,7 +303,6 @@ int main(int argc, char** argv) {
             Global::config().set("compile");
         }
 
-<<<<<<< HEAD
         /* disable provenance with engine option */
         if (Global::config().has("provenance")) {
             if (Global::config().has("engine")) {
@@ -322,8 +322,6 @@ int main(int argc, char** argv) {
             }
         }
 
-=======
->>>>>>> upstream
         if (Global::config().has("live-profile") && !Global::config().has("profile")) {
             Global::config().set("profile");
         }

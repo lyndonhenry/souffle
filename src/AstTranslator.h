@@ -292,7 +292,6 @@ private:
     std::string getRelationName(const AstRelationIdentifier& id) {
         return toString(join(id.getNames(), "."));
     }
-<<<<<<< HEAD
     // a function to load relations
     void makeRamLoad(std::unique_ptr<RamStatement>& current, std::size_t indexOfScc,
             const AstRelation* relation, const std::string& inputDirectory, const std::string& fileExtension,
@@ -303,17 +302,6 @@ private:
             const AstRelation* relation, const std::string& outputDirectory, const std::string& fileExtension,
             const std::string& engineDirectives, const std::string& ioType,
             std::unique_ptr<RamRelationReference> ramRelationReference);
-=======
-
-    void makeIODirective(IODirectives& ioDirective, const AstRelation* rel, const std::string& filePath,
-            const std::string& fileExt);
-
-    std::vector<IODirectives> getInputIODirectives(const AstRelation* rel,
-            std::string filePath = std::string(), const std::string& fileExt = std::string());
-
-    std::vector<IODirectives> getOutputIODirectives(const AstRelation* rel,
-            std::string filePath = std::string(), const std::string& fileExt = std::string());
->>>>>>> upstream
 
     /** create a reference to a RAM relation */
     std::unique_ptr<RamRelationReference> createRelationReference(const std::string name, const size_t arity,
