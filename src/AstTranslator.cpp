@@ -68,6 +68,7 @@ std::unique_ptr<RamTupleElement> AstTranslator::makeRamTupleElement(const Locati
     return std::make_unique<RamTupleElement>(loc.identifier, loc.element);
 }
 
+<<<<<<< HEAD
 void AstTranslator::makeRamLoad(std::unique_ptr<RamStatement>& current, std::size_t scc,
         const AstRelation* relation, const std::string& inputDirectory, const std::string& fileExtension,
         const std::string& engineDirectives = "default",
@@ -105,6 +106,29 @@ void AstTranslator::makeRamLoad(std::unique_ptr<RamStatement>& current, std::siz
 
         const std::string inputFilePath = (filePath.empty()) ? Global::config().get("fact-dir") : filePath;
         const std::string inputFileExt = (fileExt.empty()) ? ".facts" : fileExt;
+=======
+void AstTranslator::makeIODirective(IODirectives& ioDirective, const AstRelation* rel,
+        const std::string& filePath, const std::string& fileExt) {
+    // set relation name correctly
+    ioDirective.setRelationName(getRelationName(rel->getName()));
+    // set a default IO type of file and a default filename if not supplied
+    if (!ioDirective.has("IO")) {
+        ioDirective.setIOType("file");
+    }
+
+    // load intermediate relations from correct files
+    if (ioDirective.getIOType() == "file") {
+        // set filename by relation if not given
+        if (!ioDirective.has("filename")) {
+            ioDirective.setFileName(ioDirective.getRelationName() + fileExt);
+        }
+        // if filename is not an absolute path, concat with cmd line facts directory
+        if (ioDirective.getIOType() == "file" && ioDirective.getFileName().front() != '/') {
+            ioDirective.setFileName(filePath + "/" + ioDirective.getFileName());
+        }
+    }
+}
+>>>>>>> upstream
 
         const bool isIntermediate =
                 (Global::config().has("engine") && inputFilePath == Global::config().get("output-dir") &&
@@ -147,6 +171,7 @@ void AstTranslator::makeRamLoad(std::unique_ptr<RamStatement>& current, std::siz
         }
     }
 
+<<<<<<< HEAD
     std::unique_ptr<RamStatement> statement = std::make_unique<RamLoad>(
             (ramRelationReference == nullptr)
                     ? std::unique_ptr<RamRelationReference>(translateRelation(relation))
@@ -158,6 +183,10 @@ void AstTranslator::makeRamLoad(std::unique_ptr<RamStatement>& current, std::siz
                 LogStatement::tRelationLoadTime(toString(relation->getName()), relation->getSrcLoc());
         statement = std::make_unique<RamLogRelationTimer>(std::move(statement), logTimerStatement,
                 std::unique_ptr<RamRelationReference>(translateRelation(relation)));
+=======
+    for (auto& ioDirective : inputDirectives) {
+        makeIODirective(ioDirective, rel, inputFilePath, inputFileExt);
+>>>>>>> upstream
     }
     appendStmt(current, std::move(statement));
 }
@@ -230,6 +259,7 @@ void AstTranslator::makeRamStore(std::unique_ptr<RamStatement>& current, std::si
                 (Global::config().has("engine") && outputFilePath == Global::config().get("output-dir") &&
                         outputFileExt == ".facts");
 
+<<<<<<< HEAD
         for (auto& ioDirective : outputDirectives) {
             // all intermediate relations are given the default delimiter and have no headers
             if (isIntermediate) {
@@ -259,6 +289,10 @@ void AstTranslator::makeRamStore(std::unique_ptr<RamStatement>& current, std::si
                 if (!ioDirective.has("filename") || ioDirective.get("intermediate") == "true") {
                     ioDirective.setFileName(ioDirective.getRelationName() + ioDirective.get("extension"));
                 }
+=======
+    for (auto& ioDirective : outputDirectives) {
+        makeIODirective(ioDirective, rel, outputFilePath, outputFileExt);
+>>>>>>> upstream
 
                 // if filename is not an absolute path, concat with cmd line directory
                 if (ioDirective.getIOType() == "file" && ioDirective.getFileName().front() != '/') {
@@ -266,6 +300,7 @@ void AstTranslator::makeRamStore(std::unique_ptr<RamStatement>& current, std::si
                 }
             }
 
+<<<<<<< HEAD
             if (!ioDirective.has("attributeNames")) {
                 std::string delimiter("\t");
                 if (ioDirective.has("delimiter")) {
@@ -283,6 +318,14 @@ void AstTranslator::makeRamStore(std::unique_ptr<RamStatement>& current, std::si
                 } else {
                     ioDirective.set("attributeNames", toString(join(attributeNames, delimiter)));
                 }
+=======
+            if (Global::config().has("provenance")) {
+                std::vector<std::string> originalAttributeNames(
+                        attributeNames.begin(), attributeNames.end() - rel->getAuxiliaryArity());
+                ioDirective.set("attributeNames", toString(join(originalAttributeNames, delimiter)));
+            } else {
+                ioDirective.set("attributeNames", toString(join(attributeNames, delimiter)));
+>>>>>>> upstream
             }
         }
     }
@@ -1941,6 +1984,7 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
         const auto& internExps = expirySchedule.at(sccIndex).expired();
         sccIndex++;
 
+<<<<<<< HEAD
         {
             if (!Global::config().has("engine")) {
                 // load all internal input relations from the facts dir with a .facts extension
@@ -1994,6 +2038,11 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
                     }
                 }
             }
+=======
+        // load all internal input relations from the facts dir with a .facts extension
+        for (const auto& relation : internIns) {
+            makeRamLoad(current, relation, "fact-dir", ".facts");
+>>>>>>> upstream
         }
 
         // compute the relations themselves
@@ -2002,6 +2051,7 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
                                          translationUnit, *((const AstRelation*)*allInterns.begin()))
                                : translateRecursiveRelation(translationUnit, scc);
         appendStmt(current, std::move(bodyStatement));
+<<<<<<< HEAD
 
         if (!Global::config().has("use-general-producers")) {
             // if a communication engine is enabled...
@@ -2036,32 +2086,23 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
                     makeRamStore(current, scc, relation, "output-dir", ".csv", "null-payload");
                 }*/
             }
+=======
+
+        // store all internal output relations to the output dir with a .csv extension
+        for (const auto& relation : internOuts) {
+            makeRamStore(current, relation, "output-dir", ".csv");
+>>>>>>> upstream
         }
 
         // if provenance is not enabled...
         if (!Global::config().has("provenance")) {
-            // if a communication engine is enabled...
-            if (Global::config().has("engine")) {
-                // drop all internal relations
-                for (const auto& relation : allInterns) {
-                    makeRamClear(current, relation);
-                }
-                // drop external output predecessor relations
-                for (const auto& relation : externOutPreds) {
-                    makeRamClear(current, relation);
-                }
-                // drop external non-output predecessor relations
-                for (const auto& relation : externNonOutPreds) {
-                    makeRamClear(current, relation);
-                }
-            } else {
-                // otherwise, drop all  relations expired as per the topological order
-                for (const auto& relation : internExps) {
-                    makeRamClear(current, relation);
-                }
+            // otherwise, drop all  relations expired as per the topological order
+            for (const auto& relation : internExps) {
+                makeRamClear(current, relation);
             }
         }
 
+<<<<<<< HEAD
         if (current) {
             // append the current SCC as a stratum to the sequence
             appendStmt(res, std::make_unique<RamStratum>(std::move(current), scc));
@@ -2104,6 +2145,10 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
 
         // append the master stratum
         appendStmt(res, std::make_unique<RamStratum>(std::move(current), masterScc));
+=======
+        appendStmt(res, std::move(current));
+        indexOfScc++;
+>>>>>>> upstream
     }
 
     // add main timer if profiling
