@@ -76,6 +76,12 @@ public:
     void unset(const K& key) {
         _data.erase(key);
     }
+    /* Erase the entry in the table for the specified keys. */
+    void unset(const std::initializer_list<K>& keys) {
+        for (const auto& key : keys) {
+            _data.erase(key);
+        }
+    }
     /* Print the raw backing data to the specified stream. */
     void print(std::ostream& os) {
         os << _data << std::endl;

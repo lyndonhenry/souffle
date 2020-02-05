@@ -391,17 +391,17 @@ function ensure_testsuite_passes() {
     local SOUFFLE_CONFS=""
     SOUFFLE_CONFS+="-j${JOBS}"
     SOUFFLE_CONFS+=",-j${JOBS} -c"
-    SOUFFLE_CONFS+=",-j${JOBS} -c -efile"
-    SOUFFLE_CONFS+=",-j${JOBS} -c -ekafka"
-    SOUFFLE_CONFS+=",-j${JOBS} --custom=use-general"
-    SOUFFLE_CONFS+=",-j${JOBS} -c --custom=use-general"
-    SOUFFLE_CONFS+=",-j${JOBS} -c -efile --custom=use-general"
-    SOUFFLE_CONFS+=",-j${JOBS} -c -ekafka --custom=use-general"
-    SOUFFLE_CONFS+=",-j${JOBS} --custom=use-general_use-general-producers"
-    SOUFFLE_CONFS+=",-j${JOBS} -c --custom=use-general_use-general-producers"
-    SOUFFLE_CONFS+=",-j${JOBS} -c -efile --custom=use-general_use-general-producers"
-    SOUFFLE_CONFS+=",-j${JOBS} -c -ekafka --custom=use-general_use-general-producers"
-    SOUFFLE_CONFS+=",-j${JOBS} -c -ekafka --custom=use-general_use-general-producers_use-general-consumers"
+    SOUFFLE_CONFS+=",-j${JOBS} -c -Xuse-engine-file"
+    SOUFFLE_CONFS+=",-j${JOBS} -c -Xuse-engine-kafka"
+    SOUFFLE_CONFS+=",-j${JOBS} -Xuse-general"
+    SOUFFLE_CONFS+=",-j${JOBS} -c -Xuse-general"
+    SOUFFLE_CONFS+=",-j${JOBS} -c -Xuse-engine-file_use-general"
+    SOUFFLE_CONFS+=",-j${JOBS} -c -Xuse-engine-kafka_use-general"
+    SOUFFLE_CONFS+=",-j${JOBS} -Xuse-general_use-general-producers"
+    SOUFFLE_CONFS+=",-j${JOBS} -c -Xuse-general_use-general-producers"
+    SOUFFLE_CONFS+=",-j${JOBS} -c -Xuse-engine-file_use-general_use-general-producers"
+    SOUFFLE_CONFS+=",-j${JOBS} -c -Xuse-engine-kafka_use-general_use-general-producers"
+    SOUFFLE_CONFS+=",-j${JOBS} -c -Xuse-engine-kafka_use-general_use-general-producers_use-general-consumers"
     export SOUFFLE_CATEGORY="${SOUFFLE_CATEGORY}"
     export SOUFFLE_CONFS="${SOUFFLE_CONFS}"
     make clean
@@ -448,20 +448,20 @@ function main() {
     # normal seminaive evaluation
     # @TODO ensure_test_case_passes "${TEST_CASE}"
     # generalized seminaive evaluation
-    # @TODO ensure_test_case_passes "${TEST_CASE}" --custom=use-general
+    # @TODO ensure_test_case_passes "${TEST_CASE}" -Xuse-general
     # generalized seminaive evaluation with output relations written to files inside fixpoint loop
-    # @TODO ensure_test_case_passes "${TEST_CASE}" --custom=use-general_use-general-producers
+    # @TODO ensure_test_case_passes "${TEST_CASE}" -Xuse-general_use-general-producers
 
-    # run tests for -efile
+    # run tests for -Xuse-engine-file
 
     # normal seminaive evaluation with intermediate results written to and read from files
-    # @TODO ensure_test_case_passes "${TEST_CASE}" "-efile"
+    # @TODO ensure_test_case_passes "${TEST_CASE}" "-Xuse-engine-file"
     # generalized seminaive evaluation with intermediate results written to and read from files outside of fixpoint loop
-    # @TODO ensure_test_case_passes "${TEST_CASE}" "-efile --custom=use-general"
+    # @TODO ensure_test_case_passes "${TEST_CASE}" "-Xuse-engine-file_use-general"
     # generalized seminaive evaluation with intermediate results read from files outside of fixpoint loop and written to files inside fixpoint loop
-    # @TODO ensure_test_case_passes "${TEST_CASE}" "-efile --custom=use-general_use-general-producers"
+    # @TODO ensure_test_case_passes "${TEST_CASE}" "-Xuse-engine-file_use-general_use-general-producers"
 
-    # run tests for -ekafka
+    # run tests for -Xuse-engine-kafka
 
     # set variables for kafka
     local KAFKA_HOST="localhost:9092"
@@ -471,13 +471,13 @@ function main() {
     ensure_docker_compose_is_up "${KAFKA_DOCKER_PATH}"
 
     # normal seminaive evaluation with intermediate results produced to and consumed from kafka topics
-    ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka"
+    #ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-Xuse-engine-kafka"
     # generalized seminaive evaluation with intermediate results produced to and consumed from kafka topics outside of fixpoint loop
-    ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka --custom=use-general"
+    #ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-Xuse-engine-kafka_use-general"
     # generalized seminaive evaluation with intermediate results consumed from kafka topics outside of fixpoint loop and produced to kafka topics inside of fixpoint loop
-    ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka --custom=use-general_use-general-producers"
+    #ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-Xuse-engine-kafka_use-general_use-general-producers"
     # generalized seminaive evaluation with intermediate results produced to and consumed from kafka topics inside of fixpoint loop
-    ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-ekafka --custom=use-general_use-general-producers_use-general-consumers"
+    ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-Xuse-engine-kafka_use-general_use-general-producers_use-general-consumers"
 
     # run the testsuite
     ensure_testsuite_passes

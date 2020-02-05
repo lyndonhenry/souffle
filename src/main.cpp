@@ -186,7 +186,6 @@ int main(int argc, char** argv) {
                 {"pragma", 'P', "OPTIONS", "", false, "Set pragma options."},
                 {"provenance", 't', "[ none | explain | explore | subtreeHeights ]", "", false,
                         "Enable provenance instrumentation and interaction."},
-                {"engine", 'e', "[ file ]", "", false, "Alternative evaluation strategies."},
                 {"verbose", 'v', "", "", false, "Verbose output."},
                 {"version", '\3', "", "", false, "Version."},
                 {"show", '\4',
@@ -195,8 +194,6 @@ int main(int argc, char** argv) {
                         "transformed-ram | type-analysis ]",
                         "", false, "Print selected program information."},
                 {"parse-errors", '\5', "", "", false, "Show parsing errors, if any, then exit."},
-                // @TODO (lh): remove this option when kafka implementation complete
-                {"custom", '\7', "FLAGS", "", false, ""},
                 {"experimental", 'X', "OPTIONS", "", false, "Experimental features."},
                 {"help", 'h', "", "", false, "Display this help message."}};
         Global::config().processArgs(argc, argv, header.str(), footer.str(), options);
@@ -204,8 +201,7 @@ int main(int argc, char** argv) {
         // ------ command line arguments -------------
 
 {
-    // @TODO (lh)
-
+        // @TODO (lh)
         for (const auto& option : splitString(Global::config().get("experimental"), '_')) {
             Global::config().set("experimental." + option, "true");
         }
@@ -214,10 +210,17 @@ int main(int argc, char** argv) {
         }
         if (Global::config().has("experimental.use-engine-file")) {
             assert(!Global::config().has("experimental.use-engine-kafka"));
+            assert(!Global::config().has("provenance"));
+            assert(Global::config().has("compile") || Global::config().has("dl-program") || Global::config().has("generate"));
             Global::config().set("experimental.use-engine", "true");
         }       
         if (Global::config().has("experimental.use-engine-kafka")) {
             assert(!Global::config().has("experimental.use-engine-file"));
+            assert(!Global::config().has("provenance"));
+            assert(Global::config().has("compile") || Global::config().has("dl-program") || Global::config().has("generate"));
+            #ifndef USE_KAFKA
+            assert(false);
+            #endif
             Global::config().set("experimental.use-engine", "true");
         }       
         if (Global::config().has("experimental.use-general")) {
@@ -232,15 +235,24 @@ int main(int argc, char** argv) {
             Global::config().set("experimental.use-general-producers", "true");
         }       
 }
-
-
-        // @TODO (lh): change option handling and make all tests pass
-
-        // @TODO (lh): remove this option handling when kafka implementation complete
-        // @TODO (lh): maybe change the delimiter here, can't use ',' due to testsuite SOUFFLE_CONFS
-        for (const auto& flag : splitString(Global::config().get("custom"), '_')) {
-            Global::config().set(flag, "true");
+{
+// @TODO (lh)
+        if (Global::config().has("experimental.use-engine-file")) {
+            Global::config().set("engine", "file");
+        }       
+        if (Global::config().has("experimental.use-engine-kafka")) {
+            Global::config().set("engine", "kafka");
+        }       
+        if (Global::config().has("experimental.use-general")) {
+            Global::config().set("use-general", "true");
+        }       
+        if (Global::config().has("experimental.use-general-producers")) {
+            Global::config().set("use-general-producers", "true");
+        }       
+        if (Global::config().has("experimental.use-general-consumers")) {
+            Global::config().set("use-general-consumers", "true");
         }
+}
 
         /* for the version option, if given print the version text then exit */
         if (Global::config().has("version")) {
@@ -333,25 +345,6 @@ int main(int argc, char** argv) {
         /* turn on compilation of executables */
         if (Global::config().has("dl-program")) {
             Global::config().set("compile");
-        }
-
-        /* disable provenance with engine option */
-        if (Global::config().has("provenance")) {
-            if (Global::config().has("engine")) {
-                throw std::runtime_error("provenance cannot be enabled with distributed execution.");
-            }
-        }
-
-        /* ensure that souffle has been compiled with support for the execution engine, if specified */
-        if (Global::config().has("engine")) {
-            if (!(Global::config().has("compile") || Global::config().has("dl-program") ||
-                        Global::config().has("generate"))) {
-                throw std::invalid_argument("Error: Use of engine option not yet available for interpreter.");
-            }
-            const auto& engine = Global::config().get("engine");
-            if (engine != "file" && engine != "kafka") {
-                throw std::invalid_argument("Error: Use of engine '" + engine + "' is not supported.");
-            }
         }
 
         if (Global::config().has("live-profile") && !Global::config().has("profile")) {
