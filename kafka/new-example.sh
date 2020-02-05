@@ -91,6 +91,7 @@ function ensure_github_repo_is_cloned_and_updated() {
 function ensure_file_is_downloaded() {
     local CWD="${1}"
     local URL="${2}"
+    ensure_directory_exists "${CWD}"
     if [ ! -e "${CWD}/$(basename "${URL}")" ]
     then
         cd "${CWD}"
@@ -160,7 +161,7 @@ function ensure_apt_package_installed() {
 function ensure_librdkafka_is_installed() {
     local CWD="${1}"
     local GITHUB_REPO="edenhill/librdkafka"
-    if [ ! -e "${CWD}/${GITHUB_REPO}/src/librdkafka.a" ]
+    if [ ! -e "/usr/local/lib/librdkafka.a" ]
     then
         ensure_github_repo_is_cloned "${CWD}" "${GITHUB_REPO}"
         ensure_autoconf_project_is_installed "${CWD}/${GITHUB_REPO}" "--install-deps"
@@ -173,8 +174,10 @@ function ensure_kafkacat_is_installed() {
 
 function ensure_apache_kafka_is_installed() {
     local CWD="${1}"
+    local KAFKA_PATH="${2}"
     local APACHE_KAFKA_URL="http://mirror.vorboss.net/apache/kafka/2.3.1/kafka_2.12-2.3.1.tgz"
     ensure_tarball_is_downloaded_and_unzipped "${CWD}" "${APACHE_KAFKA_URL}"
+    ensure_file_is_moved "${CWD}/kafka_2.12-2.3.1" "${KAFKA_PATH}"
 }
 
 function ensure_jq_is_installed() {
@@ -215,6 +218,8 @@ function ensure_souffle_program_is_built() {
         cd "${DIRNAME}"
         # show transformed ram
         ${COMMAND} --show=transformed-ram
+        # show global config
+        ${COMMAND} --show=global-config
         # echo the command
         echo
         echo "${COMMAND}"
@@ -228,9 +233,10 @@ function ensure_souffle_program_is_built() {
 
 function ensure_kafka_depencencies_are_installed() {
     local CWD="${1}"
+    local KAFKA_PATH="${2}"
     ensure_librdkafka_is_installed "${CWD}"
     ensure_kafkacat_is_installed "${CWD}"
-    ensure_apache_kafka_is_installed "${CWD}"
+    ensure_apache_kafka_is_installed "${CWD}" "${KAFKA_PATH}"
 }
 
 function ensure_souffle_test_case_is_built() {
@@ -388,20 +394,24 @@ function ensure_testsuite_passes() {
     # @TODO (lh): get testing right here
     local JOBS=$(nproc || sysctl -n hw.ncpu || echo 2)
     local SOUFFLE_CATEGORY="FastEvaluation"
+    local SC=""
+    SC+=" -j${JOBS} "
+    # @TODO (lh): test with and without this
+    #SC+=" -Xuse-immutable-global-config "
     local SOUFFLE_CONFS=""
-    SOUFFLE_CONFS+="-j${JOBS}"
-    SOUFFLE_CONFS+=",-j${JOBS} -c"
-    SOUFFLE_CONFS+=",-j${JOBS} -c -Xuse-engine-file"
-    SOUFFLE_CONFS+=",-j${JOBS} -c -Xuse-engine-kafka"
-    SOUFFLE_CONFS+=",-j${JOBS} -Xuse-general"
-    SOUFFLE_CONFS+=",-j${JOBS} -c -Xuse-general"
-    SOUFFLE_CONFS+=",-j${JOBS} -c -Xuse-engine-file_use-general"
-    SOUFFLE_CONFS+=",-j${JOBS} -c -Xuse-engine-kafka_use-general"
-    SOUFFLE_CONFS+=",-j${JOBS} -Xuse-general_use-general-producers"
-    SOUFFLE_CONFS+=",-j${JOBS} -c -Xuse-general_use-general-producers"
-    SOUFFLE_CONFS+=",-j${JOBS} -c -Xuse-engine-file_use-general_use-general-producers"
-    SOUFFLE_CONFS+=",-j${JOBS} -c -Xuse-engine-kafka_use-general_use-general-producers"
-    SOUFFLE_CONFS+=",-j${JOBS} -c -Xuse-engine-kafka_use-general_use-general-producers_use-general-consumers"
+    SOUFFLE_CONFS+="${SC}"
+    SOUFFLE_CONFS+=",${SC} -c"
+    SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-file"
+    SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-kafka"
+    SOUFFLE_CONFS+=",${SC} -Xuse-general"
+    SOUFFLE_CONFS+=",${SC} -c -Xuse-general"
+    SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-file -Xuse-general"
+    SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-kafka -Xuse-general"
+    SOUFFLE_CONFS+=",${SC} -Xuse-general -Xuse-general-producers"
+    SOUFFLE_CONFS+=",${SC} -c -Xuse-general -Xuse-general-producers"
+    SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-file -Xuse-general -Xuse-general-producers"
+    SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-kafka -Xuse-general -Xuse-general-producers"
+    SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-kafka -Xuse-general -Xuse-general-producers -Xuse-general-consumers"
     export SOUFFLE_CATEGORY="${SOUFFLE_CATEGORY}"
     export SOUFFLE_CONFS="${SOUFFLE_CONFS}"
     make clean
@@ -428,17 +438,20 @@ function main() {
 
     # set the test case used by this script
     # @TODO (lh): local TEST_CASE="example/input_output_numbers"
-    local TEST_CASE="evaluation/aggregates2"
+    local TEST_CASE="evaluation/arithm"
 
     # make a temp directory for dependencies
-    local TMP_DIRECTORY="/tmp/souffle"
+    local TMP_PATH="/tmp/souffle"
+
+    # use a home directory for kafka
+    local KAFKA_PATH="${HOME}/.kafka"
 
     # set the path to use the kafka scripts
-    export PATH="${TMP_DIRECTORY}/kafka_2.12-2.3.1/bin:${PATH}"
+    export PATH="${KAFKA_PATH}/bin:${PATH}"
 
     # ensure dependencies are installed
-    ensure_kafka_depencencies_are_installed "${TMP_DIRECTORY}"
-    ensure_jq_is_installed "${TMP_DIRECTORY}"
+    ensure_kafka_depencencies_are_installed "${TMP_PATH}" "${KAFKA_PATH}"
+    ensure_jq_is_installed "${TMP_PATH}"
 
     # ensure that souffle is built for kafka
     ensure_souffle_is_built_for_kafka "${PWD}"
@@ -446,20 +459,20 @@ function main() {
     # run tests for no -e
 
     # normal seminaive evaluation
-    # @TODO ensure_test_case_passes "${TEST_CASE}"
+    ensure_test_case_passes "${TEST_CASE}"
     # generalized seminaive evaluation
-    # @TODO ensure_test_case_passes "${TEST_CASE}" -Xuse-general
+    ensure_test_case_passes "${TEST_CASE}" -Xuse-general
     # generalized seminaive evaluation with output relations written to files inside fixpoint loop
-    # @TODO ensure_test_case_passes "${TEST_CASE}" -Xuse-general_use-general-producers
+    ensure_test_case_passes "${TEST_CASE}" -Xuse-general -Xuse-general-producers
 
     # run tests for -Xuse-engine-file
 
     # normal seminaive evaluation with intermediate results written to and read from files
-    # @TODO ensure_test_case_passes "${TEST_CASE}" "-Xuse-engine-file"
+    #ensure_test_case_passes "${TEST_CASE}" "-Xuse-engine-file"
     # generalized seminaive evaluation with intermediate results written to and read from files outside of fixpoint loop
-    # @TODO ensure_test_case_passes "${TEST_CASE}" "-Xuse-engine-file_use-general"
+    #ensure_test_case_passes "${TEST_CASE}" "-Xuse-engine-file -Xuse-general"
     # generalized seminaive evaluation with intermediate results read from files outside of fixpoint loop and written to files inside fixpoint loop
-    # @TODO ensure_test_case_passes "${TEST_CASE}" "-Xuse-engine-file_use-general_use-general-producers"
+    #ensure_test_case_passes "${TEST_CASE}" "-Xuse-engine-file -Xuse-general -Xuse-general-producers"
 
     # run tests for -Xuse-engine-kafka
 
@@ -468,16 +481,17 @@ function main() {
     local KAFKA_DOCKER_PATH="${PWD}/kafka"
 
     # start the kafka broker
+    ensure_docker_compose_is_down "${KAFKA_DOCKER_PATH}"
     ensure_docker_compose_is_up "${KAFKA_DOCKER_PATH}"
 
     # normal seminaive evaluation with intermediate results produced to and consumed from kafka topics
     #ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-Xuse-engine-kafka"
     # generalized seminaive evaluation with intermediate results produced to and consumed from kafka topics outside of fixpoint loop
-    #ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-Xuse-engine-kafka_use-general"
+    #ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-Xuse-engine-kafka -Xuse-general"
     # generalized seminaive evaluation with intermediate results consumed from kafka topics outside of fixpoint loop and produced to kafka topics inside of fixpoint loop
-    #ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-Xuse-engine-kafka_use-general_use-general-producers"
+    #ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-Xuse-engine-kafka -Xuse-general -Xuse-general-producers"
     # generalized seminaive evaluation with intermediate results produced to and consumed from kafka topics inside of fixpoint loop
-    ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-Xuse-engine-kafka_use-general_use-general-producers_use-general-consumers"
+    #ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-Xuse-engine-kafka -Xuse-general -Xuse-general-producers -Xuse-general-consumers"
 
     # run the testsuite
     ensure_testsuite_passes
@@ -490,9 +504,9 @@ function main() {
 }
 
 # @TODO (lh)
-ensure_docker_compose_is_down "${PWD}/kafka"
-ensure_docker_compose_is_up "${PWD}/kafka"
-export PATH="/tmp/souffle/kafka_2.12-2.3.1/bin:${PATH}"
-ensure_testsuite_passes
+#ensure_docker_compose_is_down "${PWD}/kafka"
+#ensure_docker_compose_is_up "${PWD}/kafka"
+#export PATH="/tmp/souffle/kafka_2.12-2.3.1/bin:${PATH}"
+#ensure_testsuite_passes
 
 main ${@:-}

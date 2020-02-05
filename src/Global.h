@@ -62,6 +62,16 @@ public:
     /* Check the table has the specified key and the specified value for that key. */
     bool has(const K& key, const V& value) const {
         return has(key) && _data.at(key) == value;
+        // @@@TODO (lh): allow checking of multiple keys with the following
+        /*
+         || [&](){
+        const auto values = _data.at(key);
+        const auto index = values.find(value);
+        return (index != std::string::npos) 
+               && (index == 0 || values[index - 1] = ' ')
+               && (index + value.size() == values.size() - 1 || values[index + value.size() + 1] = ' ');
+        }();
+        */
     }
     /* Set the entry in the table for the specified key to an object of the value class called with an empty
      * constructor. */

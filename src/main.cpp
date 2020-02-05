@@ -189,12 +189,12 @@ int main(int argc, char** argv) {
                 {"verbose", 'v', "", "", false, "Verbose output."},
                 {"version", '\3', "", "", false, "Version."},
                 {"show", '\4',
-                        "[ parse-errors | precedence-graph | scc-graph | topsort-info | transformed-datalog "
+                        "[ global-config | parse-errors | precedence-graph | scc-graph | topsort-info | transformed-datalog "
                         "| "
                         "transformed-ram | type-analysis ]",
                         "", false, "Print selected program information."},
                 {"parse-errors", '\5', "", "", false, "Show parsing errors, if any, then exit."},
-                {"experimental", 'X', "OPTIONS", "", false, "Experimental features."},
+                {"experimental", 'X', "OPTIONS", "", true, "Experimental features."},
                 {"help", 'h', "", "", false, "Display this help message."}};
         Global::config().processArgs(argc, argv, header.str(), footer.str(), options);
 
@@ -202,7 +202,7 @@ int main(int argc, char** argv) {
 
 {
         // @TODO (lh)
-        for (const auto& option : splitString(Global::config().get("experimental"), '_')) {
+        for (const auto& option : splitString(Global::config().get("experimental"), ' ')) {
             Global::config().set("experimental." + option, "true");
         }
         if (Global::config().has("experimental.use-engine")) {
@@ -509,6 +509,12 @@ int main(int argc, char** argv) {
     pipeline->apply(*astTranslationUnit);
 
     if (Global::config().has("show")) {
+        // Output the global config and return
+    if (Global::config().get("show") == "global-config") {
+        Global::config().print(std::cout);
+        return 0;
+    }
+
         // Output the transformed datalog and return
         if (Global::config().get("show") == "transformed-datalog") {
             std::cout << *astTranslationUnit->getProgram() << std::endl;

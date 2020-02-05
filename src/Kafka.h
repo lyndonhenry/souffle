@@ -22,6 +22,7 @@
 #include <cassert>
 #include <chrono>
 #include <csignal>
+#include <cctype>
 #include <cstdlib>
 #include <sstream>
 #include <unordered_map>
@@ -273,7 +274,7 @@ private:
         {"create-topics", "true"},
         {"run-program", "true"},
         // @TODO (lh): choose if to delete topics by default, don't do here for speed and debugging
-        {"delete-topics", "false"},
+        {"delete-topics", "true"},
         {"unique-id", [](){ return std::to_string(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count()) + "."; }()},
         {"use-kafkacat", "true"}
         };
@@ -355,7 +356,7 @@ public:
     }
     void beginProduction(const std::string& topicName) {
         if (!hasProductionBegun(topicName) || hasProductionEnded(topicName)) {
-            producerTopics_[topicName] = detail::KafkaHelper::createTopic(topicConf_, producer_, uniqueId_ + topicName);
+            producerTopics_[topicName] = detail::KafkaHelper::createTopic(topicConf_, producer_, getTopicIdentifier(topicName));
         }
     }
     void endProduction(const std::string& topicName) {
@@ -371,7 +372,7 @@ public:
     }
     void beginConsumption(const std::string& topicName) {
         if (!hasConsumptionBegun(topicName) || hasConsumptionEnded(topicName)) {
-            consumerTopics_[topicName] = detail::KafkaHelper::createTopic(topicConf_, consumer_, uniqueId_ + topicName);
+            consumerTopics_[topicName] = detail::KafkaHelper::createTopic(topicConf_, consumer_, getTopicIdentifier(topicName));
             detail::KafkaHelper::startConsumer(consumer_, consumerTopics_.at(topicName));
         }
     }
@@ -414,18 +415,28 @@ private:
     void createTopic(const std::string& topicName, const std::string& bootstrapServer) {
         std::stringstream stringstream;
         if (customConf_.at("use-kafkacat") == "true") {
-            stringstream << "kafkacat -b \"" << bootstrapServer << "\" -t \"" << uniqueId_ << topicName << "\" > /dev/null 2>&1";
+            stringstream << "kafkacat -b \"" << bootstrapServer << "\" -t \"" << getTopicIdentifier(topicName) << "\" > /dev/null 2>&1";
         } else {
-        stringstream << "kafka-topics.sh --create --bootstrap-server \"" << bootstrapServer << "\" --topic \"" << uniqueId_
-                     << topicName << "\" --replication-factor 1 --partitions 1 > /dev/null 2>&1";
+        stringstream << "kafka-topics.sh --create --bootstrap-server \"" << bootstrapServer << "\" --topic \"" << getTopicIdentifier(topicName) << "\" --replication-factor 1 --partitions 1 > /dev/null 2>&1";
         }
         system(stringstream.str().c_str());
     }
     void deleteTopic(const std::string& topicName, const std::string& bootstrapServer = "localhost") {
         std::stringstream stringstream;
-        stringstream << "kafka-topics.sh --delete --bootstrap-server \"" << bootstrapServer << "\" --topic \"" << uniqueId_
-                     << topicName << "\" > /dev/null 2>&1";
+        stringstream << "kafka-topics.sh --delete --bootstrap-server \"" << bootstrapServer << "\" --topic \"" <<  getTopicIdentifier(topicName) << "\" > /dev/null 2>&1";
         system(stringstream.str().c_str());
+    }
+    std::string getTopicIdentifier(const std::string& topicName) {
+        std::stringstream stringstream;
+        stringstream << uniqueId_;
+        for (const auto& character : topicName) {
+            if (std::isalnum(character) || character == '_') {
+                stringstream << character;
+            } else {
+                stringstream << (int) character;
+            }
+        }
+        return stringstream.str();
     }
 };
 }  // namespace kafka
