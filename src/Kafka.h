@@ -272,6 +272,8 @@ private:
     std::unordered_map<std::string, std::string> customConf_ = {
         {"bootstrap-server", "localhost:9092"},
         {"create-topics", "true"},
+        {"disable-stdout", "true"},
+        {"disable-stderr", "true"},
         {"run-program", "true"},
         // @TODO (lh): choose if to delete topics by default, don't do here for speed and debugging
         {"delete-topics", "true"},
@@ -417,16 +419,19 @@ private:
         if (customConf_.at("use-kafkacat") == "true") {
             stringstream << "kafkacat -b \"" << bootstrapServer << "\" -t \"" << getTopicIdentifier(topicName) << "\" > /dev/null 2>&1";
         } else {
-        stringstream << "kafka-topics.sh --create --bootstrap-server \"" << bootstrapServer << "\" --topic \"" << getTopicIdentifier(topicName) << "\" --replication-factor 1 --partitions 1 > /dev/null 2>&1";
+            stringstream << "kafka-topics.sh --create --bootstrap-server \"" << bootstrapServer << "\" --topic \"" << getTopicIdentifier(topicName) << "\" --replication-factor 1 --partitions 1";
         }
+        addIoRedirect(stringstream);
         system(stringstream.str().c_str());
     }
     void deleteTopic(const std::string& topicName, const std::string& bootstrapServer = "localhost") {
         std::stringstream stringstream;
-        stringstream << "kafka-topics.sh --delete --bootstrap-server \"" << bootstrapServer << "\" --topic \"" <<  getTopicIdentifier(topicName) << "\" > /dev/null 2>&1";
+        stringstream << "kafka-topics.sh --delete --bootstrap-server \"" << bootstrapServer << "\" --topic \"" <<  getTopicIdentifier(topicName) << "\"";
+        addIoRedirect(stringstream);
         system(stringstream.str().c_str());
     }
-    std::string getTopicIdentifier(const std::string& topicName) {
+private:
+    std::string getTopicIdentifier(const std::string& topicName) const {
         std::stringstream stringstream;
         stringstream << uniqueId_;
         for (const auto& character : topicName) {
@@ -437,6 +442,15 @@ private:
             }
         }
         return stringstream.str();
+    }
+    void addIoRedirect(std::stringstream& stringstream) const {
+        // @TODO (lh): do disable-stderr on its own here
+        if (customConf_.at("disable-stdout") == "true") {
+            stringstream << " > /dev/null";
+            if (customConf_.at("disable-stderr") == "true") {
+                stringstream << " 2>&1";
+            }
+        }
     }
 };
 }  // namespace kafka

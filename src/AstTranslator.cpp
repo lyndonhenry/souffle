@@ -970,7 +970,16 @@ std::unique_ptr<RamStatement> AstTranslator::ClauseTranslator::translateClause(
     if (cond != nullptr) {
         return std::make_unique<RamQuery>(std::make_unique<RamFilter>(std::move(cond), std::move(op)));
     } else {
-        return std::make_unique<RamQuery>(std::move(op));
+        // @TODO: this may break everything!!!
+        /*
+        if (head->getArity() == 0 && Global::config().has("use-general")) {
+            return std::make_unique<RamQuery>(std::make_unique<RamFilter>(
+                std::make_unique<RamEmptinessCheck>(std::unique_ptr<RamRelationReference>(translator.translateRelation(head))),
+                std::move(op)
+            ));
+        } else */ {
+            return std::make_unique<RamQuery>(std::move(op));
+        }
     }
 }
 
@@ -1145,15 +1154,6 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
     const auto hasUseGeneralProducers = Global::config().has("use-general-producers");
     const auto hasUseGeneralConsumers = Global::config().has("use-general-consumers");
 
-    if (hasUseGeneralProducers) {
-        assert(hasUseGeneral);
-    }
-
-    if (hasUseGeneralConsumers) {
-        assert(hasEngine && getEngine == "kafka");
-        assert(hasUseGeneral && hasUseGeneralProducers);
-    }
-
     if (!hasUseGeneral) {
         rrel.clear();
         relDelta.clear();
@@ -1170,7 +1170,7 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
             /* Generate code for non-recursive part of relation */
             appendStmt(preamble, translateNonRecursiveRelation(translationUnit, *relation));
 
-            /* Generate merge operation for temp tables */
+            // @TODO: should this be done here???
             appendStmt(preamble, genMerge(relDelta[relation].get(), rrel[relation].get()));
         }
     }

@@ -110,6 +110,10 @@ void AstSemanticChecker::checkProgram(AstTranslationUnit& translationUnit) {
     checkWitnessProblem(report, program);
     checkInlining(report, program, precedenceGraph, ioTypes);
 
+    {
+
+    }
+
     // get the list of components to be checked
     std::vector<const AstNode*> nodes;
     for (const auto& rel : program.getRelations()) {
