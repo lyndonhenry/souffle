@@ -266,13 +266,13 @@ void DebugReporter::generateDebugReport(
              }(),
                     getCodeSectionForAstAnalysisPhase<TypeAnalysis>(translationUnit, id),
                     getCodeSectionForAstAnalysisPhase<TypeEnvironmentAnalysis>(translationUnit, id),
-                    getDotGraphSectionForAstAnalysisPhase<PrecedenceGraph>(translationUnit, id),
-                    getDotGraphSectionForAstAnalysisPhase<SCCGraph>(translationUnit, id),
-                    getCodeSectionForAstAnalysisPhase<TopologicallySortedSCCGraph>(translationUnit, id),
                     getCodeSectionForAstAnalysisPhase<RedundantRelations>(translationUnit, id),
                     getCodeSectionForAstAnalysisPhase<RecursiveClauses>(translationUnit, id),
-                    getCodeSectionForAstAnalysisPhase<AggregatedAndNegatedRelations>(translationUnit, id),
-                    getCodeSectionForAstAnalysisPhase<RelationSchedule>(translationUnit, id)},
+                    // getCodeSectionForAstAnalysisPhase<AggregatedAndNegatedRelations>(translationUnit, id),
+                    getDotGraphSectionForAstAnalysisPhase<PrecedenceGraph>(translationUnit, id),
+                    getDotGraphSectionForAstAnalysisPhase<SCCGraph>(translationUnit, id),
+                    getCodeSectionForAstAnalysisPhase<TopologicallySortedSCCGraph>(translationUnit, id)},
+                    // getCodeSectionForAstAnalysisPhase<RelationSchedule>(translationUnit, id)},
             ""));
 }
 

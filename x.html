@@ -1,0 +1,2776 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Souffle Debug Report</title>
+<style>
+ul { list-style-type: none; }
+ul > li.leaf { display: inline-block; padding: 0em 1em; }
+ul > li.nonleaf { padding: 0em 1em; }
+* { font-family: sans-serif; }
+pre { white-space: pre-wrap; font-family: monospace; }
+a:link { text-decoration: none; color: blue; }
+a:visited { text-decoration: none; color: blue; }
+div.headerdiv { background-color:lightgrey; margin:10px; padding-left:10px; padding-right:10px; padding-top:3px; padding-bottom:3px; border-radius:5px }
+.headerdiv h1 { display:inline; }
+.headerdiv a { float:right; }
+</style>
+<script type="text/javascript">
+function toggleVisibility(id) {
+  var element = document.getElementById(id);
+  if (element.style.display == 'none') {
+    element.style.display = 'block';
+  } else {
+    element.style.display = 'none';
+  }
+}
+</script>
+</head>
+<body>
+<div class='headerdiv'><h1>Souffle Debug Report</h1></div>
+<a href="#Parsing8">After Parsing (0.945854s)</a>
+<ul>
+<li class='leaf'><a href="#Parsing-dl0">Datalog</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#Parsing-type-analysis1">Type Analysis</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#Parsing-type-environment2">Type Environment</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#Parsing-redundant-relations3">Redundant Relations</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#Parsing-recursive-clauses4">Recursive Clauses</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#Parsing-precedence-graph5">Precedence Graph</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#Parsing-scc-graph6">Scc Graph</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#Parsing-topological-scc-graph7">Topological Scc Graph</a>
+<ul>
+</ul>
+</li></ul>
+<a href="#AstComponentChecker9">After AstComponentChecker (0.138036s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#ComponentInstantiationTransformer18">After ComponentInstantiationTransformer (0.160611s)</a>
+<ul>
+<li class='leaf'><a href="#ComponentInstantiationTransformer-dl10">Datalog</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#ComponentInstantiationTransformer-type-analysis11">Type Analysis</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#ComponentInstantiationTransformer-type-environment12">Type Environment</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#ComponentInstantiationTransformer-redundant-relations13">Redundant Relations</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#ComponentInstantiationTransformer-recursive-clauses14">Recursive Clauses</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#ComponentInstantiationTransformer-precedence-graph15">Precedence Graph</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#ComponentInstantiationTransformer-scc-graph16">Scc Graph</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#ComponentInstantiationTransformer-topological-scc-graph17">Topological Scc Graph</a>
+<ul>
+</ul>
+</li></ul>
+<a href="#UniqueAggregationVariablesTransformer19">After UniqueAggregationVariablesTransformer (0.006196s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#AstSemanticChecker20">After AstSemanticChecker (0.467454s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#RemoveTypecastsTransformer21">After RemoveTypecastsTransformer (0.020517s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#RemoveBooleanConstraintsTransformer22">After RemoveBooleanConstraintsTransformer (0.014628s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#ResolveAliasesTransformer23">After ResolveAliasesTransformer (0.067647s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#MinimiseProgramTransformer24">After MinimiseProgramTransformer (0.095180s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#InlineRelationsTransformer25">After InlineRelationsTransformer (0.018832s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#ResolveAliasesTransformer26">After ResolveAliasesTransformer (0.023143s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#RemoveRedundantRelationsTransformer27">After RemoveRedundantRelationsTransformer (0.002341s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#RemoveRelationCopiesTransformer28">After RemoveRelationCopiesTransformer (0.004222s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#RemoveEmptyRelationsTransformer37">After RemoveEmptyRelationsTransformer (0.053998s)</a>
+<ul>
+<li class='leaf'><a href="#RemoveEmptyRelationsTransformer-dl29">Datalog</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#RemoveEmptyRelationsTransformer-type-analysis30">Type Analysis</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#RemoveEmptyRelationsTransformer-type-environment31">Type Environment</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#RemoveEmptyRelationsTransformer-redundant-relations32">Redundant Relations</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#RemoveEmptyRelationsTransformer-recursive-clauses33">Recursive Clauses</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#RemoveEmptyRelationsTransformer-precedence-graph34">Precedence Graph</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#RemoveEmptyRelationsTransformer-scc-graph35">Scc Graph</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#RemoveEmptyRelationsTransformer-topological-scc-graph36">Topological Scc Graph</a>
+<ul>
+</ul>
+</li></ul>
+<a href="#ReplaceSingletonVariablesTransformer38">After ReplaceSingletonVariablesTransformer (0.025092s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#ReduceExistentialsTransformer47">After ReduceExistentialsTransformer (0.069825s)</a>
+<ul>
+<li class='leaf'><a href="#ReduceExistentialsTransformer-dl39">Datalog</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#ReduceExistentialsTransformer-type-analysis40">Type Analysis</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#ReduceExistentialsTransformer-type-environment41">Type Environment</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#ReduceExistentialsTransformer-redundant-relations42">Redundant Relations</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#ReduceExistentialsTransformer-recursive-clauses43">Recursive Clauses</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#ReduceExistentialsTransformer-precedence-graph44">Precedence Graph</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#ReduceExistentialsTransformer-scc-graph45">Scc Graph</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#ReduceExistentialsTransformer-topological-scc-graph46">Topological Scc Graph</a>
+<ul>
+</ul>
+</li></ul>
+<a href="#RemoveRedundantRelationsTransformer56">After RemoveRedundantRelationsTransformer (0.010729s)</a>
+<ul>
+<li class='leaf'><a href="#RemoveRedundantRelationsTransformer-dl48">Datalog</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#RemoveRedundantRelationsTransformer-type-analysis49">Type Analysis</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#RemoveRedundantRelationsTransformer-type-environment50">Type Environment</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#RemoveRedundantRelationsTransformer-redundant-relations51">Redundant Relations</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#RemoveRedundantRelationsTransformer-recursive-clauses52">Recursive Clauses</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#RemoveRedundantRelationsTransformer-precedence-graph53">Precedence Graph</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#RemoveRedundantRelationsTransformer-scc-graph54">Scc Graph</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#RemoveRedundantRelationsTransformer-topological-scc-graph55">Topological Scc Graph</a>
+<ul>
+</ul>
+</li></ul>
+<a href="#ReduceExistentialsTransformer57">After ReduceExistentialsTransformer (0.008916s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#RemoveRedundantRelationsTransformer58">After RemoveRedundantRelationsTransformer (0.003171s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#RemoveRelationCopiesTransformer59">After RemoveRelationCopiesTransformer (0.003151s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#NameUnnamedVariablesTransformer60">After NameUnnamedVariablesTransformer (0.003694s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#PartitionBodyLiteralsTransformer61">After PartitionBodyLiteralsTransformer (0.019056s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#ReplaceSingletonVariablesTransformer62">After ReplaceSingletonVariablesTransformer (0.002059s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#MinimiseProgramTransformer71">After MinimiseProgramTransformer (0.024492s)</a>
+<ul>
+<li class='leaf'><a href="#MinimiseProgramTransformer-dl63">Datalog</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#MinimiseProgramTransformer-type-analysis64">Type Analysis</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#MinimiseProgramTransformer-type-environment65">Type Environment</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#MinimiseProgramTransformer-redundant-relations66">Redundant Relations</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#MinimiseProgramTransformer-recursive-clauses67">Recursive Clauses</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#MinimiseProgramTransformer-precedence-graph68">Precedence Graph</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#MinimiseProgramTransformer-scc-graph69">Scc Graph</a>
+<ul>
+</ul>
+</li><li class='leaf'><a href="#MinimiseProgramTransformer-topological-scc-graph70">Topological Scc Graph</a>
+<ul>
+</ul>
+</li></ul>
+<a href="#MinimiseProgramTransformer72">After MinimiseProgramTransformer (0.003538s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#RemoveRelationCopiesTransformer73">After RemoveRelationCopiesTransformer (0.002317s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#ReorderLiteralsTransformer74">After ReorderLiteralsTransformer (0.021204s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#ResolveAliasesTransformer75">After ResolveAliasesTransformer (0.003854s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#MaterializeAggregationQueriesTransformer76">After MaterializeAggregationQueriesTransformer (0.007039s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#RemoveRedundantSumsTransformer77">After RemoveRedundantSumsTransformer (0.001773s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#RemoveEmptyRelationsTransformer78">After RemoveEmptyRelationsTransformer (0.001579s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#ReorderLiteralsTransformer79">After ReorderLiteralsTransformer (0.000797s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#AstExecutionPlanChecker80">After AstExecutionPlanChecker (0.037542s) (unchanged)</a>
+<ul>
+</ul>
+<a href="#ram-program81">RAM Program (0.299444s)</a>
+<ul>
+</ul>
+<a href="#ExpandFilterTransformer82">After ExpandFilterTransformer  (unchanged)</a>
+<ul>
+</ul>
+<a href="#HoistConditionsTransformer83">RAM Program after HoistConditionsTransformer</a>
+<ul>
+</ul>
+<a href="#MakeIndexTransformer84">After MakeIndexTransformer  (unchanged)</a>
+<ul>
+</ul>
+<a href="#RamTransformerSequence85">After RamTransformerSequence  (unchanged)</a>
+<ul>
+</ul>
+<a href="#RamLoopTransformer86">After RamLoopTransformer  (unchanged)</a>
+<ul>
+</ul>
+<a href="#IfConversionTransformer87">After IfConversionTransformer  (unchanged)</a>
+<ul>
+</ul>
+<a href="#ChoiceConversionTransformer88">After ChoiceConversionTransformer  (unchanged)</a>
+<ul>
+</ul>
+<a href="#CollapseFiltersTransformer89">After CollapseFiltersTransformer  (unchanged)</a>
+<ul>
+</ul>
+<a href="#TupleIdTransformer90">After TupleIdTransformer  (unchanged)</a>
+<ul>
+</ul>
+<a href="#HoistAggregateTransformer91">After HoistAggregateTransformer  (unchanged)</a>
+<ul>
+</ul>
+<a href="#TupleIdTransformer92">After TupleIdTransformer  (unchanged)</a>
+<ul>
+</ul>
+<a href="#RamTransformerSequence93">After RamTransformerSequence  (unchanged)</a>
+<ul>
+</ul>
+<a href="#RamLoopTransformer94">After RamLoopTransformer  (unchanged)</a>
+<ul>
+</ul>
+<a href="#ExpandFilterTransformer95">RAM Program after ExpandFilterTransformer</a>
+<ul>
+</ul>
+<a href="#HoistConditionsTransformer96">RAM Program after HoistConditionsTransformer</a>
+<ul>
+</ul>
+<a href="#CollapseFiltersTransformer97">After CollapseFiltersTransformer  (unchanged)</a>
+<ul>
+</ul>
+<a href="#EliminateDuplicatesTransformer98">RAM Program after EliminateDuplicatesTransformer</a>
+<ul>
+</ul>
+<a href="#ReorderConditionsTransformer99">After ReorderConditionsTransformer  (unchanged)</a>
+<ul>
+</ul>
+<a href="#ReorderFilterBreak100">After ReorderFilterBreak  (unchanged)</a>
+<ul>
+</ul>
+<a href="#RamLoopTransformer101">After RamLoopTransformer  (unchanged)</a>
+<ul>
+</ul>
+<a href="#RamConditionalTransformer102">After RamConditionalTransformer  (unchanged)</a>
+<ul>
+</ul>
+<a href="#ReportIndexTransfomer103">RAM Analysis index-analysis</a>
+<ul>
+</ul>
+<a href="#ReportIndexTransfomer104">After ReportIndexTransfomer  (unchanged)</a>
+<ul>
+</ul>
+<a href="#RamTransformerSequence105">After RamTransformerSequence  (unchanged)</a>
+<ul>
+</ul>
+<a id="Parsing8"></a>
+<div class='headerdiv'>
+<h1>After Parsing (0.945854s)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+<a id="Parsing-dl0"></a>
+<div class='headerdiv'>
+<h1>Datalog</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>// ----- Types -----
+.type Number = number
+.type Symbol = symbol
+
+// ----- Components -----
+.comp Nullary {
+.decl truth()  
+.decl falsehood()  
+truth().
+}
+
+.comp Unary&lt;Type> {
+.decl truth(x:Type)  
+.decl falsehood(x:Type)  
+}
+
+.comp UnaryNumber : Unary&lt;Number> {
+truth(1).
+}
+
+.comp UnarySymbol : Unary&lt;Symbol> {
+truth("1").
+}
+
+.comp Binary&lt;Type> {
+.decl truth(x:Type,y:Type)  
+.decl falsehood(x:Type,y:Type)  
+}
+
+.comp BinaryNumber : Binary&lt;Number> {
+truth(1,1).
+}
+
+.comp BinarySymbol : Binary&lt;Symbol> {
+truth("1","1").
+}
+
+
+.init nullary = Nullary
+.init unary_number = UnaryNumber
+.init unary_symbol = UnarySymbol
+.init binary_number = BinaryNumber
+.init binary_symbol = BinarySymbol
+
+// ----- Functors -----
+
+// ----- Relations -----
+
+
+// -- contradiction --
+.decl contradiction()  
+
+contradiction() :- 
+   nullary.falsehood(),
+   unary_number.falsehood(_),
+   unary_symbol.falsehood(_),
+   binary_number.falsehood(_,_),
+   binary_symbol.falsehood(_,_),
+   !nullary.truth(),
+   !unary_number.truth(_),
+   !unary_symbol.truth(_),
+   !binary_number.truth(_,_),
+   !binary_symbol.truth(_,_).
+
+.printsize contradiction(IO="stdoutprintsize")
+
+
+
+// -- tautology --
+.decl tautology()  
+
+tautology() :- 
+   nullary.truth(),
+   unary_number.truth(_),
+   unary_symbol.truth(_),
+   binary_number.truth(_,_),
+   binary_symbol.truth(_,_),
+   !nullary.falsehood(),
+   !unary_number.falsehood(_),
+   !unary_symbol.falsehood(_),
+   !binary_number.falsehood(_,_),
+   !binary_symbol.falsehood(_,_).
+
+.printsize tautology(IO="stdoutprintsize")
+
+.output tautology
+
+</pre>
+
+</div>
+<a id="Parsing-type-analysis1"></a>
+<div class='headerdiv'>
+<h1>Type Analysis</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>-- Analysis logs --
+Clause: contradiction() :- 
+   nullary.falsehood(),
+   unary_number.falsehood(_),
+   unary_symbol.falsehood(_),
+   binary_number.falsehood(_,_),
+   binary_symbol.falsehood(_,_),
+   !nullary.truth(),
+   !unary_number.truth(_),
+   !unary_symbol.truth(_),
+   !binary_number.truth(_,_),
+   !binary_symbol.truth(_,_).
+Problem:
+{}
+Solution:
+{}
+Clause: tautology() :- 
+   nullary.truth(),
+   unary_number.truth(_),
+   unary_symbol.truth(_),
+   binary_number.truth(_,_),
+   binary_symbol.truth(_,_),
+   !nullary.falsehood(),
+   !unary_number.falsehood(_),
+   !unary_symbol.falsehood(_),
+   !binary_number.falsehood(_,_),
+   !binary_symbol.falsehood(_,_).
+Problem:
+{}
+Solution:
+{}
+
+-- Result --
+contradiction() :- 
+   nullary.falsehood(),
+   unary_number.falsehood(_&isin;{ - all types - }),
+   unary_symbol.falsehood(_&isin;{ - all types - }),
+   binary_number.falsehood(_&isin;{ - all types - },_&isin;{ - all types - }),
+   binary_symbol.falsehood(_&isin;{ - all types - },_&isin;{ - all types - }),
+   !nullary.truth(),
+   !unary_number.truth(_&isin;{ - all types - }),
+   !unary_symbol.truth(_&isin;{ - all types - }),
+   !binary_number.truth(_&isin;{ - all types - },_&isin;{ - all types - }),
+   !binary_symbol.truth(_&isin;{ - all types - },_&isin;{ - all types - }).
+tautology() :- 
+   nullary.truth(),
+   unary_number.truth(_&isin;{ - all types - }),
+   unary_symbol.truth(_&isin;{ - all types - }),
+   binary_number.truth(_&isin;{ - all types - },_&isin;{ - all types - }),
+   binary_symbol.truth(_&isin;{ - all types - },_&isin;{ - all types - }),
+   !nullary.falsehood(),
+   !unary_number.falsehood(_&isin;{ - all types - }),
+   !unary_symbol.falsehood(_&isin;{ - all types - }),
+   !binary_number.falsehood(_&isin;{ - all types - },_&isin;{ - all types - }),
+   !binary_symbol.falsehood(_&isin;{ - all types - },_&isin;{ - all types - }).
+</pre>
+
+</div>
+<a id="Parsing-type-environment2"></a>
+<div class='headerdiv'>
+<h1>Type Environment</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>Types:
+	Number = number
+	Symbol = symbol
+	number
+	symbol
+</pre>
+
+</div>
+<a id="Parsing-redundant-relations3"></a>
+<div class='headerdiv'>
+<h1>Redundant Relations</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>{}
+</pre>
+
+</div>
+<a id="Parsing-recursive-clauses4"></a>
+<div class='headerdiv'>
+<h1>Recursive Clauses</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>{}
+</pre>
+
+</div>
+<a id="Parsing-precedence-graph5"></a>
+<div class='headerdiv'>
+<h1>Precedence Graph</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<img alt='graph image' src='data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIKICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPgo8IS0tIEdlbmVyYXRlZCBieSBncmFwaHZpeiB2ZXJzaW9uIDIuNDAuMSAoMjAxNjEyMjUuMDMwNCkKIC0tPgo8IS0tIFRpdGxlOiAlMyBQYWdlczogMSAtLT4KPHN2ZyB3aWR0aD0iMjI4cHQiIGhlaWdodD0iNDRwdCIKIHZpZXdCb3g9IjAuMDAgMC4wMCAyMjguMzkgNDQuMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiPgo8ZyBpZD0iZ3JhcGgwIiBjbGFzcz0iZ3JhcGgiIHRyYW5zZm9ybT0ic2NhbGUoMSAxKSByb3RhdGUoMCkgdHJhbnNsYXRlKDQgNDApIj4KPHRpdGxlPiUzPC90aXRsZT4KPHBvbHlnb24gZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSJ0cmFuc3BhcmVudCIgcG9pbnRzPSItNCw0IC00LC00MCAyMjQuMzkxLC00MCAyMjQuMzkxLDQgLTQsNCIvPgo8IS0tIGNvbnRyYWRpY3Rpb24gLS0+CjxnIGlkPSJub2RlMSIgY2xhc3M9Im5vZGUiPgo8dGl0bGU+Y29udHJhZGljdGlvbjwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjU3LjE5NDkiIGN5PSItMTgiIHJ4PSI1Ny4zOTA1IiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iNTcuMTk0OSIgeT0iLTE0LjMiIGZvbnQtZmFtaWx5PSJUaW1lcyxzZXJpZiIgZm9udC1zaXplPSIxNC4wMCIgZmlsbD0iIzAwMDAwMCI+Y29udHJhZGljdGlvbjwvdGV4dD4KPC9nPgo8IS0tIHRhdXRvbG9neSAtLT4KPGcgaWQ9Im5vZGUyIiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT50YXV0b2xvZ3k8L3RpdGxlPgo8ZWxsaXBzZSBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGN4PSIxNzYuMTk0OSIgY3k9Ii0xOCIgcng9IjQ0LjM5MyIgcnk9IjE4Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjE3Ni4xOTQ5IiB5PSItMTQuMyIgZm9udC1mYW1pbHk9IlRpbWVzLHNlcmlmIiBmb250LXNpemU9IjE0LjAwIiBmaWxsPSIjMDAwMDAwIj50YXV0b2xvZ3k8L3RleHQ+CjwvZz4KPC9nPgo8L3N2Zz4K'><br/>
+<a href="javascript:toggleVisibility('Parsing-precedence-graph-source')">(show dot source)</a>
+<div id='Parsing-precedence-graph-source' style='display:none'>
+<pre>digraph {
+	"contradiction" [label = "contradiction"];
+	"tautology" [label = "tautology"];
+}
+</pre>
+</div>
+
+</div>
+<a id="Parsing-scc-graph6"></a>
+<div class='headerdiv'>
+<h1>Scc Graph</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<img alt='graph image' src='data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIKICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPgo8IS0tIEdlbmVyYXRlZCBieSBncmFwaHZpeiB2ZXJzaW9uIDIuNDAuMSAoMjAxNjEyMjUuMDMwNCkKIC0tPgo8IS0tIFRpdGxlOiAlMyBQYWdlczogMSAtLT4KPHN2ZyB3aWR0aD0iMTIycHQiIGhlaWdodD0iMTE2cHQiCiB2aWV3Qm94PSIwLjAwIDAuMDAgMTIyLjM5IDExNi4wMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+CjxnIGlkPSJncmFwaDAiIGNsYXNzPSJncmFwaCIgdHJhbnNmb3JtPSJzY2FsZSgxIDEpIHJvdGF0ZSgwKSB0cmFuc2xhdGUoNCAxMTIpIj4KPHRpdGxlPiUzPC90aXRsZT4KPHBvbHlnb24gZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSJ0cmFuc3BhcmVudCIgcG9pbnRzPSItNCw0IC00LC0xMTIgMTE4LjM4OTksLTExMiAxMTguMzg5OSw0IC00LDQiLz4KPCEtLSBfMCAtLT4KPGcgaWQ9Im5vZGUxIiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT5fMDwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjU3LjE5NDkiIGN5PSItOTAiIHJ4PSI1Ny4zOTA1IiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iNTcuMTk0OSIgeT0iLTg2LjMiIGZvbnQtZmFtaWx5PSJUaW1lcyxzZXJpZiIgZm9udC1zaXplPSIxNC4wMCIgZmlsbD0iIzAwMDAwMCI+Y29udHJhZGljdGlvbjwvdGV4dD4KPC9nPgo8IS0tIF8xIC0tPgo8ZyBpZD0ibm9kZTIiIGNsYXNzPSJub2RlIj4KPHRpdGxlPl8xPC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iNTcuMTk0OSIgY3k9Ii0xOCIgcng9IjQ0LjM5MyIgcnk9IjE4Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjU3LjE5NDkiIHk9Ii0xNC4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPnRhdXRvbG9neTwvdGV4dD4KPC9nPgo8IS0tIF8wJiM0NTsmZ3Q7XzEgLS0+CjxnIGlkPSJlZGdlMSIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+XzAmIzQ1OyZndDtfMTwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgZD0iTTU3LjE5NDksLTcxLjgzMTRDNTcuMTk0OSwtNjQuMTMxIDU3LjE5NDksLTU0Ljk3NDMgNTcuMTk0OSwtNDYuNDE2NiIvPgo8cG9seWdvbiBmaWxsPSIjMDAwMDAwIiBzdHJva2U9IiMwMDAwMDAiIHBvaW50cz0iNjAuNjk1LC00Ni40MTMyIDU3LjE5NDksLTM2LjQxMzMgNTMuNjk1LC00Ni40MTMzIDYwLjY5NSwtNDYuNDEzMiIvPgo8L2c+CjwvZz4KPC9zdmc+Cg=='><br/>
+<a href="javascript:toggleVisibility('Parsing-scc-graph-source')">(show dot source)</a>
+<div id='Parsing-scc-graph-source' style='display:none'>
+<pre>digraph {
+	_0[label = "contradiction" ];
+	_1[label = "tautology" ];
+	_0 -> _1;
+}</pre>
+</div>
+
+</div>
+<a id="Parsing-topological-scc-graph7"></a>
+<div class='headerdiv'>
+<h1>Topological Scc Graph</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>{
+    "StratumNames": [
+        "0",
+        "1"
+    ],
+    "StratumDependencies": {
+        "0": ["1"],
+        "1": []
+    },
+    "RelationNames": [
+        "contradiction",
+        "tautology"
+    ],
+    "StratumRelations": {
+        "0": ["contradiction"],
+        "1": ["tautology"]
+    },
+    "TopologicalOrderingCost": 1
+}</pre>
+
+</div>
+</div>
+<a id="AstComponentChecker9"></a>
+<div class='headerdiv'>
+<h1>After AstComponentChecker (0.138036s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="ComponentInstantiationTransformer18"></a>
+<div class='headerdiv'>
+<h1>After ComponentInstantiationTransformer (0.160611s)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+<a id="ComponentInstantiationTransformer-dl10"></a>
+<div class='headerdiv'>
+<h1>Datalog</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>// ----- Types -----
+.type Number = number
+.type Symbol = symbol
+
+// ----- Functors -----
+
+// ----- Relations -----
+
+
+// -- binary_number.falsehood --
+.decl binary_number.falsehood(x:Number,y:Number)  
+
+
+
+// -- binary_number.truth --
+.decl binary_number.truth(x:Number,y:Number)  
+
+binary_number.truth(1,1).
+
+
+
+// -- binary_symbol.falsehood --
+.decl binary_symbol.falsehood(x:Symbol,y:Symbol)  
+
+
+
+// -- binary_symbol.truth --
+.decl binary_symbol.truth(x:Symbol,y:Symbol)  
+
+binary_symbol.truth("1","1").
+
+
+
+// -- contradiction --
+.decl contradiction()  
+
+contradiction() :- 
+   nullary.falsehood(),
+   unary_number.falsehood(_),
+   unary_symbol.falsehood(_),
+   binary_number.falsehood(_,_),
+   binary_symbol.falsehood(_,_),
+   !nullary.truth(),
+   !unary_number.truth(_),
+   !unary_symbol.truth(_),
+   !binary_number.truth(_,_),
+   !binary_symbol.truth(_,_).
+
+.printsize contradiction(IO="stdoutprintsize")
+
+
+
+// -- nullary.falsehood --
+.decl nullary.falsehood()  
+
+
+
+// -- nullary.truth --
+.decl nullary.truth()  
+
+nullary.truth().
+
+
+
+// -- tautology --
+.decl tautology()  
+
+tautology() :- 
+   nullary.truth(),
+   unary_number.truth(_),
+   unary_symbol.truth(_),
+   binary_number.truth(_,_),
+   binary_symbol.truth(_,_),
+   !nullary.falsehood(),
+   !unary_number.falsehood(_),
+   !unary_symbol.falsehood(_),
+   !binary_number.falsehood(_,_),
+   !binary_symbol.falsehood(_,_).
+
+.printsize tautology(IO="stdoutprintsize")
+
+.output tautology
+
+
+
+// -- unary_number.falsehood --
+.decl unary_number.falsehood(x:Number)  
+
+
+
+// -- unary_number.truth --
+.decl unary_number.truth(x:Number)  
+
+unary_number.truth(1).
+
+
+
+// -- unary_symbol.falsehood --
+.decl unary_symbol.falsehood(x:Symbol)  
+
+
+
+// -- unary_symbol.truth --
+.decl unary_symbol.truth(x:Symbol)  
+
+unary_symbol.truth("1").
+
+</pre>
+
+</div>
+<a id="ComponentInstantiationTransformer-type-analysis11"></a>
+<div class='headerdiv'>
+<h1>Type Analysis</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>-- Analysis logs --
+Clause: binary_number.truth(1,1).
+Problem:
+{
+	var(1) &lt;: Number,
+	var(1) &lt;: Number,
+	var(1) &lt;: number,
+	var(1) &lt;: number
+}
+Solution:
+{var(1)->{Number},var(1)->{Number}}
+Clause: binary_symbol.truth("1","1").
+Problem:
+{
+	var("1") &lt;: Symbol,
+	var("1") &lt;: Symbol,
+	var("1") &lt;: symbol,
+	var("1") &lt;: symbol
+}
+Solution:
+{var("1")->{Symbol},var("1")->{Symbol}}
+Clause: contradiction() :- 
+   nullary.falsehood(),
+   unary_number.falsehood(_),
+   unary_symbol.falsehood(_),
+   binary_number.falsehood(_,_),
+   binary_symbol.falsehood(_,_),
+   !nullary.truth(),
+   !unary_number.truth(_),
+   !unary_symbol.truth(_),
+   !binary_number.truth(_,_),
+   !binary_symbol.truth(_,_).
+Problem:
+{
+	var(_) &lt;: Number,
+	var(_) &lt;: Symbol,
+	var(_) &lt;: Number,
+	var(_) &lt;: Number,
+	var(_) &lt;: Symbol,
+	var(_) &lt;: Symbol,
+	var(_) >: Number,
+	var(_) >: Symbol,
+	var(_) >: Number,
+	var(_) >: Number,
+	var(_) >: Symbol,
+	var(_) >: Symbol
+}
+Solution:
+{var(_)->{Number},var(_)->{Symbol},var(_)->{Number},var(_)->{Number},var(_)->{Symbol},var(_)->{Symbol},var(_)->{Number},var(_)->{Symbol},var(_)->{Number},var(_)->{Number},var(_)->{Symbol},var(_)->{Symbol}}
+Clause: nullary.truth().
+Problem:
+{}
+Solution:
+{}
+Clause: tautology() :- 
+   nullary.truth(),
+   unary_number.truth(_),
+   unary_symbol.truth(_),
+   binary_number.truth(_,_),
+   binary_symbol.truth(_,_),
+   !nullary.falsehood(),
+   !unary_number.falsehood(_),
+   !unary_symbol.falsehood(_),
+   !binary_number.falsehood(_,_),
+   !binary_symbol.falsehood(_,_).
+Problem:
+{
+	var(_) &lt;: Number,
+	var(_) &lt;: Symbol,
+	var(_) &lt;: Number,
+	var(_) &lt;: Number,
+	var(_) &lt;: Symbol,
+	var(_) &lt;: Symbol,
+	var(_) >: Number,
+	var(_) >: Symbol,
+	var(_) >: Number,
+	var(_) >: Number,
+	var(_) >: Symbol,
+	var(_) >: Symbol
+}
+Solution:
+{var(_)->{Number},var(_)->{Symbol},var(_)->{Number},var(_)->{Number},var(_)->{Symbol},var(_)->{Symbol},var(_)->{Number},var(_)->{Symbol},var(_)->{Number},var(_)->{Number},var(_)->{Symbol},var(_)->{Symbol}}
+Clause: unary_number.truth(1).
+Problem:
+{
+	var(1) &lt;: Number,
+	var(1) &lt;: number
+}
+Solution:
+{var(1)->{Number}}
+Clause: unary_symbol.truth("1").
+Problem:
+{
+	var("1") &lt;: Symbol,
+	var("1") &lt;: symbol
+}
+Solution:
+{var("1")->{Symbol}}
+
+-- Result --
+binary_number.truth(1,1).
+binary_symbol.truth("1","1").
+contradiction() :- 
+   nullary.falsehood(),
+   unary_number.falsehood(_&isin;{Number}),
+   unary_symbol.falsehood(_&isin;{Symbol}),
+   binary_number.falsehood(_&isin;{Number},_&isin;{Number}),
+   binary_symbol.falsehood(_&isin;{Symbol},_&isin;{Symbol}),
+   !nullary.truth(),
+   !unary_number.truth(_&isin;{Number}),
+   !unary_symbol.truth(_&isin;{Symbol}),
+   !binary_number.truth(_&isin;{Number},_&isin;{Number}),
+   !binary_symbol.truth(_&isin;{Symbol},_&isin;{Symbol}).
+nullary.truth().
+tautology() :- 
+   nullary.truth(),
+   unary_number.truth(_&isin;{Number}),
+   unary_symbol.truth(_&isin;{Symbol}),
+   binary_number.truth(_&isin;{Number},_&isin;{Number}),
+   binary_symbol.truth(_&isin;{Symbol},_&isin;{Symbol}),
+   !nullary.falsehood(),
+   !unary_number.falsehood(_&isin;{Number}),
+   !unary_symbol.falsehood(_&isin;{Symbol}),
+   !binary_number.falsehood(_&isin;{Number},_&isin;{Number}),
+   !binary_symbol.falsehood(_&isin;{Symbol},_&isin;{Symbol}).
+unary_number.truth(1).
+unary_symbol.truth("1").
+</pre>
+
+</div>
+<a id="ComponentInstantiationTransformer-type-environment12"></a>
+<div class='headerdiv'>
+<h1>Type Environment</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>Types:
+	Number = number
+	Symbol = symbol
+	number
+	symbol
+</pre>
+
+</div>
+<a id="ComponentInstantiationTransformer-redundant-relations13"></a>
+<div class='headerdiv'>
+<h1>Redundant Relations</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>{}
+</pre>
+
+</div>
+<a id="ComponentInstantiationTransformer-recursive-clauses14"></a>
+<div class='headerdiv'>
+<h1>Recursive Clauses</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>{}
+</pre>
+
+</div>
+<a id="ComponentInstantiationTransformer-precedence-graph15"></a>
+<div class='headerdiv'>
+<h1>Precedence Graph</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<img alt='graph image' src='data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIKICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPgo8IS0tIEdlbmVyYXRlZCBieSBncmFwaHZpeiB2ZXJzaW9uIDIuNDAuMSAoMjAxNjEyMjUuMDMwNCkKIC0tPgo8IS0tIFRpdGxlOiAlMyBQYWdlczogMSAtLT4KPHN2ZyB3aWR0aD0iMTg3OXB0IiBoZWlnaHQ9IjExNnB0Igogdmlld0JveD0iMC4wMCAwLjAwIDE4NzkuMzkgMTE2LjAwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj4KPGcgaWQ9ImdyYXBoMCIgY2xhc3M9ImdyYXBoIiB0cmFuc2Zvcm09InNjYWxlKDEgMSkgcm90YXRlKDApIHRyYW5zbGF0ZSg0IDExMikiPgo8dGl0bGU+JTM8L3RpdGxlPgo8cG9seWdvbiBmaWxsPSIjZmZmZmZmIiBzdHJva2U9InRyYW5zcGFyZW50IiBwb2ludHM9Ii00LDQgLTQsLTExMiAxODc1LjM4NjQsLTExMiAxODc1LjM4NjQsNCAtNCw0Ii8+CjwhLS0gYmluYXJ5X251bWJlci5mYWxzZWhvb2QgLS0+CjxnIGlkPSJub2RlMSIgY2xhc3M9Im5vZGUiPgo8dGl0bGU+YmluYXJ5X251bWJlci5mYWxzZWhvb2Q8L3RpdGxlPgo8ZWxsaXBzZSBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGN4PSI4OTAuNzkxMiIgY3k9Ii05MCIgcng9IjEwMS4yODIxIiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iODkwLjc5MTIiIHk9Ii04Ni4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPmJpbmFyeV9udW1iZXIuZmFsc2Vob29kPC90ZXh0Pgo8L2c+CjwhLS0gY29udHJhZGljdGlvbiAtLT4KPGcgaWQ9Im5vZGU1IiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT5jb250cmFkaWN0aW9uPC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iOTMyLjc5MTIiIGN5PSItMTgiIHJ4PSI1Ny4zOTA1IiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iOTMyLjc5MTIiIHk9Ii0xNC4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPmNvbnRyYWRpY3Rpb248L3RleHQ+CjwvZz4KPCEtLSBiaW5hcnlfbnVtYmVyLmZhbHNlaG9vZCYjNDU7Jmd0O2NvbnRyYWRpY3Rpb24gLS0+CjxnIGlkPSJlZGdlMSIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+YmluYXJ5X251bWJlci5mYWxzZWhvb2QmIzQ1OyZndDtjb250cmFkaWN0aW9uPC90aXRsZT4KPHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBkPSJNOTAxLjM4OTYsLTcxLjgzMTRDOTA2LjIwMTIsLTYzLjU4MjkgOTExLjk4NzUsLTUzLjY2MzUgOTE3LjI3NSwtNDQuNTk5MiIvPgo8cG9seWdvbiBmaWxsPSIjMDAwMDAwIiBzdHJva2U9IiMwMDAwMDAiIHBvaW50cz0iOTIwLjMyNjIsLTQ2LjMxNDggOTIyLjM0MTcsLTM1LjkxMzQgOTE0LjI3OTgsLTQyLjc4NzYgOTIwLjMyNjIsLTQ2LjMxNDgiLz4KPC9nPgo8IS0tIHRhdXRvbG9neSAtLT4KPGcgaWQ9Im5vZGU4IiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT50YXV0b2xvZ3k8L3RpdGxlPgo8ZWxsaXBzZSBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGN4PSIxMDcyLjc5MTIiIGN5PSItMTgiIHJ4PSI0NC4zOTMiIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSIxMDcyLjc5MTIiIHk9Ii0xNC4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPnRhdXRvbG9neTwvdGV4dD4KPC9nPgo8IS0tIGJpbmFyeV9udW1iZXIuZmFsc2Vob29kJiM0NTsmZ3Q7dGF1dG9sb2d5IC0tPgo8ZyBpZD0iZWRnZTIiIGNsYXNzPSJlZGdlIj4KPHRpdGxlPmJpbmFyeV9udW1iZXIuZmFsc2Vob29kJiM0NTsmZ3Q7dGF1dG9sb2d5PC90aXRsZT4KPHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBkPSJNOTMyLjU0NTcsLTczLjQ4MTdDOTYyLjE1MjEsLTYxLjc2OTMgMTAwMS43MTA0LC00Ni4xMTk5IDEwMzEuMjY1NCwtMzQuNDI3OCIvPgo8cG9seWdvbiBmaWxsPSIjMDAwMDAwIiBzdHJva2U9IiMwMDAwMDAiIHBvaW50cz0iMTAzMi44NjQ4LC0zNy41NTkxIDEwNDAuODc2MSwtMzAuNjI1OCAxMDMwLjI4OTgsLTMxLjA0OTkgMTAzMi44NjQ4LC0zNy41NTkxIi8+CjwvZz4KPCEtLSBiaW5hcnlfbnVtYmVyLnRydXRoIC0tPgo8ZyBpZD0ibm9kZTIiIGNsYXNzPSJub2RlIj4KPHRpdGxlPmJpbmFyeV9udW1iZXIudHJ1dGg8L3RpdGxlPgo8ZWxsaXBzZSBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGN4PSIxMDkzLjc5MTIiIGN5PSItOTAiIHJ4PSI4My42ODU0IiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iMTA5My43OTEyIiB5PSItODYuMyIgZm9udC1mYW1pbHk9IlRpbWVzLHNlcmlmIiBmb250LXNpemU9IjE0LjAwIiBmaWxsPSIjMDAwMDAwIj5iaW5hcnlfbnVtYmVyLnRydXRoPC90ZXh0Pgo8L2c+CjwhLS0gYmluYXJ5X251bWJlci50cnV0aCYjNDU7Jmd0O2NvbnRyYWRpY3Rpb24gLS0+CjxnIGlkPSJlZGdlMyIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+YmluYXJ5X251bWJlci50cnV0aCYjNDU7Jmd0O2NvbnRyYWRpY3Rpb248L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGQ9Ik0xMDU3LjI1NzgsLTczLjY2MjFDMTAzMi45MDY4LC02Mi43NzIyIDEwMDAuODEzMSwtNDguNDE5NyA5NzUuMzE0MywtMzcuMDE2NSIvPgo8cG9seWdvbiBmaWxsPSIjMDAwMDAwIiBzdHJva2U9IiMwMDAwMDAiIHBvaW50cz0iOTc2LjQ1MiwtMzMuNjkxMyA5NjUuODk0NCwtMzIuODAzOSA5NzMuNTk0MywtNDAuMDgxNCA5NzYuNDUyLC0zMy42OTEzIi8+CjwvZz4KPCEtLSBiaW5hcnlfbnVtYmVyLnRydXRoJiM0NTsmZ3Q7dGF1dG9sb2d5IC0tPgo8ZyBpZD0iZWRnZTQiIGNsYXNzPSJlZGdlIj4KPHRpdGxlPmJpbmFyeV9udW1iZXIudHJ1dGgmIzQ1OyZndDt0YXV0b2xvZ3k8L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGQ9Ik0xMDg4LjQ5MiwtNzEuODMxNEMxMDg2LjE4NjUsLTYzLjkyNjYgMTA4My40MzMzLC01NC40ODcyIDEwODAuODgxLC00NS43MzY1Ii8+Cjxwb2x5Z29uIGZpbGw9IiMwMDAwMDAiIHN0cm9rZT0iIzAwMDAwMCIgcG9pbnRzPSIxMDg0LjE3NjEsLTQ0LjUzMzQgMTA3OC4wMTYsLTM1LjkxMzQgMTA3Ny40NTYsLTQ2LjQ5MzQgMTA4NC4xNzYxLC00NC41MzM0Ii8+CjwvZz4KPCEtLSBiaW5hcnlfc3ltYm9sLmZhbHNlaG9vZCAtLT4KPGcgaWQ9Im5vZGUzIiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT5iaW5hcnlfc3ltYm9sLmZhbHNlaG9vZDwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjEyOTYuNzkxMiIgY3k9Ii05MCIgcng9IjEwMC45ODI3IiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iMTI5Ni43OTEyIiB5PSItODYuMyIgZm9udC1mYW1pbHk9IlRpbWVzLHNlcmlmIiBmb250LXNpemU9IjE0LjAwIiBmaWxsPSIjMDAwMDAwIj5iaW5hcnlfc3ltYm9sLmZhbHNlaG9vZDwvdGV4dD4KPC9nPgo8IS0tIGJpbmFyeV9zeW1ib2wuZmFsc2Vob29kJiM0NTsmZ3Q7Y29udHJhZGljdGlvbiAtLT4KPGcgaWQ9ImVkZ2U1IiBjbGFzcz0iZWRnZSI+Cjx0aXRsZT5iaW5hcnlfc3ltYm9sLmZhbHNlaG9vZCYjNDU7Jmd0O2NvbnRyYWRpY3Rpb248L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGQ9Ik0xMjI3Ljg3NzYsLTc2Ljc5MzVDMTE3MS44MDY3LC02NS45OTMyIDEwOTAuNjQzOCwtNTAuMjM1MyAxMDE5Ljc5MTIsLTM2IDEwMTAuMzYzNywtMzQuMTA1OSAxMDAwLjM2ODIsLTMyLjA2NjggOTkwLjY0MDYsLTMwLjA2NTYiLz4KPHBvbHlnb24gZmlsbD0iIzAwMDAwMCIgc3Ryb2tlPSIjMDAwMDAwIiBwb2ludHM9Ijk5MS4xMzYyLC0yNi41OTQzIDk4MC42MzUzLC0yOC4wMDE3IDk4OS43MjE5LC0zMy40NDk5IDk5MS4xMzYyLC0yNi41OTQzIi8+CjwvZz4KPCEtLSBiaW5hcnlfc3ltYm9sLmZhbHNlaG9vZCYjNDU7Jmd0O3RhdXRvbG9neSAtLT4KPGcgaWQ9ImVkZ2U2IiBjbGFzcz0iZWRnZSI+Cjx0aXRsZT5iaW5hcnlfc3ltYm9sLmZhbHNlaG9vZCYjNDU7Jmd0O3RhdXRvbG9neTwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgZD0iTTEyNDcuNjMzNSwtNzQuMTk5M0MxMjA4LjczODgsLTYxLjY5NzQgMTE1NC44OTQ0LC00NC4zOTAzIDExMTcuMjcwMSwtMzIuMjk2OCIvPgo8cG9seWdvbiBmaWxsPSIjMDAwMDAwIiBzdHJva2U9IiMwMDAwMDAiIHBvaW50cz0iMTExOC4xODU3LC0yOC45MTQ4IDExMDcuNTk0NCwtMjkuMTg2NyAxMTE2LjA0MzYsLTM1LjU3OSAxMTE4LjE4NTcsLTI4LjkxNDgiLz4KPC9nPgo8IS0tIGJpbmFyeV9zeW1ib2wudHJ1dGggLS0+CjxnIGlkPSJub2RlNCIgY2xhc3M9Im5vZGUiPgo8dGl0bGU+YmluYXJ5X3N5bWJvbC50cnV0aDwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjE0OTguNzkxMiIgY3k9Ii05MCIgcng9IjgzLjM4NTciIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSIxNDk4Ljc5MTIiIHk9Ii04Ni4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPmJpbmFyeV9zeW1ib2wudHJ1dGg8L3RleHQ+CjwvZz4KPCEtLSBiaW5hcnlfc3ltYm9sLnRydXRoJiM0NTsmZ3Q7Y29udHJhZGljdGlvbiAtLT4KPGcgaWQ9ImVkZ2U3IiBjbGFzcz0iZWRnZSI+Cjx0aXRsZT5iaW5hcnlfc3ltYm9sLnRydXRoJiM0NTsmZ3Q7Y29udHJhZGljdGlvbjwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgZD0iTTE0MzkuMDU4NiwtNzcuNDA5NEMxNDI4LjM0NjgsLTc1LjQwOTggMTQxNy4yNjIxLC03My41MDc0IDE0MDYuNzkxMiwtNzIgMTIzNS44MTE1LC00Ny4zODQ3IDExOTAuNjM1NSwtNjEuNTM4OCAxMDE5Ljc5MTIsLTM2IDEwMDkuODM3NiwtMzQuNTEyMSA5OTkuMzA2MSwtMzIuNjEzMyA5ODkuMTM3OCwtMzAuNjA5NyIvPgo8cG9seWdvbiBmaWxsPSIjMDAwMDAwIiBzdHJva2U9IiMwMDAwMDAiIHBvaW50cz0iOTg5LjYyMTIsLTI3LjEzNjYgOTc5LjEyNTUsLTI4LjU4MjUgOTg4LjIzMiwtMzMuOTk3NCA5ODkuNjIxMiwtMjcuMTM2NiIvPgo8L2c+CjwhLS0gYmluYXJ5X3N5bWJvbC50cnV0aCYjNDU7Jmd0O3RhdXRvbG9neSAtLT4KPGcgaWQ9ImVkZ2U4IiBjbGFzcz0iZWRnZSI+Cjx0aXRsZT5iaW5hcnlfc3ltYm9sLnRydXRoJiM0NTsmZ3Q7dGF1dG9sb2d5PC90aXRsZT4KPHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBkPSJNMTQzNy40Nzk3LC03Ny43MTI3QzE0MjcuMjQyNywtNzUuNzQ0OSAxNDE2LjcyNDYsLTczLjc3NDIgMTQwNi43OTEyLC03MiAxMzA3LjAzMzEsLTU0LjE4MTggMTE5MC4wNDM3LC0zNS44NTUgMTEyNC4zNTMxLC0yNS43OTczIi8+Cjxwb2x5Z29uIGZpbGw9IiMwMDAwMDAiIHN0cm9rZT0iIzAwMDAwMCIgcG9pbnRzPSIxMTI0LjY3NSwtMjIuMzA2IDExMTQuMjYxMSwtMjQuMjU1NSAxMTIzLjYxNzgsLTI5LjIyNTcgMTEyNC42NzUsLTIyLjMwNiIvPgo8L2c+CjwhLS0gbnVsbGFyeS5mYWxzZWhvb2QgLS0+CjxnIGlkPSJub2RlNiIgY2xhc3M9Im5vZGUiPgo8dGl0bGU+bnVsbGFyeS5mYWxzZWhvb2Q8L3RpdGxlPgo8ZWxsaXBzZSBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGN4PSIxNjcxLjc5MTIiIGN5PSItOTAiIHJ4PSI3Mi4yODc1IiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iMTY3MS43OTEyIiB5PSItODYuMyIgZm9udC1mYW1pbHk9IlRpbWVzLHNlcmlmIiBmb250LXNpemU9IjE0LjAwIiBmaWxsPSIjMDAwMDAwIj5udWxsYXJ5LmZhbHNlaG9vZDwvdGV4dD4KPC9nPgo8IS0tIG51bGxhcnkuZmFsc2Vob29kJiM0NTsmZ3Q7Y29udHJhZGljdGlvbiAtLT4KPGcgaWQ9ImVkZ2U5IiBjbGFzcz0iZWRnZSI+Cjx0aXRsZT5udWxsYXJ5LmZhbHNlaG9vZCYjNDU7Jmd0O2NvbnRyYWRpY3Rpb248L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGQ9Ik0xNjIwLjE1NzgsLTc3LjI2ODVDMTYxMC40NDk4LC03NS4yMzMxIDE2MDAuMzQ3NCwtNzMuMzU0NiAxNTkwLjc5MTIsLTcyIDEzMzkuMDI2NSwtMzYuMzExMiAxMjcxLjgxMDYsLTY5Ljg0MzYgMTAxOS43OTEyLC0zNiAxMDA5LjgxNjYsLTM0LjY2MDUgOTk5LjI3NDcsLTMyLjgzNDUgOTg5LjEwMjcsLTMwLjg1NjkiLz4KPHBvbHlnb24gZmlsbD0iIzAwMDAwMCIgc3Ryb2tlPSIjMDAwMDAwIiBwb2ludHM9Ijk4OS41ODI4LC0yNy4zODM0IDk3OS4wODg4LC0yOC44NDEzIDk4OC4yMDE1LC0zNC4yNDU4IDk4OS41ODI4LC0yNy4zODM0Ii8+CjwvZz4KPCEtLSBudWxsYXJ5LmZhbHNlaG9vZCYjNDU7Jmd0O3RhdXRvbG9neSAtLT4KPGcgaWQ9ImVkZ2UxMCIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+bnVsbGFyeS5mYWxzZWhvb2QmIzQ1OyZndDt0YXV0b2xvZ3k8L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGQ9Ik0xNjE5LjY3NDUsLTc3LjQ5NTJDMTYxMC4xMDQ5LC03NS40NjI2IDE2MDAuMTc1NSwtNzMuNTI2NyAxNTkwLjc5MTIsLTcyIDE0MjIuNjIyMiwtNDQuNjQxNyAxMjIxLjM2NjEsLTI4LjMwMTMgMTEyNi44NDgxLC0yMS41ODE4Ii8+Cjxwb2x5Z29uIGZpbGw9IiMwMDAwMDAiIHN0cm9rZT0iIzAwMDAwMCIgcG9pbnRzPSIxMTI2Ljg5NjcsLTE4LjA3NjYgMTExNi42NzU4LC0yMC44NjY1IDExMjYuNDA1NywtMjUuMDU5NCAxMTI2Ljg5NjcsLTE4LjA3NjYiLz4KPC9nPgo8IS0tIG51bGxhcnkudHJ1dGggLS0+CjxnIGlkPSJub2RlNyIgY2xhc3M9Im5vZGUiPgo8dGl0bGU+bnVsbGFyeS50cnV0aDwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjE4MTYuNzkxMiIgY3k9Ii05MCIgcng9IjU0LjY5MDUiIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSIxODE2Ljc5MTIiIHk9Ii04Ni4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPm51bGxhcnkudHJ1dGg8L3RleHQ+CjwvZz4KPCEtLSBudWxsYXJ5LnRydXRoJiM0NTsmZ3Q7Y29udHJhZGljdGlvbiAtLT4KPGcgaWQ9ImVkZ2UxMSIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+bnVsbGFyeS50cnV0aCYjNDU7Jmd0O2NvbnRyYWRpY3Rpb248L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGQ9Ik0xNzc3LjUwMDgsLTc3LjQ1MTdDMTc2OS40MDQsLTc1LjI5MDUgMTc2MC44Nzk0LC03My4zMTg3IDE3NTIuNzkxMiwtNzIgMTQzMC44NzE1LC0xOS41MTMzIDEzNDMuMzUzNSwtNzcuMTY1NSAxMDE5Ljc5MTIsLTM2IDEwMDkuNjkyOCwtMzQuNzE1MiA5OTkuMDE4NywtMzIuODk2NSA5ODguNzM3LC0zMC45MDQ1Ii8+Cjxwb2x5Z29uIGZpbGw9IiMwMDAwMDAiIHN0cm9rZT0iIzAwMDAwMCIgcG9pbnRzPSI5ODkuMTE2LC0yNy40MTA3IDk3OC42MjE5LC0yOC44NjgyIDk4Ny43MzQ0LC0zNC4yNzMgOTg5LjExNiwtMjcuNDEwNyIvPgo8L2c+CjwhLS0gbnVsbGFyeS50cnV0aCYjNDU7Jmd0O3RhdXRvbG9neSAtLT4KPGcgaWQ9ImVkZ2UxMiIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+bnVsbGFyeS50cnV0aCYjNDU7Jmd0O3RhdXRvbG9neTwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgZD0iTTE3NzcuMTI2LC03Ny41NTA4QzE3NjkuMTM0MSwtNzUuNDA5NyAxNzYwLjc0NSwtNzMuNDIwMyAxNzUyLjc5MTIsLTcyIDE1MjIuNzc4MiwtMzAuOTI2OCAxMjQzLjQxMDYsLTIxLjA4OSAxMTI3LjM3OTYsLTE4LjczNyIvPgo8cG9seWdvbiBmaWxsPSIjMDAwMDAwIiBzdHJva2U9IiMwMDAwMDAiIHBvaW50cz0iMTEyNy4zOTE0LC0xNS4yMzY2IDExMTcuMzI2LC0xOC41NDM4IDExMjcuMjU2OSwtMjIuMjM1MyAxMTI3LjM5MTQsLTE1LjIzNjYiLz4KPC9nPgo8IS0tIHVuYXJ5X251bWJlci5mYWxzZWhvb2QgLS0+CjxnIGlkPSJub2RlOSIgY2xhc3M9Im5vZGUiPgo8dGl0bGU+dW5hcnlfbnVtYmVyLmZhbHNlaG9vZDwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9Ijk4Ljc5MTIiIGN5PSItOTAiIHJ4PSI5OC41ODI5IiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iOTguNzkxMiIgeT0iLTg2LjMiIGZvbnQtZmFtaWx5PSJUaW1lcyxzZXJpZiIgZm9udC1zaXplPSIxNC4wMCIgZmlsbD0iIzAwMDAwMCI+dW5hcnlfbnVtYmVyLmZhbHNlaG9vZDwvdGV4dD4KPC9nPgo8IS0tIHVuYXJ5X251bWJlci5mYWxzZWhvb2QmIzQ1OyZndDtjb250cmFkaWN0aW9uIC0tPgo8ZyBpZD0iZWRnZTEzIiBjbGFzcz0iZWRnZSI+Cjx0aXRsZT51bmFyeV9udW1iZXIuZmFsc2Vob29kJiM0NTsmZ3Q7Y29udHJhZGljdGlvbjwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgZD0iTTE2OS4yNDM1LC03Ny4zMDk5QzE4MS43MjM2LC03NS4zMzMgMTk0LjYxODQsLTczLjQ2NCAyMDYuNzkxMiwtNzIgNDQ4LjM5NTksLTQyLjk0MiA3MzcuMjM5OSwtMjcuMDQ3OCA4NjUuNjA0MSwtMjAuOTUzMiIvPgo8cG9seWdvbiBmaWxsPSIjMDAwMDAwIiBzdHJva2U9IiMwMDAwMDAiIHBvaW50cz0iODY1Ljg1MTIsLTI0LjQ0NTUgODc1LjY3NTcsLTIwLjQ3OTUgODY1LjUyMjIsLTE3LjQ1MzIgODY1Ljg1MTIsLTI0LjQ0NTUiLz4KPC9nPgo8IS0tIHVuYXJ5X251bWJlci5mYWxzZWhvb2QmIzQ1OyZndDt0YXV0b2xvZ3kgLS0+CjxnIGlkPSJlZGdlMTQiIGNsYXNzPSJlZGdlIj4KPHRpdGxlPnVuYXJ5X251bWJlci5mYWxzZWhvb2QmIzQ1OyZndDt0YXV0b2xvZ3k8L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGQ9Ik0xNjguMzM5OSwtNzcuMTUxMUMxODEuMDkzNCwtNzUuMTUzNSAxOTQuMzE1LC03My4zMTg0IDIwNi43OTEyLC03MiA1NTcuMjAzNSwtMzQuOTY5NiA2NDkuOTc1MiwtODUuODczMyA5OTguNzkxMiwtMzYgMTAwNy43MzA0LC0zNC43MjE5IDEwMTcuMTY2OCwtMzIuODQ0NiAxMDI2LjE5ODksLTMwLjc3ODgiLz4KPHBvbHlnb24gZmlsbD0iIzAwMDAwMCIgc3Ryb2tlPSIjMDAwMDAwIiBwb2ludHM9IjEwMjcuMjY3MiwtMzQuMTIyIDEwMzYuMTc2NSwtMjguMzg4MyAxMDI1LjYzNjIsLTI3LjMxNDYgMTAyNy4yNjcyLC0zNC4xMjIiLz4KPC9nPgo8IS0tIHVuYXJ5X251bWJlci50cnV0aCAtLT4KPGcgaWQ9Im5vZGUxMCIgY2xhc3M9Im5vZGUiPgo8dGl0bGU+dW5hcnlfbnVtYmVyLnRydXRoPC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iMjk2Ljc5MTIiIGN5PSItOTAiIHJ4PSI4MS40ODYzIiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iMjk2Ljc5MTIiIHk9Ii04Ni4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPnVuYXJ5X251bWJlci50cnV0aDwvdGV4dD4KPC9nPgo8IS0tIHVuYXJ5X251bWJlci50cnV0aCYjNDU7Jmd0O2NvbnRyYWRpY3Rpb24gLS0+CjxnIGlkPSJlZGdlMTUiIGNsYXNzPSJlZGdlIj4KPHRpdGxlPnVuYXJ5X251bWJlci50cnV0aCYjNDU7Jmd0O2NvbnRyYWRpY3Rpb248L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGQ9Ik0zNTUuMjIzNywtNzcuNDQyNEMzNjUuNzAyOSwtNzUuNDM5MyAzNzYuNTQ3MSwtNzMuNTI3MiAzODYuNzkxMiwtNzIgNTU4Ljk0MTUsLTQ2LjMzNjIgNzYzLjUwODgsLTI5Ljc5NzMgODY2LjUxMjIsLTIyLjQzMiIvPgo8cG9seWdvbiBmaWxsPSIjMDAwMDAwIiBzdHJva2U9IiMwMDAwMDAiIHBvaW50cz0iODY3LjAzMjQsLTI1LjkwNCA4NzYuNzU5OSwtMjEuNzA1NiA4NjYuNTM3NCwtMTguOTIxNSA4NjcuMDMyNCwtMjUuOTA0Ii8+CjwvZz4KPCEtLSB1bmFyeV9udW1iZXIudHJ1dGgmIzQ1OyZndDt0YXV0b2xvZ3kgLS0+CjxnIGlkPSJlZGdlMTYiIGNsYXNzPSJlZGdlIj4KPHRpdGxlPnVuYXJ5X251bWJlci50cnV0aCYjNDU7Jmd0O3RhdXRvbG9neTwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgZD0iTTM1NC42OTI3LC03Ny4xOTIxQzM2NS4zMjYzLC03NS4xOTAzIDM3Ni4zNjA2LC03My4zNDMzIDM4Ni43OTEyLC03MiA2NTcuMDI5OCwtMzcuMTk4NSA3MjkuMzI3MiwtNzYuMzYyNSA5OTguNzkxMiwtMzYgMTAwNy43MjE3LC0zNC42NjIzIDEwMTcuMTU0LC0zMi43NTczIDEwMjYuMTg0OCwtMzAuNjgyOCIvPgo8cG9seWdvbiBmaWxsPSIjMDAwMDAwIiBzdHJva2U9IiMwMDAwMDAiIHBvaW50cz0iMTAyNy4yNTQyLC0zNC4wMjU2IDEwMzYuMTYyMSwtMjguMjg5OCAxMDI1LjYyMTUsLTI3LjIxODcgMTAyNy4yNTQyLC0zNC4wMjU2Ii8+CjwvZz4KPCEtLSB1bmFyeV9zeW1ib2wuZmFsc2Vob29kIC0tPgo8ZyBpZD0ibm9kZTExIiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT51bmFyeV9zeW1ib2wuZmFsc2Vob29kPC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iNDkzLjc5MTIiIGN5PSItOTAiIHJ4PSI5OC4yODI4IiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iNDkzLjc5MTIiIHk9Ii04Ni4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPnVuYXJ5X3N5bWJvbC5mYWxzZWhvb2Q8L3RleHQ+CjwvZz4KPCEtLSB1bmFyeV9zeW1ib2wuZmFsc2Vob29kJiM0NTsmZ3Q7Y29udHJhZGljdGlvbiAtLT4KPGcgaWQ9ImVkZ2UxNyIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+dW5hcnlfc3ltYm9sLmZhbHNlaG9vZCYjNDU7Jmd0O2NvbnRyYWRpY3Rpb248L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGQ9Ik01NjYuMDE1NywtNzcuNzk1MkM1NzcuNjQyLC03NS44NDY0IDU4OS41NDc0LC03My44NjAxIDYwMC43OTEyLC03MiA2OTUuMzIxNCwtNTYuMzYxMyA4MDUuMDU5LC0zOC41ODY2IDg3MS42Nzg2LC0yNy44MzgyIi8+Cjxwb2x5Z29uIGZpbGw9IiMwMDAwMDAiIHN0cm9rZT0iIzAwMDAwMCIgcG9pbnRzPSI4NzIuMjc0NCwtMzEuMjg3NCA4ODEuNTg5NSwtMjYuMjM5NiA4NzEuMTU5NywtMjQuMzc2NyA4NzIuMjc0NCwtMzEuMjg3NCIvPgo8L2c+CjwhLS0gdW5hcnlfc3ltYm9sLmZhbHNlaG9vZCYjNDU7Jmd0O3RhdXRvbG9neSAtLT4KPGcgaWQ9ImVkZ2UxOCIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+dW5hcnlfc3ltYm9sLmZhbHNlaG9vZCYjNDU7Jmd0O3RhdXRvbG9neTwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgZD0iTTU2NC4xODM0LC03Ny4zNzE5QzU3Ni4zNjY2LC03NS40MTE2IDU4OC45MjgsLTczLjUzMjEgNjAwLjc5MTIsLTcyIDc3Ni45Mzk0LC00OS4yNTExIDgyMy41NzUyLC02NS4wNjkzIDk5OC43OTEyLC0zNiAxMDA3LjY5OTYsLTM0LjUyMjEgMTAxNy4xMjE2LC0zMi41NTE2IDEwMjYuMTQ5MSwtMzAuNDU2NSIvPgo8cG9seWdvbiBmaWxsPSIjMDAwMDAwIiBzdHJva2U9IiMwMDAwMDAiIHBvaW50cz0iMTAyNy4yMjA4LC0zMy43OTg3IDEwMzYuMTI1NSwtMjguMDU3OSAxMDI1LjU4NDMsLTI2Ljk5MjYgMTAyNy4yMjA4LC0zMy43OTg3Ii8+CjwvZz4KPCEtLSB1bmFyeV9zeW1ib2wudHJ1dGggLS0+CjxnIGlkPSJub2RlMTIiIGNsYXNzPSJub2RlIj4KPHRpdGxlPnVuYXJ5X3N5bWJvbC50cnV0aDwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjY5MC43OTEyIiBjeT0iLTkwIiByeD0iODAuNjg1OCIgcnk9IjE4Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjY5MC43OTEyIiB5PSItODYuMyIgZm9udC1mYW1pbHk9IlRpbWVzLHNlcmlmIiBmb250LXNpemU9IjE0LjAwIiBmaWxsPSIjMDAwMDAwIj51bmFyeV9zeW1ib2wudHJ1dGg8L3RleHQ+CjwvZz4KPCEtLSB1bmFyeV9zeW1ib2wudHJ1dGgmIzQ1OyZndDtjb250cmFkaWN0aW9uIC0tPgo8ZyBpZD0iZWRnZTE5IiBjbGFzcz0iZWRnZSI+Cjx0aXRsZT51bmFyeV9zeW1ib2wudHJ1dGgmIzQ1OyZndDtjb250cmFkaWN0aW9uPC90aXRsZT4KPHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBkPSJNNzM5LjE4MTksLTc1LjYwMjhDNzgwLjMsLTYzLjM2OTMgODM5LjE2OTYsLTQ1Ljg1NDQgODgxLjE4MTIsLTMzLjM1NTEiLz4KPHBvbHlnb24gZmlsbD0iIzAwMDAwMCIgc3Ryb2tlPSIjMDAwMDAwIiBwb2ludHM9Ijg4Mi4zNTU3LC0zNi42NTczIDg5MC45NDIzLC0zMC40NTA5IDg4MC4zNTk1LC0yOS45NDggODgyLjM1NTcsLTM2LjY1NzMiLz4KPC9nPgo8IS0tIHVuYXJ5X3N5bWJvbC50cnV0aCYjNDU7Jmd0O3RhdXRvbG9neSAtLT4KPGcgaWQ9ImVkZ2UyMCIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+dW5hcnlfc3ltYm9sLnRydXRoJiM0NTsmZ3Q7dGF1dG9sb2d5PC90aXRsZT4KPHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBkPSJNNzUwLjI4MzEsLTc3LjgwNzJDNzYwLjQ1MDIsLTc1LjgwNzkgNzcwLjkxNTcsLTczLjgwMjQgNzgwLjc5MTIsLTcyIDg3Ny4zOTY1LC01NC4zNjgxIDkwMi41Njk4LC01NS42MTg4IDk5OC43OTEyLC0zNiAxMDA3LjQ1MSwtMzQuMjM0MyAxMDE2LjYzMzcsLTMyLjE2MzUgMTAyNS40NzU3LC0zMC4wNjczIi8+Cjxwb2x5Z29uIGZpbGw9IiMwMDAwMDAiIHN0cm9rZT0iIzAwMDAwMCIgcG9pbnRzPSIxMDI2LjM2NzgsLTMzLjQ1MjYgMTAzNS4yNjc5LC0yNy43MDQ3IDEwMjQuNzI2LC0yNi42NDc5IDEwMjYuMzY3OCwtMzMuNDUyNiIvPgo8L2c+CjwvZz4KPC9zdmc+Cg=='><br/>
+<a href="javascript:toggleVisibility('ComponentInstantiationTransformer-precedence-graph-source')">(show dot source)</a>
+<div id='ComponentInstantiationTransformer-precedence-graph-source' style='display:none'>
+<pre>digraph {
+	"binary_number.falsehood" [label = "binary_number.falsehood"];
+	"binary_number.truth" [label = "binary_number.truth"];
+	"binary_symbol.falsehood" [label = "binary_symbol.falsehood"];
+	"binary_symbol.truth" [label = "binary_symbol.truth"];
+	"contradiction" [label = "contradiction"];
+	"nullary.falsehood" [label = "nullary.falsehood"];
+	"nullary.truth" [label = "nullary.truth"];
+	"tautology" [label = "tautology"];
+	"unary_number.falsehood" [label = "unary_number.falsehood"];
+	"unary_number.truth" [label = "unary_number.truth"];
+	"unary_symbol.falsehood" [label = "unary_symbol.falsehood"];
+	"unary_symbol.truth" [label = "unary_symbol.truth"];
+	"binary_number.falsehood" -> "contradiction";
+	"binary_number.falsehood" -> "tautology";
+	"binary_number.truth" -> "contradiction";
+	"binary_number.truth" -> "tautology";
+	"binary_symbol.falsehood" -> "contradiction";
+	"binary_symbol.falsehood" -> "tautology";
+	"binary_symbol.truth" -> "contradiction";
+	"binary_symbol.truth" -> "tautology";
+	"nullary.falsehood" -> "contradiction";
+	"nullary.falsehood" -> "tautology";
+	"nullary.truth" -> "contradiction";
+	"nullary.truth" -> "tautology";
+	"unary_number.falsehood" -> "contradiction";
+	"unary_number.falsehood" -> "tautology";
+	"unary_number.truth" -> "contradiction";
+	"unary_number.truth" -> "tautology";
+	"unary_symbol.falsehood" -> "contradiction";
+	"unary_symbol.falsehood" -> "tautology";
+	"unary_symbol.truth" -> "contradiction";
+	"unary_symbol.truth" -> "tautology";
+}
+</pre>
+</div>
+
+</div>
+<a id="ComponentInstantiationTransformer-scc-graph16"></a>
+<div class='headerdiv'>
+<h1>Scc Graph</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<img alt='graph image' src='data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIKICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPgo8IS0tIEdlbmVyYXRlZCBieSBncmFwaHZpeiB2ZXJzaW9uIDIuNDAuMSAoMjAxNjEyMjUuMDMwNCkKIC0tPgo8IS0tIFRpdGxlOiAlMyBQYWdlczogMSAtLT4KPHN2ZyB3aWR0aD0iMTg3OXB0IiBoZWlnaHQ9IjExNnB0Igogdmlld0JveD0iMC4wMCAwLjAwIDE4NzkuMzkgMTE2LjAwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj4KPGcgaWQ9ImdyYXBoMCIgY2xhc3M9ImdyYXBoIiB0cmFuc2Zvcm09InNjYWxlKDEgMSkgcm90YXRlKDApIHRyYW5zbGF0ZSg0IDExMikiPgo8dGl0bGU+JTM8L3RpdGxlPgo8cG9seWdvbiBmaWxsPSIjZmZmZmZmIiBzdHJva2U9InRyYW5zcGFyZW50IiBwb2ludHM9Ii00LDQgLTQsLTExMiAxODc1LjM4NjQsLTExMiAxODc1LjM4NjQsNCAtNCw0Ii8+CjwhLS0gXzAgLS0+CjxnIGlkPSJub2RlMSIgY2xhc3M9Im5vZGUiPgo8dGl0bGU+XzA8L3RpdGxlPgo8ZWxsaXBzZSBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGN4PSI4OTAuNzkxMiIgY3k9Ii05MCIgcng9IjEwMS4yODIxIiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iODkwLjc5MTIiIHk9Ii04Ni4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPmJpbmFyeV9udW1iZXIuZmFsc2Vob29kPC90ZXh0Pgo8L2c+CjwhLS0gXzEwIC0tPgo8ZyBpZD0ibm9kZTExIiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT5fMTA8L3RpdGxlPgo8ZWxsaXBzZSBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGN4PSI5MzIuNzkxMiIgY3k9Ii0xOCIgcng9IjU3LjM5MDUiIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSI5MzIuNzkxMiIgeT0iLTE0LjMiIGZvbnQtZmFtaWx5PSJUaW1lcyxzZXJpZiIgZm9udC1zaXplPSIxNC4wMCIgZmlsbD0iIzAwMDAwMCI+Y29udHJhZGljdGlvbjwvdGV4dD4KPC9nPgo8IS0tIF8wJiM0NTsmZ3Q7XzEwIC0tPgo8ZyBpZD0iZWRnZTEiIGNsYXNzPSJlZGdlIj4KPHRpdGxlPl8wJiM0NTsmZ3Q7XzEwPC90aXRsZT4KPHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBkPSJNOTAxLjM4OTYsLTcxLjgzMTRDOTA2LjIwMTIsLTYzLjU4MjkgOTExLjk4NzUsLTUzLjY2MzUgOTE3LjI3NSwtNDQuNTk5MiIvPgo8cG9seWdvbiBmaWxsPSIjMDAwMDAwIiBzdHJva2U9IiMwMDAwMDAiIHBvaW50cz0iOTIwLjMyNjIsLTQ2LjMxNDggOTIyLjM0MTcsLTM1LjkxMzQgOTE0LjI3OTgsLTQyLjc4NzYgOTIwLjMyNjIsLTQ2LjMxNDgiLz4KPC9nPgo8IS0tIF8xMSAtLT4KPGcgaWQ9Im5vZGUxMiIgY2xhc3M9Im5vZGUiPgo8dGl0bGU+XzExPC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iMTA3Mi43OTEyIiBjeT0iLTE4IiByeD0iNDQuMzkzIiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iMTA3Mi43OTEyIiB5PSItMTQuMyIgZm9udC1mYW1pbHk9IlRpbWVzLHNlcmlmIiBmb250LXNpemU9IjE0LjAwIiBmaWxsPSIjMDAwMDAwIj50YXV0b2xvZ3k8L3RleHQ+CjwvZz4KPCEtLSBfMCYjNDU7Jmd0O18xMSAtLT4KPGcgaWQ9ImVkZ2UyIiBjbGFzcz0iZWRnZSI+Cjx0aXRsZT5fMCYjNDU7Jmd0O18xMTwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgZD0iTTkzMi41NDU3LC03My40ODE3Qzk2Mi4xNTIxLC02MS43NjkzIDEwMDEuNzEwNCwtNDYuMTE5OSAxMDMxLjI2NTQsLTM0LjQyNzgiLz4KPHBvbHlnb24gZmlsbD0iIzAwMDAwMCIgc3Ryb2tlPSIjMDAwMDAwIiBwb2ludHM9IjEwMzIuODY0OCwtMzcuNTU5MSAxMDQwLjg3NjEsLTMwLjYyNTggMTAzMC4yODk4LC0zMS4wNDk5IDEwMzIuODY0OCwtMzcuNTU5MSIvPgo8L2c+CjwhLS0gXzEgLS0+CjxnIGlkPSJub2RlMiIgY2xhc3M9Im5vZGUiPgo8dGl0bGU+XzE8L3RpdGxlPgo8ZWxsaXBzZSBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGN4PSIxMDkzLjc5MTIiIGN5PSItOTAiIHJ4PSI4My42ODU0IiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iMTA5My43OTEyIiB5PSItODYuMyIgZm9udC1mYW1pbHk9IlRpbWVzLHNlcmlmIiBmb250LXNpemU9IjE0LjAwIiBmaWxsPSIjMDAwMDAwIj5iaW5hcnlfbnVtYmVyLnRydXRoPC90ZXh0Pgo8L2c+CjwhLS0gXzEmIzQ1OyZndDtfMTAgLS0+CjxnIGlkPSJlZGdlMyIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+XzEmIzQ1OyZndDtfMTA8L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGQ9Ik0xMDU3LjI1NzgsLTczLjY2MjFDMTAzMi45MDY4LC02Mi43NzIyIDEwMDAuODEzMSwtNDguNDE5NyA5NzUuMzE0MywtMzcuMDE2NSIvPgo8cG9seWdvbiBmaWxsPSIjMDAwMDAwIiBzdHJva2U9IiMwMDAwMDAiIHBvaW50cz0iOTc2LjQ1MiwtMzMuNjkxMyA5NjUuODk0NCwtMzIuODAzOSA5NzMuNTk0MywtNDAuMDgxNCA5NzYuNDUyLC0zMy42OTEzIi8+CjwvZz4KPCEtLSBfMSYjNDU7Jmd0O18xMSAtLT4KPGcgaWQ9ImVkZ2U0IiBjbGFzcz0iZWRnZSI+Cjx0aXRsZT5fMSYjNDU7Jmd0O18xMTwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgZD0iTTEwODguNDkyLC03MS44MzE0QzEwODYuMTg2NSwtNjMuOTI2NiAxMDgzLjQzMzMsLTU0LjQ4NzIgMTA4MC44ODEsLTQ1LjczNjUiLz4KPHBvbHlnb24gZmlsbD0iIzAwMDAwMCIgc3Ryb2tlPSIjMDAwMDAwIiBwb2ludHM9IjEwODQuMTc2MSwtNDQuNTMzNCAxMDc4LjAxNiwtMzUuOTEzNCAxMDc3LjQ1NiwtNDYuNDkzNCAxMDg0LjE3NjEsLTQ0LjUzMzQiLz4KPC9nPgo8IS0tIF8yIC0tPgo8ZyBpZD0ibm9kZTMiIGNsYXNzPSJub2RlIj4KPHRpdGxlPl8yPC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iMTI5Ni43OTEyIiBjeT0iLTkwIiByeD0iMTAwLjk4MjciIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSIxMjk2Ljc5MTIiIHk9Ii04Ni4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPmJpbmFyeV9zeW1ib2wuZmFsc2Vob29kPC90ZXh0Pgo8L2c+CjwhLS0gXzImIzQ1OyZndDtfMTAgLS0+CjxnIGlkPSJlZGdlNSIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+XzImIzQ1OyZndDtfMTA8L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGQ9Ik0xMjI3Ljg3NzYsLTc2Ljc5MzVDMTE3MS44MDY3LC02NS45OTMyIDEwOTAuNjQzOCwtNTAuMjM1MyAxMDE5Ljc5MTIsLTM2IDEwMTAuMzYzNywtMzQuMTA1OSAxMDAwLjM2ODIsLTMyLjA2NjggOTkwLjY0MDYsLTMwLjA2NTYiLz4KPHBvbHlnb24gZmlsbD0iIzAwMDAwMCIgc3Ryb2tlPSIjMDAwMDAwIiBwb2ludHM9Ijk5MS4xMzYyLC0yNi41OTQzIDk4MC42MzUzLC0yOC4wMDE3IDk4OS43MjE5LC0zMy40NDk5IDk5MS4xMzYyLC0yNi41OTQzIi8+CjwvZz4KPCEtLSBfMiYjNDU7Jmd0O18xMSAtLT4KPGcgaWQ9ImVkZ2U2IiBjbGFzcz0iZWRnZSI+Cjx0aXRsZT5fMiYjNDU7Jmd0O18xMTwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgZD0iTTEyNDcuNjMzNSwtNzQuMTk5M0MxMjA4LjczODgsLTYxLjY5NzQgMTE1NC44OTQ0LC00NC4zOTAzIDExMTcuMjcwMSwtMzIuMjk2OCIvPgo8cG9seWdvbiBmaWxsPSIjMDAwMDAwIiBzdHJva2U9IiMwMDAwMDAiIHBvaW50cz0iMTExOC4xODU3LC0yOC45MTQ4IDExMDcuNTk0NCwtMjkuMTg2NyAxMTE2LjA0MzYsLTM1LjU3OSAxMTE4LjE4NTcsLTI4LjkxNDgiLz4KPC9nPgo8IS0tIF8zIC0tPgo8ZyBpZD0ibm9kZTQiIGNsYXNzPSJub2RlIj4KPHRpdGxlPl8zPC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iMTQ5OC43OTEyIiBjeT0iLTkwIiByeD0iODMuMzg1NyIgcnk9IjE4Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjE0OTguNzkxMiIgeT0iLTg2LjMiIGZvbnQtZmFtaWx5PSJUaW1lcyxzZXJpZiIgZm9udC1zaXplPSIxNC4wMCIgZmlsbD0iIzAwMDAwMCI+YmluYXJ5X3N5bWJvbC50cnV0aDwvdGV4dD4KPC9nPgo8IS0tIF8zJiM0NTsmZ3Q7XzEwIC0tPgo8ZyBpZD0iZWRnZTciIGNsYXNzPSJlZGdlIj4KPHRpdGxlPl8zJiM0NTsmZ3Q7XzEwPC90aXRsZT4KPHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBkPSJNMTQzOS4wNTg2LC03Ny40MDk0QzE0MjguMzQ2OCwtNzUuNDA5OCAxNDE3LjI2MjEsLTczLjUwNzQgMTQwNi43OTEyLC03MiAxMjM1LjgxMTUsLTQ3LjM4NDcgMTE5MC42MzU1LC02MS41Mzg4IDEwMTkuNzkxMiwtMzYgMTAwOS44Mzc2LC0zNC41MTIxIDk5OS4zMDYxLC0zMi42MTMzIDk4OS4xMzc4LC0zMC42MDk3Ii8+Cjxwb2x5Z29uIGZpbGw9IiMwMDAwMDAiIHN0cm9rZT0iIzAwMDAwMCIgcG9pbnRzPSI5ODkuNjIxMiwtMjcuMTM2NiA5NzkuMTI1NSwtMjguNTgyNSA5ODguMjMyLC0zMy45OTc0IDk4OS42MjEyLC0yNy4xMzY2Ii8+CjwvZz4KPCEtLSBfMyYjNDU7Jmd0O18xMSAtLT4KPGcgaWQ9ImVkZ2U4IiBjbGFzcz0iZWRnZSI+Cjx0aXRsZT5fMyYjNDU7Jmd0O18xMTwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgZD0iTTE0MzcuNDc5NywtNzcuNzEyN0MxNDI3LjI0MjcsLTc1Ljc0NDkgMTQxNi43MjQ2LC03My43NzQyIDE0MDYuNzkxMiwtNzIgMTMwNy4wMzMxLC01NC4xODE4IDExOTAuMDQzNywtMzUuODU1IDExMjQuMzUzMSwtMjUuNzk3MyIvPgo8cG9seWdvbiBmaWxsPSIjMDAwMDAwIiBzdHJva2U9IiMwMDAwMDAiIHBvaW50cz0iMTEyNC42NzUsLTIyLjMwNiAxMTE0LjI2MTEsLTI0LjI1NTUgMTEyMy42MTc4LC0yOS4yMjU3IDExMjQuNjc1LC0yMi4zMDYiLz4KPC9nPgo8IS0tIF80IC0tPgo8ZyBpZD0ibm9kZTUiIGNsYXNzPSJub2RlIj4KPHRpdGxlPl80PC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iMTY3MS43OTEyIiBjeT0iLTkwIiByeD0iNzIuMjg3NSIgcnk9IjE4Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjE2NzEuNzkxMiIgeT0iLTg2LjMiIGZvbnQtZmFtaWx5PSJUaW1lcyxzZXJpZiIgZm9udC1zaXplPSIxNC4wMCIgZmlsbD0iIzAwMDAwMCI+bnVsbGFyeS5mYWxzZWhvb2Q8L3RleHQ+CjwvZz4KPCEtLSBfNCYjNDU7Jmd0O18xMCAtLT4KPGcgaWQ9ImVkZ2U5IiBjbGFzcz0iZWRnZSI+Cjx0aXRsZT5fNCYjNDU7Jmd0O18xMDwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgZD0iTTE2MjAuMTU3OCwtNzcuMjY4NUMxNjEwLjQ0OTgsLTc1LjIzMzEgMTYwMC4zNDc0LC03My4zNTQ2IDE1OTAuNzkxMiwtNzIgMTMzOS4wMjY1LC0zNi4zMTEyIDEyNzEuODEwNiwtNjkuODQzNiAxMDE5Ljc5MTIsLTM2IDEwMDkuODE2NiwtMzQuNjYwNSA5OTkuMjc0NywtMzIuODM0NSA5ODkuMTAyNywtMzAuODU2OSIvPgo8cG9seWdvbiBmaWxsPSIjMDAwMDAwIiBzdHJva2U9IiMwMDAwMDAiIHBvaW50cz0iOTg5LjU4MjgsLTI3LjM4MzQgOTc5LjA4ODgsLTI4Ljg0MTMgOTg4LjIwMTUsLTM0LjI0NTggOTg5LjU4MjgsLTI3LjM4MzQiLz4KPC9nPgo8IS0tIF80JiM0NTsmZ3Q7XzExIC0tPgo8ZyBpZD0iZWRnZTEwIiBjbGFzcz0iZWRnZSI+Cjx0aXRsZT5fNCYjNDU7Jmd0O18xMTwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgZD0iTTE2MTkuNjc0NSwtNzcuNDk1MkMxNjEwLjEwNDksLTc1LjQ2MjYgMTYwMC4xNzU1LC03My41MjY3IDE1OTAuNzkxMiwtNzIgMTQyMi42MjIyLC00NC42NDE3IDEyMjEuMzY2MSwtMjguMzAxMyAxMTI2Ljg0ODEsLTIxLjU4MTgiLz4KPHBvbHlnb24gZmlsbD0iIzAwMDAwMCIgc3Ryb2tlPSIjMDAwMDAwIiBwb2ludHM9IjExMjYuODk2NywtMTguMDc2NiAxMTE2LjY3NTgsLTIwLjg2NjUgMTEyNi40MDU3LC0yNS4wNTk0IDExMjYuODk2NywtMTguMDc2NiIvPgo8L2c+CjwhLS0gXzUgLS0+CjxnIGlkPSJub2RlNiIgY2xhc3M9Im5vZGUiPgo8dGl0bGU+XzU8L3RpdGxlPgo8ZWxsaXBzZSBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGN4PSIxODE2Ljc5MTIiIGN5PSItOTAiIHJ4PSI1NC42OTA1IiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iMTgxNi43OTEyIiB5PSItODYuMyIgZm9udC1mYW1pbHk9IlRpbWVzLHNlcmlmIiBmb250LXNpemU9IjE0LjAwIiBmaWxsPSIjMDAwMDAwIj5udWxsYXJ5LnRydXRoPC90ZXh0Pgo8L2c+CjwhLS0gXzUmIzQ1OyZndDtfMTAgLS0+CjxnIGlkPSJlZGdlMTEiIGNsYXNzPSJlZGdlIj4KPHRpdGxlPl81JiM0NTsmZ3Q7XzEwPC90aXRsZT4KPHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBkPSJNMTc3Ny41MDA4LC03Ny40NTE3QzE3NjkuNDA0LC03NS4yOTA1IDE3NjAuODc5NCwtNzMuMzE4NyAxNzUyLjc5MTIsLTcyIDE0MzAuODcxNSwtMTkuNTEzMyAxMzQzLjM1MzUsLTc3LjE2NTUgMTAxOS43OTEyLC0zNiAxMDA5LjY5MjgsLTM0LjcxNTIgOTk5LjAxODcsLTMyLjg5NjUgOTg4LjczNywtMzAuOTA0NSIvPgo8cG9seWdvbiBmaWxsPSIjMDAwMDAwIiBzdHJva2U9IiMwMDAwMDAiIHBvaW50cz0iOTg5LjExNiwtMjcuNDEwNyA5NzguNjIxOSwtMjguODY4MiA5ODcuNzM0NCwtMzQuMjczIDk4OS4xMTYsLTI3LjQxMDciLz4KPC9nPgo8IS0tIF81JiM0NTsmZ3Q7XzExIC0tPgo8ZyBpZD0iZWRnZTEyIiBjbGFzcz0iZWRnZSI+Cjx0aXRsZT5fNSYjNDU7Jmd0O18xMTwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgZD0iTTE3NzcuMTI2LC03Ny41NTA4QzE3NjkuMTM0MSwtNzUuNDA5NyAxNzYwLjc0NSwtNzMuNDIwMyAxNzUyLjc5MTIsLTcyIDE1MjIuNzc4MiwtMzAuOTI2OCAxMjQzLjQxMDYsLTIxLjA4OSAxMTI3LjM3OTYsLTE4LjczNyIvPgo8cG9seWdvbiBmaWxsPSIjMDAwMDAwIiBzdHJva2U9IiMwMDAwMDAiIHBvaW50cz0iMTEyNy4zOTE0LC0xNS4yMzY2IDExMTcuMzI2LC0xOC41NDM4IDExMjcuMjU2OSwtMjIuMjM1MyAxMTI3LjM5MTQsLTE1LjIzNjYiLz4KPC9nPgo8IS0tIF82IC0tPgo8ZyBpZD0ibm9kZTciIGNsYXNzPSJub2RlIj4KPHRpdGxlPl82PC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iOTguNzkxMiIgY3k9Ii05MCIgcng9Ijk4LjU4MjkiIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSI5OC43OTEyIiB5PSItODYuMyIgZm9udC1mYW1pbHk9IlRpbWVzLHNlcmlmIiBmb250LXNpemU9IjE0LjAwIiBmaWxsPSIjMDAwMDAwIj51bmFyeV9udW1iZXIuZmFsc2Vob29kPC90ZXh0Pgo8L2c+CjwhLS0gXzYmIzQ1OyZndDtfMTAgLS0+CjxnIGlkPSJlZGdlMTMiIGNsYXNzPSJlZGdlIj4KPHRpdGxlPl82JiM0NTsmZ3Q7XzEwPC90aXRsZT4KPHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBkPSJNMTY5LjI0MzUsLTc3LjMwOTlDMTgxLjcyMzYsLTc1LjMzMyAxOTQuNjE4NCwtNzMuNDY0IDIwNi43OTEyLC03MiA0NDguMzk1OSwtNDIuOTQyIDczNy4yMzk5LC0yNy4wNDc4IDg2NS42MDQxLC0yMC45NTMyIi8+Cjxwb2x5Z29uIGZpbGw9IiMwMDAwMDAiIHN0cm9rZT0iIzAwMDAwMCIgcG9pbnRzPSI4NjUuODUxMiwtMjQuNDQ1NSA4NzUuNjc1NywtMjAuNDc5NSA4NjUuNTIyMiwtMTcuNDUzMiA4NjUuODUxMiwtMjQuNDQ1NSIvPgo8L2c+CjwhLS0gXzYmIzQ1OyZndDtfMTEgLS0+CjxnIGlkPSJlZGdlMTQiIGNsYXNzPSJlZGdlIj4KPHRpdGxlPl82JiM0NTsmZ3Q7XzExPC90aXRsZT4KPHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBkPSJNMTY4LjMzOTksLTc3LjE1MTFDMTgxLjA5MzQsLTc1LjE1MzUgMTk0LjMxNSwtNzMuMzE4NCAyMDYuNzkxMiwtNzIgNTU3LjIwMzUsLTM0Ljk2OTYgNjQ5Ljk3NTIsLTg1Ljg3MzMgOTk4Ljc5MTIsLTM2IDEwMDcuNzMwNCwtMzQuNzIxOSAxMDE3LjE2NjgsLTMyLjg0NDYgMTAyNi4xOTg5LC0zMC43Nzg4Ii8+Cjxwb2x5Z29uIGZpbGw9IiMwMDAwMDAiIHN0cm9rZT0iIzAwMDAwMCIgcG9pbnRzPSIxMDI3LjI2NzIsLTM0LjEyMiAxMDM2LjE3NjUsLTI4LjM4ODMgMTAyNS42MzYyLC0yNy4zMTQ2IDEwMjcuMjY3MiwtMzQuMTIyIi8+CjwvZz4KPCEtLSBfNyAtLT4KPGcgaWQ9Im5vZGU4IiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT5fNzwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjI5Ni43OTEyIiBjeT0iLTkwIiByeD0iODEuNDg2MyIgcnk9IjE4Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjI5Ni43OTEyIiB5PSItODYuMyIgZm9udC1mYW1pbHk9IlRpbWVzLHNlcmlmIiBmb250LXNpemU9IjE0LjAwIiBmaWxsPSIjMDAwMDAwIj51bmFyeV9udW1iZXIudHJ1dGg8L3RleHQ+CjwvZz4KPCEtLSBfNyYjNDU7Jmd0O18xMCAtLT4KPGcgaWQ9ImVkZ2UxNSIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+XzcmIzQ1OyZndDtfMTA8L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGQ9Ik0zNTUuMjIzNywtNzcuNDQyNEMzNjUuNzAyOSwtNzUuNDM5MyAzNzYuNTQ3MSwtNzMuNTI3MiAzODYuNzkxMiwtNzIgNTU4Ljk0MTUsLTQ2LjMzNjIgNzYzLjUwODgsLTI5Ljc5NzMgODY2LjUxMjIsLTIyLjQzMiIvPgo8cG9seWdvbiBmaWxsPSIjMDAwMDAwIiBzdHJva2U9IiMwMDAwMDAiIHBvaW50cz0iODY3LjAzMjQsLTI1LjkwNCA4NzYuNzU5OSwtMjEuNzA1NiA4NjYuNTM3NCwtMTguOTIxNSA4NjcuMDMyNCwtMjUuOTA0Ii8+CjwvZz4KPCEtLSBfNyYjNDU7Jmd0O18xMSAtLT4KPGcgaWQ9ImVkZ2UxNiIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+XzcmIzQ1OyZndDtfMTE8L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGQ9Ik0zNTQuNjkyNywtNzcuMTkyMUMzNjUuMzI2MywtNzUuMTkwMyAzNzYuMzYwNiwtNzMuMzQzMyAzODYuNzkxMiwtNzIgNjU3LjAyOTgsLTM3LjE5ODUgNzI5LjMyNzIsLTc2LjM2MjUgOTk4Ljc5MTIsLTM2IDEwMDcuNzIxNywtMzQuNjYyMyAxMDE3LjE1NCwtMzIuNzU3MyAxMDI2LjE4NDgsLTMwLjY4MjgiLz4KPHBvbHlnb24gZmlsbD0iIzAwMDAwMCIgc3Ryb2tlPSIjMDAwMDAwIiBwb2ludHM9IjEwMjcuMjU0MiwtMzQuMDI1NiAxMDM2LjE2MjEsLTI4LjI4OTggMTAyNS42MjE1LC0yNy4yMTg3IDEwMjcuMjU0MiwtMzQuMDI1NiIvPgo8L2c+CjwhLS0gXzggLS0+CjxnIGlkPSJub2RlOSIgY2xhc3M9Im5vZGUiPgo8dGl0bGU+Xzg8L3RpdGxlPgo8ZWxsaXBzZSBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGN4PSI0OTMuNzkxMiIgY3k9Ii05MCIgcng9Ijk4LjI4MjgiIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSI0OTMuNzkxMiIgeT0iLTg2LjMiIGZvbnQtZmFtaWx5PSJUaW1lcyxzZXJpZiIgZm9udC1zaXplPSIxNC4wMCIgZmlsbD0iIzAwMDAwMCI+dW5hcnlfc3ltYm9sLmZhbHNlaG9vZDwvdGV4dD4KPC9nPgo8IS0tIF84JiM0NTsmZ3Q7XzEwIC0tPgo8ZyBpZD0iZWRnZTE3IiBjbGFzcz0iZWRnZSI+Cjx0aXRsZT5fOCYjNDU7Jmd0O18xMDwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgZD0iTTU2Ni4wMTU3LC03Ny43OTUyQzU3Ny42NDIsLTc1Ljg0NjQgNTg5LjU0NzQsLTczLjg2MDEgNjAwLjc5MTIsLTcyIDY5NS4zMjE0LC01Ni4zNjEzIDgwNS4wNTksLTM4LjU4NjYgODcxLjY3ODYsLTI3LjgzODIiLz4KPHBvbHlnb24gZmlsbD0iIzAwMDAwMCIgc3Ryb2tlPSIjMDAwMDAwIiBwb2ludHM9Ijg3Mi4yNzQ0LC0zMS4yODc0IDg4MS41ODk1LC0yNi4yMzk2IDg3MS4xNTk3LC0yNC4zNzY3IDg3Mi4yNzQ0LC0zMS4yODc0Ii8+CjwvZz4KPCEtLSBfOCYjNDU7Jmd0O18xMSAtLT4KPGcgaWQ9ImVkZ2UxOCIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+XzgmIzQ1OyZndDtfMTE8L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGQ9Ik01NjQuMTgzNCwtNzcuMzcxOUM1NzYuMzY2NiwtNzUuNDExNiA1ODguOTI4LC03My41MzIxIDYwMC43OTEyLC03MiA3NzYuOTM5NCwtNDkuMjUxMSA4MjMuNTc1MiwtNjUuMDY5MyA5OTguNzkxMiwtMzYgMTAwNy42OTk2LC0zNC41MjIxIDEwMTcuMTIxNiwtMzIuNTUxNiAxMDI2LjE0OTEsLTMwLjQ1NjUiLz4KPHBvbHlnb24gZmlsbD0iIzAwMDAwMCIgc3Ryb2tlPSIjMDAwMDAwIiBwb2ludHM9IjEwMjcuMjIwOCwtMzMuNzk4NyAxMDM2LjEyNTUsLTI4LjA1NzkgMTAyNS41ODQzLC0yNi45OTI2IDEwMjcuMjIwOCwtMzMuNzk4NyIvPgo8L2c+CjwhLS0gXzkgLS0+CjxnIGlkPSJub2RlMTAiIGNsYXNzPSJub2RlIj4KPHRpdGxlPl85PC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iNjkwLjc5MTIiIGN5PSItOTAiIHJ4PSI4MC42ODU4IiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iNjkwLjc5MTIiIHk9Ii04Ni4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPnVuYXJ5X3N5bWJvbC50cnV0aDwvdGV4dD4KPC9nPgo8IS0tIF85JiM0NTsmZ3Q7XzEwIC0tPgo8ZyBpZD0iZWRnZTE5IiBjbGFzcz0iZWRnZSI+Cjx0aXRsZT5fOSYjNDU7Jmd0O18xMDwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgZD0iTTczOS4xODE5LC03NS42MDI4Qzc4MC4zLC02My4zNjkzIDgzOS4xNjk2LC00NS44NTQ0IDg4MS4xODEyLC0zMy4zNTUxIi8+Cjxwb2x5Z29uIGZpbGw9IiMwMDAwMDAiIHN0cm9rZT0iIzAwMDAwMCIgcG9pbnRzPSI4ODIuMzU1NywtMzYuNjU3MyA4OTAuOTQyMywtMzAuNDUwOSA4ODAuMzU5NSwtMjkuOTQ4IDg4Mi4zNTU3LC0zNi42NTczIi8+CjwvZz4KPCEtLSBfOSYjNDU7Jmd0O18xMSAtLT4KPGcgaWQ9ImVkZ2UyMCIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+XzkmIzQ1OyZndDtfMTE8L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGQ9Ik03NTAuMjgzMSwtNzcuODA3MkM3NjAuNDUwMiwtNzUuODA3OSA3NzAuOTE1NywtNzMuODAyNCA3ODAuNzkxMiwtNzIgODc3LjM5NjUsLTU0LjM2ODEgOTAyLjU2OTgsLTU1LjYxODggOTk4Ljc5MTIsLTM2IDEwMDcuNDUxLC0zNC4yMzQzIDEwMTYuNjMzNywtMzIuMTYzNSAxMDI1LjQ3NTcsLTMwLjA2NzMiLz4KPHBvbHlnb24gZmlsbD0iIzAwMDAwMCIgc3Ryb2tlPSIjMDAwMDAwIiBwb2ludHM9IjEwMjYuMzY3OCwtMzMuNDUyNiAxMDM1LjI2NzksLTI3LjcwNDcgMTAyNC43MjYsLTI2LjY0NzkgMTAyNi4zNjc4LC0zMy40NTI2Ii8+CjwvZz4KPC9nPgo8L3N2Zz4K'><br/>
+<a href="javascript:toggleVisibility('ComponentInstantiationTransformer-scc-graph-source')">(show dot source)</a>
+<div id='ComponentInstantiationTransformer-scc-graph-source' style='display:none'>
+<pre>digraph {
+	_0[label = "binary_number.falsehood" ];
+	_1[label = "binary_number.truth" ];
+	_2[label = "binary_symbol.falsehood" ];
+	_3[label = "binary_symbol.truth" ];
+	_4[label = "nullary.falsehood" ];
+	_5[label = "nullary.truth" ];
+	_6[label = "unary_number.falsehood" ];
+	_7[label = "unary_number.truth" ];
+	_8[label = "unary_symbol.falsehood" ];
+	_9[label = "unary_symbol.truth" ];
+	_10[label = "contradiction" ];
+	_11[label = "tautology" ];
+	_0 -> _10;
+	_0 -> _11;
+	_1 -> _10;
+	_1 -> _11;
+	_2 -> _10;
+	_2 -> _11;
+	_3 -> _10;
+	_3 -> _11;
+	_4 -> _10;
+	_4 -> _11;
+	_5 -> _10;
+	_5 -> _11;
+	_6 -> _10;
+	_6 -> _11;
+	_7 -> _10;
+	_7 -> _11;
+	_8 -> _10;
+	_8 -> _11;
+	_9 -> _10;
+	_9 -> _11;
+}</pre>
+</div>
+
+</div>
+<a id="ComponentInstantiationTransformer-topological-scc-graph17"></a>
+<div class='headerdiv'>
+<h1>Topological Scc Graph</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>{
+    "StratumNames": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11"
+    ],
+    "StratumDependencies": {
+        "0": ["10", "11"],
+        "1": ["10", "11"],
+        "2": ["10", "11"],
+        "3": ["10", "11"],
+        "4": ["10", "11"],
+        "5": ["10", "11"],
+        "6": ["10", "11"],
+        "7": ["10", "11"],
+        "8": ["10", "11"],
+        "9": ["10", "11"],
+        "10": [],
+        "11": []
+    },
+    "RelationNames": [
+        "binary_number.falsehood",
+        "binary_number.truth",
+        "binary_symbol.falsehood",
+        "binary_symbol.truth",
+        "nullary.falsehood",
+        "nullary.truth",
+        "unary_number.falsehood",
+        "unary_number.truth",
+        "unary_symbol.falsehood",
+        "unary_symbol.truth",
+        "contradiction",
+        "tautology"
+    ],
+    "StratumRelations": {
+        "0": ["binary_number.falsehood"],
+        "1": ["binary_number.truth"],
+        "2": ["binary_symbol.falsehood"],
+        "3": ["binary_symbol.truth"],
+        "4": ["nullary.falsehood"],
+        "5": ["nullary.truth"],
+        "6": ["unary_number.falsehood"],
+        "7": ["unary_number.truth"],
+        "8": ["unary_symbol.falsehood"],
+        "9": ["unary_symbol.truth"],
+        "10": ["contradiction"],
+        "11": ["tautology"]
+    },
+    "TopologicalOrderingCost": 20
+}</pre>
+
+</div>
+</div>
+<a id="UniqueAggregationVariablesTransformer19"></a>
+<div class='headerdiv'>
+<h1>After UniqueAggregationVariablesTransformer (0.006196s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="AstSemanticChecker20"></a>
+<div class='headerdiv'>
+<h1>After AstSemanticChecker (0.467454s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RemoveTypecastsTransformer21"></a>
+<div class='headerdiv'>
+<h1>After RemoveTypecastsTransformer (0.020517s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RemoveBooleanConstraintsTransformer22"></a>
+<div class='headerdiv'>
+<h1>After RemoveBooleanConstraintsTransformer (0.014628s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="ResolveAliasesTransformer23"></a>
+<div class='headerdiv'>
+<h1>After ResolveAliasesTransformer (0.067647s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="MinimiseProgramTransformer24"></a>
+<div class='headerdiv'>
+<h1>After MinimiseProgramTransformer (0.095180s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="InlineRelationsTransformer25"></a>
+<div class='headerdiv'>
+<h1>After InlineRelationsTransformer (0.018832s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="ResolveAliasesTransformer26"></a>
+<div class='headerdiv'>
+<h1>After ResolveAliasesTransformer (0.023143s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RemoveRedundantRelationsTransformer27"></a>
+<div class='headerdiv'>
+<h1>After RemoveRedundantRelationsTransformer (0.002341s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RemoveRelationCopiesTransformer28"></a>
+<div class='headerdiv'>
+<h1>After RemoveRelationCopiesTransformer (0.004222s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RemoveEmptyRelationsTransformer37"></a>
+<div class='headerdiv'>
+<h1>After RemoveEmptyRelationsTransformer (0.053998s)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+<a id="RemoveEmptyRelationsTransformer-dl29"></a>
+<div class='headerdiv'>
+<h1>Datalog</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>// ----- Types -----
+.type Number = number
+.type Symbol = symbol
+
+// ----- Functors -----
+
+// ----- Relations -----
+
+
+// -- binary_number.truth --
+.decl binary_number.truth(x:Number,y:Number)  
+
+binary_number.truth(1,1).
+
+
+
+// -- binary_symbol.truth --
+.decl binary_symbol.truth(x:Symbol,y:Symbol)  
+
+binary_symbol.truth("1","1").
+
+
+
+// -- contradiction --
+.decl contradiction()  
+
+.printsize contradiction(IO="stdoutprintsize")
+
+
+
+// -- nullary.truth --
+.decl nullary.truth()  
+
+nullary.truth().
+
+
+
+// -- tautology --
+.decl tautology()  
+
+tautology() :- 
+   nullary.truth(),
+   unary_number.truth(_),
+   unary_symbol.truth(_),
+   binary_number.truth(_,_),
+   binary_symbol.truth(_,_).
+
+.printsize tautology(IO="stdoutprintsize")
+
+.output tautology
+
+
+
+// -- unary_number.truth --
+.decl unary_number.truth(x:Number)  
+
+unary_number.truth(1).
+
+
+
+// -- unary_symbol.truth --
+.decl unary_symbol.truth(x:Symbol)  
+
+unary_symbol.truth("1").
+
+</pre>
+
+</div>
+<a id="RemoveEmptyRelationsTransformer-type-analysis30"></a>
+<div class='headerdiv'>
+<h1>Type Analysis</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>-- Analysis logs --
+Clause: binary_number.truth(1,1).
+Problem:
+{
+	var(1) &lt;: Number,
+	var(1) &lt;: Number,
+	var(1) &lt;: number,
+	var(1) &lt;: number
+}
+Solution:
+{var(1)->{Number},var(1)->{Number}}
+Clause: binary_symbol.truth("1","1").
+Problem:
+{
+	var("1") &lt;: Symbol,
+	var("1") &lt;: Symbol,
+	var("1") &lt;: symbol,
+	var("1") &lt;: symbol
+}
+Solution:
+{var("1")->{Symbol},var("1")->{Symbol}}
+Clause: nullary.truth().
+Problem:
+{}
+Solution:
+{}
+Clause: tautology() :- 
+   nullary.truth(),
+   unary_number.truth(_),
+   unary_symbol.truth(_),
+   binary_number.truth(_,_),
+   binary_symbol.truth(_,_).
+Problem:
+{
+	var(_) &lt;: Number,
+	var(_) &lt;: Symbol,
+	var(_) &lt;: Number,
+	var(_) &lt;: Number,
+	var(_) &lt;: Symbol,
+	var(_) &lt;: Symbol
+}
+Solution:
+{var(_)->{Number},var(_)->{Symbol},var(_)->{Number},var(_)->{Number},var(_)->{Symbol},var(_)->{Symbol}}
+Clause: unary_number.truth(1).
+Problem:
+{
+	var(1) &lt;: Number,
+	var(1) &lt;: number
+}
+Solution:
+{var(1)->{Number}}
+Clause: unary_symbol.truth("1").
+Problem:
+{
+	var("1") &lt;: Symbol,
+	var("1") &lt;: symbol
+}
+Solution:
+{var("1")->{Symbol}}
+
+-- Result --
+binary_number.truth(1,1).
+binary_symbol.truth("1","1").
+nullary.truth().
+tautology() :- 
+   nullary.truth(),
+   unary_number.truth(_&isin;{Number}),
+   unary_symbol.truth(_&isin;{Symbol}),
+   binary_number.truth(_&isin;{Number},_&isin;{Number}),
+   binary_symbol.truth(_&isin;{Symbol},_&isin;{Symbol}).
+unary_number.truth(1).
+unary_symbol.truth("1").
+</pre>
+
+</div>
+<a id="RemoveEmptyRelationsTransformer-type-environment31"></a>
+<div class='headerdiv'>
+<h1>Type Environment</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>Types:
+	Number = number
+	Symbol = symbol
+	number
+	symbol
+</pre>
+
+</div>
+<a id="RemoveEmptyRelationsTransformer-redundant-relations32"></a>
+<div class='headerdiv'>
+<h1>Redundant Relations</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>{}
+</pre>
+
+</div>
+<a id="RemoveEmptyRelationsTransformer-recursive-clauses33"></a>
+<div class='headerdiv'>
+<h1>Recursive Clauses</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>{}
+</pre>
+
+</div>
+<a id="RemoveEmptyRelationsTransformer-precedence-graph34"></a>
+<div class='headerdiv'>
+<h1>Precedence Graph</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<img alt='graph image' src='data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIKICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPgo8IS0tIEdlbmVyYXRlZCBieSBncmFwaHZpeiB2ZXJzaW9uIDIuNDAuMSAoMjAxNjEyMjUuMDMwNCkKIC0tPgo8IS0tIFRpdGxlOiAlMyBQYWdlczogMSAtLT4KPHN2ZyB3aWR0aD0iOTgwcHQiIGhlaWdodD0iMTE2cHQiCiB2aWV3Qm94PSIwLjAwIDAuMDAgOTgwLjA0IDExNi4wMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+CjxnIGlkPSJncmFwaDAiIGNsYXNzPSJncmFwaCIgdHJhbnNmb3JtPSJzY2FsZSgxIDEpIHJvdGF0ZSgwKSB0cmFuc2xhdGUoNCAxMTIpIj4KPHRpdGxlPiUzPC90aXRsZT4KPHBvbHlnb24gZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSJ0cmFuc3BhcmVudCIgcG9pbnRzPSItNCw0IC00LC0xMTIgOTc2LjAzNzUsLTExMiA5NzYuMDM3NSw0IC00LDQiLz4KPCEtLSBiaW5hcnlfbnVtYmVyLnRydXRoIC0tPgo8ZyBpZD0ibm9kZTEiIGNsYXNzPSJub2RlIj4KPHRpdGxlPmJpbmFyeV9udW1iZXIudHJ1dGg8L3RpdGxlPgo8ZWxsaXBzZSBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGN4PSI4My44NDI2IiBjeT0iLTkwIiByeD0iODMuNjg1NCIgcnk9IjE4Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjgzLjg0MjYiIHk9Ii04Ni4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPmJpbmFyeV9udW1iZXIudHJ1dGg8L3RleHQ+CjwvZz4KPCEtLSB0YXV0b2xvZ3kgLS0+CjxnIGlkPSJub2RlNSIgY2xhc3M9Im5vZGUiPgo8dGl0bGU+dGF1dG9sb2d5PC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iNDI0Ljg0MjYiIGN5PSItMTgiIHJ4PSI0NC4zOTMiIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSI0MjQuODQyNiIgeT0iLTE0LjMiIGZvbnQtZmFtaWx5PSJUaW1lcyxzZXJpZiIgZm9udC1zaXplPSIxNC4wMCIgZmlsbD0iIzAwMDAwMCI+dGF1dG9sb2d5PC90ZXh0Pgo8L2c+CjwhLS0gYmluYXJ5X251bWJlci50cnV0aCYjNDU7Jmd0O3RhdXRvbG9neSAtLT4KPGcgaWQ9ImVkZ2UxIiBjbGFzcz0iZWRnZSI+Cjx0aXRsZT5iaW5hcnlfbnVtYmVyLnRydXRoJiM0NTsmZ3Q7dGF1dG9sb2d5PC90aXRsZT4KPHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBkPSJNMTQzLjYzMDQsLTc3LjM3NjJDMjA5LjQ5MTcsLTYzLjQ3IDMxNC4xODMxLC00MS4zNjUgMzc1LjUzNDUsLTI4LjQxMTEiLz4KPHBvbHlnb24gZmlsbD0iIzAwMDAwMCIgc3Ryb2tlPSIjMDAwMDAwIiBwb2ludHM9IjM3Ni4zMDI1LC0zMS44MjYyIDM4NS4zNjM3LC0yNi4zMzU3IDM3NC44NTY0LC0yNC45NzcyIDM3Ni4zMDI1LC0zMS44MjYyIi8+CjwvZz4KPCEtLSBiaW5hcnlfc3ltYm9sLnRydXRoIC0tPgo8ZyBpZD0ibm9kZTIiIGNsYXNzPSJub2RlIj4KPHRpdGxlPmJpbmFyeV9zeW1ib2wudHJ1dGg8L3RpdGxlPgo8ZWxsaXBzZSBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGN4PSIyNjguODQyNiIgY3k9Ii05MCIgcng9IjgzLjM4NTciIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSIyNjguODQyNiIgeT0iLTg2LjMiIGZvbnQtZmFtaWx5PSJUaW1lcyxzZXJpZiIgZm9udC1zaXplPSIxNC4wMCIgZmlsbD0iIzAwMDAwMCI+YmluYXJ5X3N5bWJvbC50cnV0aDwvdGV4dD4KPC9nPgo8IS0tIGJpbmFyeV9zeW1ib2wudHJ1dGgmIzQ1OyZndDt0YXV0b2xvZ3kgLS0+CjxnIGlkPSJlZGdlMiIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+YmluYXJ5X3N5bWJvbC50cnV0aCYjNDU7Jmd0O3RhdXRvbG9neTwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgZD0iTTMwNC4yNDE0LC03My42NjIxQzMyOC43MTMsLTYyLjM2NzUgMzYxLjI1NDgsLTQ3LjM0ODIgMzg2LjM2NzQsLTM1Ljc1NzgiLz4KPHBvbHlnb24gZmlsbD0iIzAwMDAwMCIgc3Ryb2tlPSIjMDAwMDAwIiBwb2ludHM9IjM4Ny45ODMxLC0zOC44NjY5IDM5NS41OTYsLTMxLjQ5ODQgMzg1LjA0OTcsLTMyLjUxMTIgMzg3Ljk4MzEsLTM4Ljg2NjkiLz4KPC9nPgo8IS0tIGNvbnRyYWRpY3Rpb24gLS0+CjxnIGlkPSJub2RlMyIgY2xhc3M9Im5vZGUiPgo8dGl0bGU+Y29udHJhZGljdGlvbjwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjkxNC44NDI2IiBjeT0iLTkwIiByeD0iNTcuMzkwNSIgcnk9IjE4Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjkxNC44NDI2IiB5PSItODYuMyIgZm9udC1mYW1pbHk9IlRpbWVzLHNlcmlmIiBmb250LXNpemU9IjE0LjAwIiBmaWxsPSIjMDAwMDAwIj5jb250cmFkaWN0aW9uPC90ZXh0Pgo8L2c+CjwhLS0gbnVsbGFyeS50cnV0aCAtLT4KPGcgaWQ9Im5vZGU0IiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT5udWxsYXJ5LnRydXRoPC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iNDI0Ljg0MjYiIGN5PSItOTAiIHJ4PSI1NC42OTA1IiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iNDI0Ljg0MjYiIHk9Ii04Ni4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPm51bGxhcnkudHJ1dGg8L3RleHQ+CjwvZz4KPCEtLSBudWxsYXJ5LnRydXRoJiM0NTsmZ3Q7dGF1dG9sb2d5IC0tPgo8ZyBpZD0iZWRnZTMiIGNsYXNzPSJlZGdlIj4KPHRpdGxlPm51bGxhcnkudHJ1dGgmIzQ1OyZndDt0YXV0b2xvZ3k8L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGQ9Ik00MjQuODQyNiwtNzEuODMxNEM0MjQuODQyNiwtNjQuMTMxIDQyNC44NDI2LC01NC45NzQzIDQyNC44NDI2LC00Ni40MTY2Ii8+Cjxwb2x5Z29uIGZpbGw9IiMwMDAwMDAiIHN0cm9rZT0iIzAwMDAwMCIgcG9pbnRzPSI0MjguMzQyNywtNDYuNDEzMiA0MjQuODQyNiwtMzYuNDEzMyA0MjEuMzQyNywtNDYuNDEzMyA0MjguMzQyNywtNDYuNDEzMiIvPgo8L2c+CjwhLS0gdW5hcnlfbnVtYmVyLnRydXRoIC0tPgo8ZyBpZD0ibm9kZTYiIGNsYXNzPSJub2RlIj4KPHRpdGxlPnVuYXJ5X251bWJlci50cnV0aDwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjU3OC44NDI2IiBjeT0iLTkwIiByeD0iODEuNDg2MyIgcnk9IjE4Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjU3OC44NDI2IiB5PSItODYuMyIgZm9udC1mYW1pbHk9IlRpbWVzLHNlcmlmIiBmb250LXNpemU9IjE0LjAwIiBmaWxsPSIjMDAwMDAwIj51bmFyeV9udW1iZXIudHJ1dGg8L3RleHQ+CjwvZz4KPCEtLSB1bmFyeV9udW1iZXIudHJ1dGgmIzQ1OyZndDt0YXV0b2xvZ3kgLS0+CjxnIGlkPSJlZGdlNCIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+dW5hcnlfbnVtYmVyLnRydXRoJiM0NTsmZ3Q7dGF1dG9sb2d5PC90aXRsZT4KPHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBkPSJNNTQzLjg5NzYsLTczLjY2MjFDNTE5LjgxODQsLTYyLjQwNDMgNDg3LjgyNDMsLTQ3LjQ0NiA0NjMuMDY2OSwtMzUuODcxMSIvPgo8cG9seWdvbiBmaWxsPSIjMDAwMDAwIiBzdHJva2U9IiMwMDAwMDAiIHBvaW50cz0iNDY0LjUwNTYsLTMyLjY4MDEgNDUzLjk2NDMsLTMxLjYxNTQgNDYxLjU0MDgsLTM5LjAyMTMgNDY0LjUwNTYsLTMyLjY4MDEiLz4KPC9nPgo8IS0tIHVuYXJ5X3N5bWJvbC50cnV0aCAtLT4KPGcgaWQ9Im5vZGU3IiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT51bmFyeV9zeW1ib2wudHJ1dGg8L3RpdGxlPgo8ZWxsaXBzZSBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGN4PSI3NTguODQyNiIgY3k9Ii05MCIgcng9IjgwLjY4NTgiIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSI3NTguODQyNiIgeT0iLTg2LjMiIGZvbnQtZmFtaWx5PSJUaW1lcyxzZXJpZiIgZm9udC1zaXplPSIxNC4wMCIgZmlsbD0iIzAwMDAwMCI+dW5hcnlfc3ltYm9sLnRydXRoPC90ZXh0Pgo8L2c+CjwhLS0gdW5hcnlfc3ltYm9sLnRydXRoJiM0NTsmZ3Q7dGF1dG9sb2d5IC0tPgo8ZyBpZD0iZWRnZTUiIGNsYXNzPSJlZGdlIj4KPHRpdGxlPnVuYXJ5X3N5bWJvbC50cnV0aCYjNDU7Jmd0O3RhdXRvbG9neTwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgZD0iTTcwMC42NjQyLC03Ny40NTg2QzYzNi41Mjk1LC02My42MzMxIDUzNC40Njc4LC00MS42MzE4IDQ3NC4xMjU3LC0yOC42MjM5Ii8+Cjxwb2x5Z29uIGZpbGw9IiMwMDAwMDAiIHN0cm9rZT0iIzAwMDAwMCIgcG9pbnRzPSI0NzQuNjAwNCwtMjUuMTQ1OSA0NjQuMDg3NCwtMjYuNDYgNDczLjEyNTIsLTMxLjk4ODcgNDc0LjYwMDQsLTI1LjE0NTkiLz4KPC9nPgo8L2c+Cjwvc3ZnPgo='><br/>
+<a href="javascript:toggleVisibility('RemoveEmptyRelationsTransformer-precedence-graph-source')">(show dot source)</a>
+<div id='RemoveEmptyRelationsTransformer-precedence-graph-source' style='display:none'>
+<pre>digraph {
+	"binary_number.truth" [label = "binary_number.truth"];
+	"binary_symbol.truth" [label = "binary_symbol.truth"];
+	"contradiction" [label = "contradiction"];
+	"nullary.truth" [label = "nullary.truth"];
+	"tautology" [label = "tautology"];
+	"unary_number.truth" [label = "unary_number.truth"];
+	"unary_symbol.truth" [label = "unary_symbol.truth"];
+	"binary_number.truth" -> "tautology";
+	"binary_symbol.truth" -> "tautology";
+	"nullary.truth" -> "tautology";
+	"unary_number.truth" -> "tautology";
+	"unary_symbol.truth" -> "tautology";
+}
+</pre>
+</div>
+
+</div>
+<a id="RemoveEmptyRelationsTransformer-scc-graph35"></a>
+<div class='headerdiv'>
+<h1>Scc Graph</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<img alt='graph image' src='data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIKICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPgo8IS0tIEdlbmVyYXRlZCBieSBncmFwaHZpeiB2ZXJzaW9uIDIuNDAuMSAoMjAxNjEyMjUuMDMwNCkKIC0tPgo8IS0tIFRpdGxlOiAlMyBQYWdlczogMSAtLT4KPHN2ZyB3aWR0aD0iOTgwcHQiIGhlaWdodD0iMTE2cHQiCiB2aWV3Qm94PSIwLjAwIDAuMDAgOTgwLjA0IDExNi4wMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+CjxnIGlkPSJncmFwaDAiIGNsYXNzPSJncmFwaCIgdHJhbnNmb3JtPSJzY2FsZSgxIDEpIHJvdGF0ZSgwKSB0cmFuc2xhdGUoNCAxMTIpIj4KPHRpdGxlPiUzPC90aXRsZT4KPHBvbHlnb24gZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSJ0cmFuc3BhcmVudCIgcG9pbnRzPSItNCw0IC00LC0xMTIgOTc2LjAzNzUsLTExMiA5NzYuMDM3NSw0IC00LDQiLz4KPCEtLSBfMCAtLT4KPGcgaWQ9Im5vZGUxIiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT5fMDwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjgzLjg0MjYiIGN5PSItOTAiIHJ4PSI4My42ODU0IiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iODMuODQyNiIgeT0iLTg2LjMiIGZvbnQtZmFtaWx5PSJUaW1lcyxzZXJpZiIgZm9udC1zaXplPSIxNC4wMCIgZmlsbD0iIzAwMDAwMCI+YmluYXJ5X251bWJlci50cnV0aDwvdGV4dD4KPC9nPgo8IS0tIF82IC0tPgo8ZyBpZD0ibm9kZTciIGNsYXNzPSJub2RlIj4KPHRpdGxlPl82PC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iNDI0Ljg0MjYiIGN5PSItMTgiIHJ4PSI0NC4zOTMiIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSI0MjQuODQyNiIgeT0iLTE0LjMiIGZvbnQtZmFtaWx5PSJUaW1lcyxzZXJpZiIgZm9udC1zaXplPSIxNC4wMCIgZmlsbD0iIzAwMDAwMCI+dGF1dG9sb2d5PC90ZXh0Pgo8L2c+CjwhLS0gXzAmIzQ1OyZndDtfNiAtLT4KPGcgaWQ9ImVkZ2UxIiBjbGFzcz0iZWRnZSI+Cjx0aXRsZT5fMCYjNDU7Jmd0O182PC90aXRsZT4KPHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBkPSJNMTQzLjYzMDQsLTc3LjM3NjJDMjA5LjQ5MTcsLTYzLjQ3IDMxNC4xODMxLC00MS4zNjUgMzc1LjUzNDUsLTI4LjQxMTEiLz4KPHBvbHlnb24gZmlsbD0iIzAwMDAwMCIgc3Ryb2tlPSIjMDAwMDAwIiBwb2ludHM9IjM3Ni4zMDI1LC0zMS44MjYyIDM4NS4zNjM3LC0yNi4zMzU3IDM3NC44NTY0LC0yNC45NzcyIDM3Ni4zMDI1LC0zMS44MjYyIi8+CjwvZz4KPCEtLSBfMSAtLT4KPGcgaWQ9Im5vZGUyIiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT5fMTwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjI2OC44NDI2IiBjeT0iLTkwIiByeD0iODMuMzg1NyIgcnk9IjE4Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjI2OC44NDI2IiB5PSItODYuMyIgZm9udC1mYW1pbHk9IlRpbWVzLHNlcmlmIiBmb250LXNpemU9IjE0LjAwIiBmaWxsPSIjMDAwMDAwIj5iaW5hcnlfc3ltYm9sLnRydXRoPC90ZXh0Pgo8L2c+CjwhLS0gXzEmIzQ1OyZndDtfNiAtLT4KPGcgaWQ9ImVkZ2UyIiBjbGFzcz0iZWRnZSI+Cjx0aXRsZT5fMSYjNDU7Jmd0O182PC90aXRsZT4KPHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBkPSJNMzA0LjI0MTQsLTczLjY2MjFDMzI4LjcxMywtNjIuMzY3NSAzNjEuMjU0OCwtNDcuMzQ4MiAzODYuMzY3NCwtMzUuNzU3OCIvPgo8cG9seWdvbiBmaWxsPSIjMDAwMDAwIiBzdHJva2U9IiMwMDAwMDAiIHBvaW50cz0iMzg3Ljk4MzEsLTM4Ljg2NjkgMzk1LjU5NiwtMzEuNDk4NCAzODUuMDQ5NywtMzIuNTExMiAzODcuOTgzMSwtMzguODY2OSIvPgo8L2c+CjwhLS0gXzIgLS0+CjxnIGlkPSJub2RlMyIgY2xhc3M9Im5vZGUiPgo8dGl0bGU+XzI8L3RpdGxlPgo8ZWxsaXBzZSBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGN4PSI5MTQuODQyNiIgY3k9Ii05MCIgcng9IjU3LjM5MDUiIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSI5MTQuODQyNiIgeT0iLTg2LjMiIGZvbnQtZmFtaWx5PSJUaW1lcyxzZXJpZiIgZm9udC1zaXplPSIxNC4wMCIgZmlsbD0iIzAwMDAwMCI+Y29udHJhZGljdGlvbjwvdGV4dD4KPC9nPgo8IS0tIF8zIC0tPgo8ZyBpZD0ibm9kZTQiIGNsYXNzPSJub2RlIj4KPHRpdGxlPl8zPC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iNDI0Ljg0MjYiIGN5PSItOTAiIHJ4PSI1NC42OTA1IiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iNDI0Ljg0MjYiIHk9Ii04Ni4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPm51bGxhcnkudHJ1dGg8L3RleHQ+CjwvZz4KPCEtLSBfMyYjNDU7Jmd0O182IC0tPgo8ZyBpZD0iZWRnZTMiIGNsYXNzPSJlZGdlIj4KPHRpdGxlPl8zJiM0NTsmZ3Q7XzY8L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGQ9Ik00MjQuODQyNiwtNzEuODMxNEM0MjQuODQyNiwtNjQuMTMxIDQyNC44NDI2LC01NC45NzQzIDQyNC44NDI2LC00Ni40MTY2Ii8+Cjxwb2x5Z29uIGZpbGw9IiMwMDAwMDAiIHN0cm9rZT0iIzAwMDAwMCIgcG9pbnRzPSI0MjguMzQyNywtNDYuNDEzMiA0MjQuODQyNiwtMzYuNDEzMyA0MjEuMzQyNywtNDYuNDEzMyA0MjguMzQyNywtNDYuNDEzMiIvPgo8L2c+CjwhLS0gXzQgLS0+CjxnIGlkPSJub2RlNSIgY2xhc3M9Im5vZGUiPgo8dGl0bGU+XzQ8L3RpdGxlPgo8ZWxsaXBzZSBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGN4PSI1NzguODQyNiIgY3k9Ii05MCIgcng9IjgxLjQ4NjMiIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSI1NzguODQyNiIgeT0iLTg2LjMiIGZvbnQtZmFtaWx5PSJUaW1lcyxzZXJpZiIgZm9udC1zaXplPSIxNC4wMCIgZmlsbD0iIzAwMDAwMCI+dW5hcnlfbnVtYmVyLnRydXRoPC90ZXh0Pgo8L2c+CjwhLS0gXzQmIzQ1OyZndDtfNiAtLT4KPGcgaWQ9ImVkZ2U0IiBjbGFzcz0iZWRnZSI+Cjx0aXRsZT5fNCYjNDU7Jmd0O182PC90aXRsZT4KPHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBkPSJNNTQzLjg5NzYsLTczLjY2MjFDNTE5LjgxODQsLTYyLjQwNDMgNDg3LjgyNDMsLTQ3LjQ0NiA0NjMuMDY2OSwtMzUuODcxMSIvPgo8cG9seWdvbiBmaWxsPSIjMDAwMDAwIiBzdHJva2U9IiMwMDAwMDAiIHBvaW50cz0iNDY0LjUwNTYsLTMyLjY4MDEgNDUzLjk2NDMsLTMxLjYxNTQgNDYxLjU0MDgsLTM5LjAyMTMgNDY0LjUwNTYsLTMyLjY4MDEiLz4KPC9nPgo8IS0tIF81IC0tPgo8ZyBpZD0ibm9kZTYiIGNsYXNzPSJub2RlIj4KPHRpdGxlPl81PC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iNzU4Ljg0MjYiIGN5PSItOTAiIHJ4PSI4MC42ODU4IiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iNzU4Ljg0MjYiIHk9Ii04Ni4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPnVuYXJ5X3N5bWJvbC50cnV0aDwvdGV4dD4KPC9nPgo8IS0tIF81JiM0NTsmZ3Q7XzYgLS0+CjxnIGlkPSJlZGdlNSIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+XzUmIzQ1OyZndDtfNjwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgZD0iTTcwMC42NjQyLC03Ny40NTg2QzYzNi41Mjk1LC02My42MzMxIDUzNC40Njc4LC00MS42MzE4IDQ3NC4xMjU3LC0yOC42MjM5Ii8+Cjxwb2x5Z29uIGZpbGw9IiMwMDAwMDAiIHN0cm9rZT0iIzAwMDAwMCIgcG9pbnRzPSI0NzQuNjAwNCwtMjUuMTQ1OSA0NjQuMDg3NCwtMjYuNDYgNDczLjEyNTIsLTMxLjk4ODcgNDc0LjYwMDQsLTI1LjE0NTkiLz4KPC9nPgo8L2c+Cjwvc3ZnPgo='><br/>
+<a href="javascript:toggleVisibility('RemoveEmptyRelationsTransformer-scc-graph-source')">(show dot source)</a>
+<div id='RemoveEmptyRelationsTransformer-scc-graph-source' style='display:none'>
+<pre>digraph {
+	_0[label = "binary_number.truth" ];
+	_1[label = "binary_symbol.truth" ];
+	_2[label = "contradiction" ];
+	_3[label = "nullary.truth" ];
+	_4[label = "unary_number.truth" ];
+	_5[label = "unary_symbol.truth" ];
+	_6[label = "tautology" ];
+	_0 -> _6;
+	_1 -> _6;
+	_3 -> _6;
+	_4 -> _6;
+	_5 -> _6;
+}</pre>
+</div>
+
+</div>
+<a id="RemoveEmptyRelationsTransformer-topological-scc-graph36"></a>
+<div class='headerdiv'>
+<h1>Topological Scc Graph</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>{
+    "StratumNames": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+    ],
+    "StratumDependencies": {
+        "0": ["6"],
+        "1": ["6"],
+        "2": [],
+        "3": ["6"],
+        "4": ["6"],
+        "5": ["6"],
+        "6": []
+    },
+    "RelationNames": [
+        "binary_number.truth",
+        "binary_symbol.truth",
+        "contradiction",
+        "nullary.truth",
+        "unary_number.truth",
+        "unary_symbol.truth",
+        "tautology"
+    ],
+    "StratumRelations": {
+        "0": ["binary_number.truth"],
+        "1": ["binary_symbol.truth"],
+        "2": ["contradiction"],
+        "3": ["nullary.truth"],
+        "4": ["unary_number.truth"],
+        "5": ["unary_symbol.truth"],
+        "6": ["tautology"]
+    },
+    "TopologicalOrderingCost": 5
+}</pre>
+
+</div>
+</div>
+<a id="ReplaceSingletonVariablesTransformer38"></a>
+<div class='headerdiv'>
+<h1>After ReplaceSingletonVariablesTransformer (0.025092s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="ReduceExistentialsTransformer47"></a>
+<div class='headerdiv'>
+<h1>After ReduceExistentialsTransformer (0.069825s)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+<a id="ReduceExistentialsTransformer-dl39"></a>
+<div class='headerdiv'>
+<h1>Datalog</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>// ----- Types -----
+.type Number = number
+.type Symbol = symbol
+
+// ----- Functors -----
+
+// ----- Relations -----
+
+
+// -- +?exists_binary_number.truth --
+.decl +?exists_binary_number.truth()  
+
++?exists_binary_number.truth().
+
+
+
+// -- +?exists_binary_symbol.truth --
+.decl +?exists_binary_symbol.truth()  
+
++?exists_binary_symbol.truth().
+
+
+
+// -- +?exists_unary_number.truth --
+.decl +?exists_unary_number.truth()  
+
++?exists_unary_number.truth().
+
+
+
+// -- +?exists_unary_symbol.truth --
+.decl +?exists_unary_symbol.truth()  
+
++?exists_unary_symbol.truth().
+
+
+
+// -- binary_number.truth --
+.decl binary_number.truth(x:Number,y:Number)  
+
+binary_number.truth(1,1).
+
+
+
+// -- binary_symbol.truth --
+.decl binary_symbol.truth(x:Symbol,y:Symbol)  
+
+binary_symbol.truth("1","1").
+
+
+
+// -- contradiction --
+.decl contradiction()  
+
+.printsize contradiction(IO="stdoutprintsize")
+
+
+
+// -- nullary.truth --
+.decl nullary.truth()  
+
+nullary.truth().
+
+
+
+// -- tautology --
+.decl tautology()  
+
+tautology() :- 
+   nullary.truth(),
+   +?exists_unary_number.truth(),
+   +?exists_unary_symbol.truth(),
+   +?exists_binary_number.truth(),
+   +?exists_binary_symbol.truth().
+
+.printsize tautology(IO="stdoutprintsize")
+
+.output tautology
+
+
+
+// -- unary_number.truth --
+.decl unary_number.truth(x:Number)  
+
+unary_number.truth(1).
+
+
+
+// -- unary_symbol.truth --
+.decl unary_symbol.truth(x:Symbol)  
+
+unary_symbol.truth("1").
+
+</pre>
+
+</div>
+<a id="ReduceExistentialsTransformer-type-analysis40"></a>
+<div class='headerdiv'>
+<h1>Type Analysis</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>-- Analysis logs --
+Clause: +?exists_binary_number.truth().
+Problem:
+{}
+Solution:
+{}
+Clause: +?exists_binary_symbol.truth().
+Problem:
+{}
+Solution:
+{}
+Clause: +?exists_unary_number.truth().
+Problem:
+{}
+Solution:
+{}
+Clause: +?exists_unary_symbol.truth().
+Problem:
+{}
+Solution:
+{}
+Clause: binary_number.truth(1,1).
+Problem:
+{
+	var(1) &lt;: Number,
+	var(1) &lt;: Number,
+	var(1) &lt;: number,
+	var(1) &lt;: number
+}
+Solution:
+{var(1)->{Number},var(1)->{Number}}
+Clause: binary_symbol.truth("1","1").
+Problem:
+{
+	var("1") &lt;: Symbol,
+	var("1") &lt;: Symbol,
+	var("1") &lt;: symbol,
+	var("1") &lt;: symbol
+}
+Solution:
+{var("1")->{Symbol},var("1")->{Symbol}}
+Clause: nullary.truth().
+Problem:
+{}
+Solution:
+{}
+Clause: tautology() :- 
+   nullary.truth(),
+   +?exists_unary_number.truth(),
+   +?exists_unary_symbol.truth(),
+   +?exists_binary_number.truth(),
+   +?exists_binary_symbol.truth().
+Problem:
+{}
+Solution:
+{}
+Clause: unary_number.truth(1).
+Problem:
+{
+	var(1) &lt;: Number,
+	var(1) &lt;: number
+}
+Solution:
+{var(1)->{Number}}
+Clause: unary_symbol.truth("1").
+Problem:
+{
+	var("1") &lt;: Symbol,
+	var("1") &lt;: symbol
+}
+Solution:
+{var("1")->{Symbol}}
+
+-- Result --
++?exists_binary_number.truth().
++?exists_binary_symbol.truth().
++?exists_unary_number.truth().
++?exists_unary_symbol.truth().
+binary_number.truth(1,1).
+binary_symbol.truth("1","1").
+nullary.truth().
+tautology() :- 
+   nullary.truth(),
+   +?exists_unary_number.truth(),
+   +?exists_unary_symbol.truth(),
+   +?exists_binary_number.truth(),
+   +?exists_binary_symbol.truth().
+unary_number.truth(1).
+unary_symbol.truth("1").
+</pre>
+
+</div>
+<a id="ReduceExistentialsTransformer-type-environment41"></a>
+<div class='headerdiv'>
+<h1>Type Environment</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>Types:
+	Number = number
+	Symbol = symbol
+	number
+	symbol
+</pre>
+
+</div>
+<a id="ReduceExistentialsTransformer-redundant-relations42"></a>
+<div class='headerdiv'>
+<h1>Redundant Relations</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>{unary_number.truth,unary_symbol.truth,binary_number.truth,binary_symbol.truth}
+</pre>
+
+</div>
+<a id="ReduceExistentialsTransformer-recursive-clauses43"></a>
+<div class='headerdiv'>
+<h1>Recursive Clauses</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>{}
+</pre>
+
+</div>
+<a id="ReduceExistentialsTransformer-precedence-graph44"></a>
+<div class='headerdiv'>
+<h1>Precedence Graph</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<img alt='graph image' src='data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIKICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPgo8IS0tIEdlbmVyYXRlZCBieSBncmFwaHZpeiB2ZXJzaW9uIDIuNDAuMSAoMjAxNjEyMjUuMDMwNCkKIC0tPgo8IS0tIFRpdGxlOiAlMyBQYWdlczogMSAtLT4KPHN2ZyB3aWR0aD0iMTk3NnB0IiBoZWlnaHQ9IjExNnB0Igogdmlld0JveD0iMC4wMCAwLjAwIDE5NzYuMjMgMTE2LjAwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj4KPGcgaWQ9ImdyYXBoMCIgY2xhc3M9ImdyYXBoIiB0cmFuc2Zvcm09InNjYWxlKDEgMSkgcm90YXRlKDApIHRyYW5zbGF0ZSg0IDExMikiPgo8dGl0bGU+JTM8L3RpdGxlPgo8cG9seWdvbiBmaWxsPSIjZmZmZmZmIiBzdHJva2U9InRyYW5zcGFyZW50IiBwb2ludHM9Ii00LDQgLTQsLTExMiAxOTcyLjIzMjQsLTExMiAxOTcyLjIzMjQsNCAtNCw0Ii8+CjwhLS0gKz9leGlzdHNfYmluYXJ5X251bWJlci50cnV0aCAtLT4KPGcgaWQ9Im5vZGUxIiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT4rP2V4aXN0c19iaW5hcnlfbnVtYmVyLnRydXRoPC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iMTE3LjYzOTYiIGN5PSItOTAiIHJ4PSIxMTcuNzc5MyIgcnk9IjE4Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjExNy42Mzk2IiB5PSItODYuMyIgZm9udC1mYW1pbHk9IlRpbWVzLHNlcmlmIiBmb250LXNpemU9IjE0LjAwIiBmaWxsPSIjMDAwMDAwIj4rP2V4aXN0c19iaW5hcnlfbnVtYmVyLnRydXRoPC90ZXh0Pgo8L2c+CjwhLS0gdGF1dG9sb2d5IC0tPgo8ZyBpZD0ibm9kZTkiIGNsYXNzPSJub2RlIj4KPHRpdGxlPnRhdXRvbG9neTwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjYxOC42Mzk2IiBjeT0iLTE4IiByeD0iNDQuMzkzIiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iNjE4LjYzOTYiIHk9Ii0xNC4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPnRhdXRvbG9neTwvdGV4dD4KPC9nPgo8IS0tICs/ZXhpc3RzX2JpbmFyeV9udW1iZXIudHJ1dGgmIzQ1OyZndDt0YXV0b2xvZ3kgLS0+CjxnIGlkPSJlZGdlMSIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+Kz9leGlzdHNfYmluYXJ5X251bWJlci50cnV0aCYjNDU7Jmd0O3RhdXRvbG9neTwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgZD0iTTIwMy40Nzk3LC03Ny42NjM3QzMwNy44NzAzLC02Mi42NjE0IDQ4MC43NTE0LC0zNy44MTYzIDU2Ni43NDM0LC0yNS40NTgxIi8+Cjxwb2x5Z29uIGZpbGw9IiMwMDAwMDAiIHN0cm9rZT0iIzAwMDAwMCIgcG9pbnRzPSI1NjcuMzg4NiwtMjguOTAxNSA1NzYuNzg5LC0yNC4wMTQ0IDU2Ni4zOTI4LC0yMS45NzI2IDU2Ny4zODg2LC0yOC45MDE1Ii8+CjwvZz4KPCEtLSArP2V4aXN0c19iaW5hcnlfc3ltYm9sLnRydXRoIC0tPgo8ZyBpZD0ibm9kZTIiIGNsYXNzPSJub2RlIj4KPHRpdGxlPis/ZXhpc3RzX2JpbmFyeV9zeW1ib2wudHJ1dGg8L3RpdGxlPgo8ZWxsaXBzZSBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGN4PSIzNjkuNjM5NiIgY3k9Ii05MCIgcng9IjExNi4xNzk2IiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iMzY5LjYzOTYiIHk9Ii04Ni4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPis/ZXhpc3RzX2JpbmFyeV9zeW1ib2wudHJ1dGg8L3RleHQ+CjwvZz4KPCEtLSArP2V4aXN0c19iaW5hcnlfc3ltYm9sLnRydXRoJiM0NTsmZ3Q7dGF1dG9sb2d5IC0tPgo8ZyBpZD0iZWRnZTIiIGNsYXNzPSJlZGdlIj4KPHRpdGxlPis/ZXhpc3RzX2JpbmFyeV9zeW1ib2wudHJ1dGgmIzQ1OyZndDt0YXV0b2xvZ3k8L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGQ9Ik00MjQuNTkxOSwtNzQuMTEwMkM0NjkuMDA5MiwtNjEuMjY2NiA1MzAuODE1NCwtNDMuMzk0OSA1NzIuNjQ2OSwtMzEuMjk5MSIvPgo8cG9seWdvbiBmaWxsPSIjMDAwMDAwIiBzdHJva2U9IiMwMDAwMDAiIHBvaW50cz0iNTczLjY2OSwtMzQuNjQ3IDU4Mi4zMDMyLC0yOC41MDY5IDU3MS43MjQ1LC0yNy45MjI1IDU3My42NjksLTM0LjY0NyIvPgo8L2c+CjwhLS0gKz9leGlzdHNfdW5hcnlfbnVtYmVyLnRydXRoIC0tPgo8ZyBpZD0ibm9kZTMiIGNsYXNzPSJub2RlIj4KPHRpdGxlPis/ZXhpc3RzX3VuYXJ5X251bWJlci50cnV0aDwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjYxOC42Mzk2IiBjeT0iLTkwIiByeD0iMTE1LjA3OTYiIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSI2MTguNjM5NiIgeT0iLTg2LjMiIGZvbnQtZmFtaWx5PSJUaW1lcyxzZXJpZiIgZm9udC1zaXplPSIxNC4wMCIgZmlsbD0iIzAwMDAwMCI+Kz9leGlzdHNfdW5hcnlfbnVtYmVyLnRydXRoPC90ZXh0Pgo8L2c+CjwhLS0gKz9leGlzdHNfdW5hcnlfbnVtYmVyLnRydXRoJiM0NTsmZ3Q7dGF1dG9sb2d5IC0tPgo8ZyBpZD0iZWRnZTMiIGNsYXNzPSJlZGdlIj4KPHRpdGxlPis/ZXhpc3RzX3VuYXJ5X251bWJlci50cnV0aCYjNDU7Jmd0O3RhdXRvbG9neTwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgZD0iTTYxOC42Mzk2LC03MS44MzE0QzYxOC42Mzk2LC02NC4xMzEgNjE4LjYzOTYsLTU0Ljk3NDMgNjE4LjYzOTYsLTQ2LjQxNjYiLz4KPHBvbHlnb24gZmlsbD0iIzAwMDAwMCIgc3Ryb2tlPSIjMDAwMDAwIiBwb2ludHM9IjYyMi4xMzk3LC00Ni40MTMyIDYxOC42Mzk2LC0zNi40MTMzIDYxNS4xMzk3LC00Ni40MTMzIDYyMi4xMzk3LC00Ni40MTMyIi8+CjwvZz4KPCEtLSArP2V4aXN0c191bmFyeV9zeW1ib2wudHJ1dGggLS0+CjxnIGlkPSJub2RlNCIgY2xhc3M9Im5vZGUiPgo8dGl0bGU+Kz9leGlzdHNfdW5hcnlfc3ltYm9sLnRydXRoPC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iODY1LjYzOTYiIGN5PSItOTAiIHJ4PSIxMTQuMjc5OCIgcnk9IjE4Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9Ijg2NS42Mzk2IiB5PSItODYuMyIgZm9udC1mYW1pbHk9IlRpbWVzLHNlcmlmIiBmb250LXNpemU9IjE0LjAwIiBmaWxsPSIjMDAwMDAwIj4rP2V4aXN0c191bmFyeV9zeW1ib2wudHJ1dGg8L3RleHQ+CjwvZz4KPCEtLSArP2V4aXN0c191bmFyeV9zeW1ib2wudHJ1dGgmIzQ1OyZndDt0YXV0b2xvZ3kgLS0+CjxnIGlkPSJlZGdlNCIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+Kz9leGlzdHNfdW5hcnlfc3ltYm9sLnRydXRoJiM0NTsmZ3Q7dGF1dG9sb2d5PC90aXRsZT4KPHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBkPSJNODExLjEyODYsLTc0LjExMDJDNzY3LjE2MSwtNjEuMjkzNyA3MDYuMDE2OSwtNDMuNDcwMyA2NjQuNTI1NywtMzEuMzc1NyIvPgo8cG9seWdvbiBmaWxsPSIjMDAwMDAwIiBzdHJva2U9IiMwMDAwMDAiIHBvaW50cz0iNjY1LjI2NCwtMjcuOTQ1MyA2NTQuNjg0LC0yOC41MDY5IDY2My4zMDUsLTM0LjY2NTYgNjY1LjI2NCwtMjcuOTQ1MyIvPgo8L2c+CjwhLS0gYmluYXJ5X251bWJlci50cnV0aCAtLT4KPGcgaWQ9Im5vZGU1IiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT5iaW5hcnlfbnVtYmVyLnRydXRoPC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iMTIwOC42Mzk2IiBjeT0iLTkwIiByeD0iODMuNjg1NCIgcnk9IjE4Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjEyMDguNjM5NiIgeT0iLTg2LjMiIGZvbnQtZmFtaWx5PSJUaW1lcyxzZXJpZiIgZm9udC1zaXplPSIxNC4wMCIgZmlsbD0iIzAwMDAwMCI+YmluYXJ5X251bWJlci50cnV0aDwvdGV4dD4KPC9nPgo8IS0tIGJpbmFyeV9zeW1ib2wudHJ1dGggLS0+CjxnIGlkPSJub2RlNiIgY2xhc3M9Im5vZGUiPgo8dGl0bGU+YmluYXJ5X3N5bWJvbC50cnV0aDwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjEzOTMuNjM5NiIgY3k9Ii05MCIgcng9IjgzLjM4NTciIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSIxMzkzLjYzOTYiIHk9Ii04Ni4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPmJpbmFyeV9zeW1ib2wudHJ1dGg8L3RleHQ+CjwvZz4KPCEtLSBjb250cmFkaWN0aW9uIC0tPgo8ZyBpZD0ibm9kZTciIGNsYXNzPSJub2RlIj4KPHRpdGxlPmNvbnRyYWRpY3Rpb248L3RpdGxlPgo8ZWxsaXBzZSBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGN4PSIxNTUxLjYzOTYiIGN5PSItOTAiIHJ4PSI1Ny4zOTA1IiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iMTU1MS42Mzk2IiB5PSItODYuMyIgZm9udC1mYW1pbHk9IlRpbWVzLHNlcmlmIiBmb250LXNpemU9IjE0LjAwIiBmaWxsPSIjMDAwMDAwIj5jb250cmFkaWN0aW9uPC90ZXh0Pgo8L2c+CjwhLS0gbnVsbGFyeS50cnV0aCAtLT4KPGcgaWQ9Im5vZGU4IiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT5udWxsYXJ5LnRydXRoPC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iMTA1Mi42Mzk2IiBjeT0iLTkwIiByeD0iNTQuNjkwNSIgcnk9IjE4Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjEwNTIuNjM5NiIgeT0iLTg2LjMiIGZvbnQtZmFtaWx5PSJUaW1lcyxzZXJpZiIgZm9udC1zaXplPSIxNC4wMCIgZmlsbD0iIzAwMDAwMCI+bnVsbGFyeS50cnV0aDwvdGV4dD4KPC9nPgo8IS0tIG51bGxhcnkudHJ1dGgmIzQ1OyZndDt0YXV0b2xvZ3kgLS0+CjxnIGlkPSJlZGdlNSIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+bnVsbGFyeS50cnV0aCYjNDU7Jmd0O3RhdXRvbG9neTwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgZD0iTTEwMTIuMjA4MywtNzcuNzc2OUMxMDA0LjQzMDgsLTc1LjY2OCA5OTYuMzE2NiwtNzMuNjMyNiA5ODguNjM5NiwtNzIgODc2Ljk3OTgsLTQ4LjI1MzcgNzQ0LjEzNDgsLTMxLjY1MDYgNjcxLjg5NzMsLTIzLjU4MiIvPgo8cG9seWdvbiBmaWxsPSIjMDAwMDAwIiBzdHJva2U9IiMwMDAwMDAiIHBvaW50cz0iNjcyLjAxMjksLTIwLjA3MzYgNjYxLjY4ODksLTIyLjQ1MzcgNjcxLjI0MzgsLTI3LjAzMTIgNjcyLjAxMjksLTIwLjA3MzYiLz4KPC9nPgo8IS0tIHVuYXJ5X251bWJlci50cnV0aCAtLT4KPGcgaWQ9Im5vZGUxMCIgY2xhc3M9Im5vZGUiPgo8dGl0bGU+dW5hcnlfbnVtYmVyLnRydXRoPC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iMTcwNy42Mzk2IiBjeT0iLTkwIiByeD0iODEuNDg2MyIgcnk9IjE4Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjE3MDcuNjM5NiIgeT0iLTg2LjMiIGZvbnQtZmFtaWx5PSJUaW1lcyxzZXJpZiIgZm9udC1zaXplPSIxNC4wMCIgZmlsbD0iIzAwMDAwMCI+dW5hcnlfbnVtYmVyLnRydXRoPC90ZXh0Pgo8L2c+CjwhLS0gdW5hcnlfc3ltYm9sLnRydXRoIC0tPgo8ZyBpZD0ibm9kZTExIiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT51bmFyeV9zeW1ib2wudHJ1dGg8L3RpdGxlPgo8ZWxsaXBzZSBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGN4PSIxODg3LjYzOTYiIGN5PSItOTAiIHJ4PSI4MC42ODU4IiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iMTg4Ny42Mzk2IiB5PSItODYuMyIgZm9udC1mYW1pbHk9IlRpbWVzLHNlcmlmIiBmb250LXNpemU9IjE0LjAwIiBmaWxsPSIjMDAwMDAwIj51bmFyeV9zeW1ib2wudHJ1dGg8L3RleHQ+CjwvZz4KPC9nPgo8L3N2Zz4K'><br/>
+<a href="javascript:toggleVisibility('ReduceExistentialsTransformer-precedence-graph-source')">(show dot source)</a>
+<div id='ReduceExistentialsTransformer-precedence-graph-source' style='display:none'>
+<pre>digraph {
+	"+?exists_binary_number.truth" [label = "+?exists_binary_number.truth"];
+	"+?exists_binary_symbol.truth" [label = "+?exists_binary_symbol.truth"];
+	"+?exists_unary_number.truth" [label = "+?exists_unary_number.truth"];
+	"+?exists_unary_symbol.truth" [label = "+?exists_unary_symbol.truth"];
+	"binary_number.truth" [label = "binary_number.truth"];
+	"binary_symbol.truth" [label = "binary_symbol.truth"];
+	"contradiction" [label = "contradiction"];
+	"nullary.truth" [label = "nullary.truth"];
+	"tautology" [label = "tautology"];
+	"unary_number.truth" [label = "unary_number.truth"];
+	"unary_symbol.truth" [label = "unary_symbol.truth"];
+	"+?exists_binary_number.truth" -> "tautology";
+	"+?exists_binary_symbol.truth" -> "tautology";
+	"+?exists_unary_number.truth" -> "tautology";
+	"+?exists_unary_symbol.truth" -> "tautology";
+	"nullary.truth" -> "tautology";
+}
+</pre>
+</div>
+
+</div>
+<a id="ReduceExistentialsTransformer-scc-graph45"></a>
+<div class='headerdiv'>
+<h1>Scc Graph</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<img alt='graph image' src='data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIKICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPgo8IS0tIEdlbmVyYXRlZCBieSBncmFwaHZpeiB2ZXJzaW9uIDIuNDAuMSAoMjAxNjEyMjUuMDMwNCkKIC0tPgo8IS0tIFRpdGxlOiAlMyBQYWdlczogMSAtLT4KPHN2ZyB3aWR0aD0iMTk3NnB0IiBoZWlnaHQ9IjExNnB0Igogdmlld0JveD0iMC4wMCAwLjAwIDE5NzYuMjMgMTE2LjAwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj4KPGcgaWQ9ImdyYXBoMCIgY2xhc3M9ImdyYXBoIiB0cmFuc2Zvcm09InNjYWxlKDEgMSkgcm90YXRlKDApIHRyYW5zbGF0ZSg0IDExMikiPgo8dGl0bGU+JTM8L3RpdGxlPgo8cG9seWdvbiBmaWxsPSIjZmZmZmZmIiBzdHJva2U9InRyYW5zcGFyZW50IiBwb2ludHM9Ii00LDQgLTQsLTExMiAxOTcyLjIzMjQsLTExMiAxOTcyLjIzMjQsNCAtNCw0Ii8+CjwhLS0gXzAgLS0+CjxnIGlkPSJub2RlMSIgY2xhc3M9Im5vZGUiPgo8dGl0bGU+XzA8L3RpdGxlPgo8ZWxsaXBzZSBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGN4PSIxMTcuNjM5NiIgY3k9Ii05MCIgcng9IjExNy43NzkzIiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iMTE3LjYzOTYiIHk9Ii04Ni4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPis/ZXhpc3RzX2JpbmFyeV9udW1iZXIudHJ1dGg8L3RleHQ+CjwvZz4KPCEtLSBfOCAtLT4KPGcgaWQ9Im5vZGU5IiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT5fODwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjYxOC42Mzk2IiBjeT0iLTE4IiByeD0iNDQuMzkzIiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iNjE4LjYzOTYiIHk9Ii0xNC4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPnRhdXRvbG9neTwvdGV4dD4KPC9nPgo8IS0tIF8wJiM0NTsmZ3Q7XzggLS0+CjxnIGlkPSJlZGdlMSIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+XzAmIzQ1OyZndDtfODwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgZD0iTTIwMy40Nzk3LC03Ny42NjM3QzMwNy44NzAzLC02Mi42NjE0IDQ4MC43NTE0LC0zNy44MTYzIDU2Ni43NDM0LC0yNS40NTgxIi8+Cjxwb2x5Z29uIGZpbGw9IiMwMDAwMDAiIHN0cm9rZT0iIzAwMDAwMCIgcG9pbnRzPSI1NjcuMzg4NiwtMjguOTAxNSA1NzYuNzg5LC0yNC4wMTQ0IDU2Ni4zOTI4LC0yMS45NzI2IDU2Ny4zODg2LC0yOC45MDE1Ii8+CjwvZz4KPCEtLSBfMSAtLT4KPGcgaWQ9Im5vZGUyIiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT5fMTwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjM2OS42Mzk2IiBjeT0iLTkwIiByeD0iMTE2LjE3OTYiIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSIzNjkuNjM5NiIgeT0iLTg2LjMiIGZvbnQtZmFtaWx5PSJUaW1lcyxzZXJpZiIgZm9udC1zaXplPSIxNC4wMCIgZmlsbD0iIzAwMDAwMCI+Kz9leGlzdHNfYmluYXJ5X3N5bWJvbC50cnV0aDwvdGV4dD4KPC9nPgo8IS0tIF8xJiM0NTsmZ3Q7XzggLS0+CjxnIGlkPSJlZGdlMiIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+XzEmIzQ1OyZndDtfODwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgZD0iTTQyNC41OTE5LC03NC4xMTAyQzQ2OS4wMDkyLC02MS4yNjY2IDUzMC44MTU0LC00My4zOTQ5IDU3Mi42NDY5LC0zMS4yOTkxIi8+Cjxwb2x5Z29uIGZpbGw9IiMwMDAwMDAiIHN0cm9rZT0iIzAwMDAwMCIgcG9pbnRzPSI1NzMuNjY5LC0zNC42NDcgNTgyLjMwMzIsLTI4LjUwNjkgNTcxLjcyNDUsLTI3LjkyMjUgNTczLjY2OSwtMzQuNjQ3Ii8+CjwvZz4KPCEtLSBfMiAtLT4KPGcgaWQ9Im5vZGUzIiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT5fMjwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjYxOC42Mzk2IiBjeT0iLTkwIiByeD0iMTE1LjA3OTYiIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSI2MTguNjM5NiIgeT0iLTg2LjMiIGZvbnQtZmFtaWx5PSJUaW1lcyxzZXJpZiIgZm9udC1zaXplPSIxNC4wMCIgZmlsbD0iIzAwMDAwMCI+Kz9leGlzdHNfdW5hcnlfbnVtYmVyLnRydXRoPC90ZXh0Pgo8L2c+CjwhLS0gXzImIzQ1OyZndDtfOCAtLT4KPGcgaWQ9ImVkZ2UzIiBjbGFzcz0iZWRnZSI+Cjx0aXRsZT5fMiYjNDU7Jmd0O184PC90aXRsZT4KPHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBkPSJNNjE4LjYzOTYsLTcxLjgzMTRDNjE4LjYzOTYsLTY0LjEzMSA2MTguNjM5NiwtNTQuOTc0MyA2MTguNjM5NiwtNDYuNDE2NiIvPgo8cG9seWdvbiBmaWxsPSIjMDAwMDAwIiBzdHJva2U9IiMwMDAwMDAiIHBvaW50cz0iNjIyLjEzOTcsLTQ2LjQxMzIgNjE4LjYzOTYsLTM2LjQxMzMgNjE1LjEzOTcsLTQ2LjQxMzMgNjIyLjEzOTcsLTQ2LjQxMzIiLz4KPC9nPgo8IS0tIF8zIC0tPgo8ZyBpZD0ibm9kZTQiIGNsYXNzPSJub2RlIj4KPHRpdGxlPl8zPC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iODY1LjYzOTYiIGN5PSItOTAiIHJ4PSIxMTQuMjc5OCIgcnk9IjE4Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9Ijg2NS42Mzk2IiB5PSItODYuMyIgZm9udC1mYW1pbHk9IlRpbWVzLHNlcmlmIiBmb250LXNpemU9IjE0LjAwIiBmaWxsPSIjMDAwMDAwIj4rP2V4aXN0c191bmFyeV9zeW1ib2wudHJ1dGg8L3RleHQ+CjwvZz4KPCEtLSBfMyYjNDU7Jmd0O184IC0tPgo8ZyBpZD0iZWRnZTQiIGNsYXNzPSJlZGdlIj4KPHRpdGxlPl8zJiM0NTsmZ3Q7Xzg8L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGQ9Ik04MTEuMTI4NiwtNzQuMTEwMkM3NjcuMTYxLC02MS4yOTM3IDcwNi4wMTY5LC00My40NzAzIDY2NC41MjU3LC0zMS4zNzU3Ii8+Cjxwb2x5Z29uIGZpbGw9IiMwMDAwMDAiIHN0cm9rZT0iIzAwMDAwMCIgcG9pbnRzPSI2NjUuMjY0LC0yNy45NDUzIDY1NC42ODQsLTI4LjUwNjkgNjYzLjMwNSwtMzQuNjY1NiA2NjUuMjY0LC0yNy45NDUzIi8+CjwvZz4KPCEtLSBfNCAtLT4KPGcgaWQ9Im5vZGU1IiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT5fNDwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjEyMDguNjM5NiIgY3k9Ii05MCIgcng9IjgzLjY4NTQiIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSIxMjA4LjYzOTYiIHk9Ii04Ni4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPmJpbmFyeV9udW1iZXIudHJ1dGg8L3RleHQ+CjwvZz4KPCEtLSBfNSAtLT4KPGcgaWQ9Im5vZGU2IiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT5fNTwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjEzOTMuNjM5NiIgY3k9Ii05MCIgcng9IjgzLjM4NTciIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSIxMzkzLjYzOTYiIHk9Ii04Ni4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPmJpbmFyeV9zeW1ib2wudHJ1dGg8L3RleHQ+CjwvZz4KPCEtLSBfNiAtLT4KPGcgaWQ9Im5vZGU3IiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT5fNjwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjE1NTEuNjM5NiIgY3k9Ii05MCIgcng9IjU3LjM5MDUiIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSIxNTUxLjYzOTYiIHk9Ii04Ni4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPmNvbnRyYWRpY3Rpb248L3RleHQ+CjwvZz4KPCEtLSBfNyAtLT4KPGcgaWQ9Im5vZGU4IiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT5fNzwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjEwNTIuNjM5NiIgY3k9Ii05MCIgcng9IjU0LjY5MDUiIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSIxMDUyLjYzOTYiIHk9Ii04Ni4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPm51bGxhcnkudHJ1dGg8L3RleHQ+CjwvZz4KPCEtLSBfNyYjNDU7Jmd0O184IC0tPgo8ZyBpZD0iZWRnZTUiIGNsYXNzPSJlZGdlIj4KPHRpdGxlPl83JiM0NTsmZ3Q7Xzg8L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGQ9Ik0xMDEyLjIwODMsLTc3Ljc3NjlDMTAwNC40MzA4LC03NS42NjggOTk2LjMxNjYsLTczLjYzMjYgOTg4LjYzOTYsLTcyIDg3Ni45Nzk4LC00OC4yNTM3IDc0NC4xMzQ4LC0zMS42NTA2IDY3MS44OTczLC0yMy41ODIiLz4KPHBvbHlnb24gZmlsbD0iIzAwMDAwMCIgc3Ryb2tlPSIjMDAwMDAwIiBwb2ludHM9IjY3Mi4wMTI5LC0yMC4wNzM2IDY2MS42ODg5LC0yMi40NTM3IDY3MS4yNDM4LC0yNy4wMzEyIDY3Mi4wMTI5LC0yMC4wNzM2Ii8+CjwvZz4KPCEtLSBfOSAtLT4KPGcgaWQ9Im5vZGUxMCIgY2xhc3M9Im5vZGUiPgo8dGl0bGU+Xzk8L3RpdGxlPgo8ZWxsaXBzZSBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGN4PSIxNzA3LjYzOTYiIGN5PSItOTAiIHJ4PSI4MS40ODYzIiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iMTcwNy42Mzk2IiB5PSItODYuMyIgZm9udC1mYW1pbHk9IlRpbWVzLHNlcmlmIiBmb250LXNpemU9IjE0LjAwIiBmaWxsPSIjMDAwMDAwIj51bmFyeV9udW1iZXIudHJ1dGg8L3RleHQ+CjwvZz4KPCEtLSBfMTAgLS0+CjxnIGlkPSJub2RlMTEiIGNsYXNzPSJub2RlIj4KPHRpdGxlPl8xMDwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjE4ODcuNjM5NiIgY3k9Ii05MCIgcng9IjgwLjY4NTgiIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSIxODg3LjYzOTYiIHk9Ii04Ni4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPnVuYXJ5X3N5bWJvbC50cnV0aDwvdGV4dD4KPC9nPgo8L2c+Cjwvc3ZnPgo='><br/>
+<a href="javascript:toggleVisibility('ReduceExistentialsTransformer-scc-graph-source')">(show dot source)</a>
+<div id='ReduceExistentialsTransformer-scc-graph-source' style='display:none'>
+<pre>digraph {
+	_0[label = "+?exists_binary_number.truth" ];
+	_1[label = "+?exists_binary_symbol.truth" ];
+	_2[label = "+?exists_unary_number.truth" ];
+	_3[label = "+?exists_unary_symbol.truth" ];
+	_4[label = "binary_number.truth" ];
+	_5[label = "binary_symbol.truth" ];
+	_6[label = "contradiction" ];
+	_7[label = "nullary.truth" ];
+	_8[label = "tautology" ];
+	_9[label = "unary_number.truth" ];
+	_10[label = "unary_symbol.truth" ];
+	_0 -> _8;
+	_1 -> _8;
+	_2 -> _8;
+	_3 -> _8;
+	_7 -> _8;
+}</pre>
+</div>
+
+</div>
+<a id="ReduceExistentialsTransformer-topological-scc-graph46"></a>
+<div class='headerdiv'>
+<h1>Topological Scc Graph</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>{
+    "StratumNames": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+    ],
+    "StratumDependencies": {
+        "0": ["8"],
+        "1": ["8"],
+        "2": ["8"],
+        "3": ["8"],
+        "4": [],
+        "5": [],
+        "6": [],
+        "7": ["8"],
+        "8": [],
+        "9": [],
+        "10": []
+    },
+    "RelationNames": [
+        "+?exists_binary_number.truth",
+        "+?exists_binary_symbol.truth",
+        "+?exists_unary_number.truth",
+        "+?exists_unary_symbol.truth",
+        "binary_number.truth",
+        "binary_symbol.truth",
+        "contradiction",
+        "nullary.truth",
+        "tautology",
+        "unary_number.truth",
+        "unary_symbol.truth"
+    ],
+    "StratumRelations": {
+        "0": ["+?exists_binary_number.truth"],
+        "1": ["+?exists_binary_symbol.truth"],
+        "2": ["+?exists_unary_number.truth"],
+        "3": ["+?exists_unary_symbol.truth"],
+        "4": ["binary_number.truth"],
+        "5": ["binary_symbol.truth"],
+        "6": ["contradiction"],
+        "7": ["nullary.truth"],
+        "8": ["tautology"],
+        "9": ["unary_number.truth"],
+        "10": ["unary_symbol.truth"]
+    },
+    "TopologicalOrderingCost": 5
+}</pre>
+
+</div>
+</div>
+<a id="RemoveRedundantRelationsTransformer56"></a>
+<div class='headerdiv'>
+<h1>After RemoveRedundantRelationsTransformer (0.010729s)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+<a id="RemoveRedundantRelationsTransformer-dl48"></a>
+<div class='headerdiv'>
+<h1>Datalog</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>// ----- Types -----
+.type Number = number
+.type Symbol = symbol
+
+// ----- Functors -----
+
+// ----- Relations -----
+
+
+// -- +?exists_binary_number.truth --
+.decl +?exists_binary_number.truth()  
+
++?exists_binary_number.truth().
+
+
+
+// -- +?exists_binary_symbol.truth --
+.decl +?exists_binary_symbol.truth()  
+
++?exists_binary_symbol.truth().
+
+
+
+// -- +?exists_unary_number.truth --
+.decl +?exists_unary_number.truth()  
+
++?exists_unary_number.truth().
+
+
+
+// -- +?exists_unary_symbol.truth --
+.decl +?exists_unary_symbol.truth()  
+
++?exists_unary_symbol.truth().
+
+
+
+// -- contradiction --
+.decl contradiction()  
+
+.printsize contradiction(IO="stdoutprintsize")
+
+
+
+// -- nullary.truth --
+.decl nullary.truth()  
+
+nullary.truth().
+
+
+
+// -- tautology --
+.decl tautology()  
+
+tautology() :- 
+   nullary.truth(),
+   +?exists_unary_number.truth(),
+   +?exists_unary_symbol.truth(),
+   +?exists_binary_number.truth(),
+   +?exists_binary_symbol.truth().
+
+.printsize tautology(IO="stdoutprintsize")
+
+.output tautology
+
+</pre>
+
+</div>
+<a id="RemoveRedundantRelationsTransformer-type-analysis49"></a>
+<div class='headerdiv'>
+<h1>Type Analysis</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>-- Analysis logs --
+Clause: +?exists_binary_number.truth().
+Problem:
+{}
+Solution:
+{}
+Clause: +?exists_binary_symbol.truth().
+Problem:
+{}
+Solution:
+{}
+Clause: +?exists_unary_number.truth().
+Problem:
+{}
+Solution:
+{}
+Clause: +?exists_unary_symbol.truth().
+Problem:
+{}
+Solution:
+{}
+Clause: nullary.truth().
+Problem:
+{}
+Solution:
+{}
+Clause: tautology() :- 
+   nullary.truth(),
+   +?exists_unary_number.truth(),
+   +?exists_unary_symbol.truth(),
+   +?exists_binary_number.truth(),
+   +?exists_binary_symbol.truth().
+Problem:
+{}
+Solution:
+{}
+
+-- Result --
++?exists_binary_number.truth().
++?exists_binary_symbol.truth().
++?exists_unary_number.truth().
++?exists_unary_symbol.truth().
+nullary.truth().
+tautology() :- 
+   nullary.truth(),
+   +?exists_unary_number.truth(),
+   +?exists_unary_symbol.truth(),
+   +?exists_binary_number.truth(),
+   +?exists_binary_symbol.truth().
+</pre>
+
+</div>
+<a id="RemoveRedundantRelationsTransformer-type-environment50"></a>
+<div class='headerdiv'>
+<h1>Type Environment</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>Types:
+	Number = number
+	Symbol = symbol
+	number
+	symbol
+</pre>
+
+</div>
+<a id="RemoveRedundantRelationsTransformer-redundant-relations51"></a>
+<div class='headerdiv'>
+<h1>Redundant Relations</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>{}
+</pre>
+
+</div>
+<a id="RemoveRedundantRelationsTransformer-recursive-clauses52"></a>
+<div class='headerdiv'>
+<h1>Recursive Clauses</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>{}
+</pre>
+
+</div>
+<a id="RemoveRedundantRelationsTransformer-precedence-graph53"></a>
+<div class='headerdiv'>
+<h1>Precedence Graph</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<img alt='graph image' src='data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIKICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPgo8IS0tIEdlbmVyYXRlZCBieSBncmFwaHZpeiB2ZXJzaW9uIDIuNDAuMSAoMjAxNjEyMjUuMDMwNCkKIC0tPgo8IS0tIFRpdGxlOiAlMyBQYWdlczogMSAtLT4KPHN2ZyB3aWR0aD0iMTI0OHB0IiBoZWlnaHQ9IjExNnB0Igogdmlld0JveD0iMC4wMCAwLjAwIDEyNDcuODMgMTE2LjAwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj4KPGcgaWQ9ImdyYXBoMCIgY2xhc3M9ImdyYXBoIiB0cmFuc2Zvcm09InNjYWxlKDEgMSkgcm90YXRlKDApIHRyYW5zbGF0ZSg0IDExMikiPgo8dGl0bGU+JTM8L3RpdGxlPgo8cG9seWdvbiBmaWxsPSIjZmZmZmZmIiBzdHJva2U9InRyYW5zcGFyZW50IiBwb2ludHM9Ii00LDQgLTQsLTExMiAxMjQzLjgzNDUsLTExMiAxMjQzLjgzNDUsNCAtNCw0Ii8+CjwhLS0gKz9leGlzdHNfYmluYXJ5X251bWJlci50cnV0aCAtLT4KPGcgaWQ9Im5vZGUxIiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT4rP2V4aXN0c19iaW5hcnlfbnVtYmVyLnRydXRoPC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iMTE3LjYzOTYiIGN5PSItOTAiIHJ4PSIxMTcuNzc5MyIgcnk9IjE4Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjExNy42Mzk2IiB5PSItODYuMyIgZm9udC1mYW1pbHk9IlRpbWVzLHNlcmlmIiBmb250LXNpemU9IjE0LjAwIiBmaWxsPSIjMDAwMDAwIj4rP2V4aXN0c19iaW5hcnlfbnVtYmVyLnRydXRoPC90ZXh0Pgo8L2c+CjwhLS0gdGF1dG9sb2d5IC0tPgo8ZyBpZD0ibm9kZTciIGNsYXNzPSJub2RlIj4KPHRpdGxlPnRhdXRvbG9neTwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjYxOC42Mzk2IiBjeT0iLTE4IiByeD0iNDQuMzkzIiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iNjE4LjYzOTYiIHk9Ii0xNC4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPnRhdXRvbG9neTwvdGV4dD4KPC9nPgo8IS0tICs/ZXhpc3RzX2JpbmFyeV9udW1iZXIudHJ1dGgmIzQ1OyZndDt0YXV0b2xvZ3kgLS0+CjxnIGlkPSJlZGdlMSIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+Kz9leGlzdHNfYmluYXJ5X251bWJlci50cnV0aCYjNDU7Jmd0O3RhdXRvbG9neTwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgZD0iTTIwMy40Nzk3LC03Ny42NjM3QzMwNy44NzAzLC02Mi42NjE0IDQ4MC43NTE0LC0zNy44MTYzIDU2Ni43NDM0LC0yNS40NTgxIi8+Cjxwb2x5Z29uIGZpbGw9IiMwMDAwMDAiIHN0cm9rZT0iIzAwMDAwMCIgcG9pbnRzPSI1NjcuMzg4NiwtMjguOTAxNSA1NzYuNzg5LC0yNC4wMTQ0IDU2Ni4zOTI4LC0yMS45NzI2IDU2Ny4zODg2LC0yOC45MDE1Ii8+CjwvZz4KPCEtLSArP2V4aXN0c19iaW5hcnlfc3ltYm9sLnRydXRoIC0tPgo8ZyBpZD0ibm9kZTIiIGNsYXNzPSJub2RlIj4KPHRpdGxlPis/ZXhpc3RzX2JpbmFyeV9zeW1ib2wudHJ1dGg8L3RpdGxlPgo8ZWxsaXBzZSBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGN4PSIzNjkuNjM5NiIgY3k9Ii05MCIgcng9IjExNi4xNzk2IiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iMzY5LjYzOTYiIHk9Ii04Ni4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPis/ZXhpc3RzX2JpbmFyeV9zeW1ib2wudHJ1dGg8L3RleHQ+CjwvZz4KPCEtLSArP2V4aXN0c19iaW5hcnlfc3ltYm9sLnRydXRoJiM0NTsmZ3Q7dGF1dG9sb2d5IC0tPgo8ZyBpZD0iZWRnZTIiIGNsYXNzPSJlZGdlIj4KPHRpdGxlPis/ZXhpc3RzX2JpbmFyeV9zeW1ib2wudHJ1dGgmIzQ1OyZndDt0YXV0b2xvZ3k8L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGQ9Ik00MjQuNTkxOSwtNzQuMTEwMkM0NjkuMDA5MiwtNjEuMjY2NiA1MzAuODE1NCwtNDMuMzk0OSA1NzIuNjQ2OSwtMzEuMjk5MSIvPgo8cG9seWdvbiBmaWxsPSIjMDAwMDAwIiBzdHJva2U9IiMwMDAwMDAiIHBvaW50cz0iNTczLjY2OSwtMzQuNjQ3IDU4Mi4zMDMyLC0yOC41MDY5IDU3MS43MjQ1LC0yNy45MjI1IDU3My42NjksLTM0LjY0NyIvPgo8L2c+CjwhLS0gKz9leGlzdHNfdW5hcnlfbnVtYmVyLnRydXRoIC0tPgo8ZyBpZD0ibm9kZTMiIGNsYXNzPSJub2RlIj4KPHRpdGxlPis/ZXhpc3RzX3VuYXJ5X251bWJlci50cnV0aDwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjYxOC42Mzk2IiBjeT0iLTkwIiByeD0iMTE1LjA3OTYiIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSI2MTguNjM5NiIgeT0iLTg2LjMiIGZvbnQtZmFtaWx5PSJUaW1lcyxzZXJpZiIgZm9udC1zaXplPSIxNC4wMCIgZmlsbD0iIzAwMDAwMCI+Kz9leGlzdHNfdW5hcnlfbnVtYmVyLnRydXRoPC90ZXh0Pgo8L2c+CjwhLS0gKz9leGlzdHNfdW5hcnlfbnVtYmVyLnRydXRoJiM0NTsmZ3Q7dGF1dG9sb2d5IC0tPgo8ZyBpZD0iZWRnZTMiIGNsYXNzPSJlZGdlIj4KPHRpdGxlPis/ZXhpc3RzX3VuYXJ5X251bWJlci50cnV0aCYjNDU7Jmd0O3RhdXRvbG9neTwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgZD0iTTYxOC42Mzk2LC03MS44MzE0QzYxOC42Mzk2LC02NC4xMzEgNjE4LjYzOTYsLTU0Ljk3NDMgNjE4LjYzOTYsLTQ2LjQxNjYiLz4KPHBvbHlnb24gZmlsbD0iIzAwMDAwMCIgc3Ryb2tlPSIjMDAwMDAwIiBwb2ludHM9IjYyMi4xMzk3LC00Ni40MTMyIDYxOC42Mzk2LC0zNi40MTMzIDYxNS4xMzk3LC00Ni40MTMzIDYyMi4xMzk3LC00Ni40MTMyIi8+CjwvZz4KPCEtLSArP2V4aXN0c191bmFyeV9zeW1ib2wudHJ1dGggLS0+CjxnIGlkPSJub2RlNCIgY2xhc3M9Im5vZGUiPgo8dGl0bGU+Kz9leGlzdHNfdW5hcnlfc3ltYm9sLnRydXRoPC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iODY1LjYzOTYiIGN5PSItOTAiIHJ4PSIxMTQuMjc5OCIgcnk9IjE4Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9Ijg2NS42Mzk2IiB5PSItODYuMyIgZm9udC1mYW1pbHk9IlRpbWVzLHNlcmlmIiBmb250LXNpemU9IjE0LjAwIiBmaWxsPSIjMDAwMDAwIj4rP2V4aXN0c191bmFyeV9zeW1ib2wudHJ1dGg8L3RleHQ+CjwvZz4KPCEtLSArP2V4aXN0c191bmFyeV9zeW1ib2wudHJ1dGgmIzQ1OyZndDt0YXV0b2xvZ3kgLS0+CjxnIGlkPSJlZGdlNCIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+Kz9leGlzdHNfdW5hcnlfc3ltYm9sLnRydXRoJiM0NTsmZ3Q7dGF1dG9sb2d5PC90aXRsZT4KPHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBkPSJNODExLjEyODYsLTc0LjExMDJDNzY3LjE2MSwtNjEuMjkzNyA3MDYuMDE2OSwtNDMuNDcwMyA2NjQuNTI1NywtMzEuMzc1NyIvPgo8cG9seWdvbiBmaWxsPSIjMDAwMDAwIiBzdHJva2U9IiMwMDAwMDAiIHBvaW50cz0iNjY1LjI2NCwtMjcuOTQ1MyA2NTQuNjg0LC0yOC41MDY5IDY2My4zMDUsLTM0LjY2NTYgNjY1LjI2NCwtMjcuOTQ1MyIvPgo8L2c+CjwhLS0gY29udHJhZGljdGlvbiAtLT4KPGcgaWQ9Im5vZGU1IiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT5jb250cmFkaWN0aW9uPC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iMTE4Mi42Mzk2IiBjeT0iLTkwIiByeD0iNTcuMzkwNSIgcnk9IjE4Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjExODIuNjM5NiIgeT0iLTg2LjMiIGZvbnQtZmFtaWx5PSJUaW1lcyxzZXJpZiIgZm9udC1zaXplPSIxNC4wMCIgZmlsbD0iIzAwMDAwMCI+Y29udHJhZGljdGlvbjwvdGV4dD4KPC9nPgo8IS0tIG51bGxhcnkudHJ1dGggLS0+CjxnIGlkPSJub2RlNiIgY2xhc3M9Im5vZGUiPgo8dGl0bGU+bnVsbGFyeS50cnV0aDwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjEwNTIuNjM5NiIgY3k9Ii05MCIgcng9IjU0LjY5MDUiIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSIxMDUyLjYzOTYiIHk9Ii04Ni4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPm51bGxhcnkudHJ1dGg8L3RleHQ+CjwvZz4KPCEtLSBudWxsYXJ5LnRydXRoJiM0NTsmZ3Q7dGF1dG9sb2d5IC0tPgo8ZyBpZD0iZWRnZTUiIGNsYXNzPSJlZGdlIj4KPHRpdGxlPm51bGxhcnkudHJ1dGgmIzQ1OyZndDt0YXV0b2xvZ3k8L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGQ9Ik0xMDEyLjIwODMsLTc3Ljc3NjlDMTAwNC40MzA4LC03NS42NjggOTk2LjMxNjYsLTczLjYzMjYgOTg4LjYzOTYsLTcyIDg3Ni45Nzk4LC00OC4yNTM3IDc0NC4xMzQ4LC0zMS42NTA2IDY3MS44OTczLC0yMy41ODIiLz4KPHBvbHlnb24gZmlsbD0iIzAwMDAwMCIgc3Ryb2tlPSIjMDAwMDAwIiBwb2ludHM9IjY3Mi4wMTI5LC0yMC4wNzM2IDY2MS42ODg5LC0yMi40NTM3IDY3MS4yNDM4LC0yNy4wMzEyIDY3Mi4wMTI5LC0yMC4wNzM2Ii8+CjwvZz4KPC9nPgo8L3N2Zz4K'><br/>
+<a href="javascript:toggleVisibility('RemoveRedundantRelationsTransformer-precedence-graph-source')">(show dot source)</a>
+<div id='RemoveRedundantRelationsTransformer-precedence-graph-source' style='display:none'>
+<pre>digraph {
+	"+?exists_binary_number.truth" [label = "+?exists_binary_number.truth"];
+	"+?exists_binary_symbol.truth" [label = "+?exists_binary_symbol.truth"];
+	"+?exists_unary_number.truth" [label = "+?exists_unary_number.truth"];
+	"+?exists_unary_symbol.truth" [label = "+?exists_unary_symbol.truth"];
+	"contradiction" [label = "contradiction"];
+	"nullary.truth" [label = "nullary.truth"];
+	"tautology" [label = "tautology"];
+	"+?exists_binary_number.truth" -> "tautology";
+	"+?exists_binary_symbol.truth" -> "tautology";
+	"+?exists_unary_number.truth" -> "tautology";
+	"+?exists_unary_symbol.truth" -> "tautology";
+	"nullary.truth" -> "tautology";
+}
+</pre>
+</div>
+
+</div>
+<a id="RemoveRedundantRelationsTransformer-scc-graph54"></a>
+<div class='headerdiv'>
+<h1>Scc Graph</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<img alt='graph image' src='data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIKICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPgo8IS0tIEdlbmVyYXRlZCBieSBncmFwaHZpeiB2ZXJzaW9uIDIuNDAuMSAoMjAxNjEyMjUuMDMwNCkKIC0tPgo8IS0tIFRpdGxlOiAlMyBQYWdlczogMSAtLT4KPHN2ZyB3aWR0aD0iMTI0OHB0IiBoZWlnaHQ9IjExNnB0Igogdmlld0JveD0iMC4wMCAwLjAwIDEyNDcuODMgMTE2LjAwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj4KPGcgaWQ9ImdyYXBoMCIgY2xhc3M9ImdyYXBoIiB0cmFuc2Zvcm09InNjYWxlKDEgMSkgcm90YXRlKDApIHRyYW5zbGF0ZSg0IDExMikiPgo8dGl0bGU+JTM8L3RpdGxlPgo8cG9seWdvbiBmaWxsPSIjZmZmZmZmIiBzdHJva2U9InRyYW5zcGFyZW50IiBwb2ludHM9Ii00LDQgLTQsLTExMiAxMjQzLjgzNDUsLTExMiAxMjQzLjgzNDUsNCAtNCw0Ii8+CjwhLS0gXzAgLS0+CjxnIGlkPSJub2RlMSIgY2xhc3M9Im5vZGUiPgo8dGl0bGU+XzA8L3RpdGxlPgo8ZWxsaXBzZSBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGN4PSIxMTcuNjM5NiIgY3k9Ii05MCIgcng9IjExNy43NzkzIiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iMTE3LjYzOTYiIHk9Ii04Ni4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPis/ZXhpc3RzX2JpbmFyeV9udW1iZXIudHJ1dGg8L3RleHQ+CjwvZz4KPCEtLSBfNiAtLT4KPGcgaWQ9Im5vZGU3IiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT5fNjwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjYxOC42Mzk2IiBjeT0iLTE4IiByeD0iNDQuMzkzIiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iNjE4LjYzOTYiIHk9Ii0xNC4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPnRhdXRvbG9neTwvdGV4dD4KPC9nPgo8IS0tIF8wJiM0NTsmZ3Q7XzYgLS0+CjxnIGlkPSJlZGdlMSIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+XzAmIzQ1OyZndDtfNjwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgZD0iTTIwMy40Nzk3LC03Ny42NjM3QzMwNy44NzAzLC02Mi42NjE0IDQ4MC43NTE0LC0zNy44MTYzIDU2Ni43NDM0LC0yNS40NTgxIi8+Cjxwb2x5Z29uIGZpbGw9IiMwMDAwMDAiIHN0cm9rZT0iIzAwMDAwMCIgcG9pbnRzPSI1NjcuMzg4NiwtMjguOTAxNSA1NzYuNzg5LC0yNC4wMTQ0IDU2Ni4zOTI4LC0yMS45NzI2IDU2Ny4zODg2LC0yOC45MDE1Ii8+CjwvZz4KPCEtLSBfMSAtLT4KPGcgaWQ9Im5vZGUyIiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT5fMTwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjM2OS42Mzk2IiBjeT0iLTkwIiByeD0iMTE2LjE3OTYiIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSIzNjkuNjM5NiIgeT0iLTg2LjMiIGZvbnQtZmFtaWx5PSJUaW1lcyxzZXJpZiIgZm9udC1zaXplPSIxNC4wMCIgZmlsbD0iIzAwMDAwMCI+Kz9leGlzdHNfYmluYXJ5X3N5bWJvbC50cnV0aDwvdGV4dD4KPC9nPgo8IS0tIF8xJiM0NTsmZ3Q7XzYgLS0+CjxnIGlkPSJlZGdlMiIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+XzEmIzQ1OyZndDtfNjwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgZD0iTTQyNC41OTE5LC03NC4xMTAyQzQ2OS4wMDkyLC02MS4yNjY2IDUzMC44MTU0LC00My4zOTQ5IDU3Mi42NDY5LC0zMS4yOTkxIi8+Cjxwb2x5Z29uIGZpbGw9IiMwMDAwMDAiIHN0cm9rZT0iIzAwMDAwMCIgcG9pbnRzPSI1NzMuNjY5LC0zNC42NDcgNTgyLjMwMzIsLTI4LjUwNjkgNTcxLjcyNDUsLTI3LjkyMjUgNTczLjY2OSwtMzQuNjQ3Ii8+CjwvZz4KPCEtLSBfMiAtLT4KPGcgaWQ9Im5vZGUzIiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT5fMjwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjYxOC42Mzk2IiBjeT0iLTkwIiByeD0iMTE1LjA3OTYiIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSI2MTguNjM5NiIgeT0iLTg2LjMiIGZvbnQtZmFtaWx5PSJUaW1lcyxzZXJpZiIgZm9udC1zaXplPSIxNC4wMCIgZmlsbD0iIzAwMDAwMCI+Kz9leGlzdHNfdW5hcnlfbnVtYmVyLnRydXRoPC90ZXh0Pgo8L2c+CjwhLS0gXzImIzQ1OyZndDtfNiAtLT4KPGcgaWQ9ImVkZ2UzIiBjbGFzcz0iZWRnZSI+Cjx0aXRsZT5fMiYjNDU7Jmd0O182PC90aXRsZT4KPHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBkPSJNNjE4LjYzOTYsLTcxLjgzMTRDNjE4LjYzOTYsLTY0LjEzMSA2MTguNjM5NiwtNTQuOTc0MyA2MTguNjM5NiwtNDYuNDE2NiIvPgo8cG9seWdvbiBmaWxsPSIjMDAwMDAwIiBzdHJva2U9IiMwMDAwMDAiIHBvaW50cz0iNjIyLjEzOTcsLTQ2LjQxMzIgNjE4LjYzOTYsLTM2LjQxMzMgNjE1LjEzOTcsLTQ2LjQxMzMgNjIyLjEzOTcsLTQ2LjQxMzIiLz4KPC9nPgo8IS0tIF8zIC0tPgo8ZyBpZD0ibm9kZTQiIGNsYXNzPSJub2RlIj4KPHRpdGxlPl8zPC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iODY1LjYzOTYiIGN5PSItOTAiIHJ4PSIxMTQuMjc5OCIgcnk9IjE4Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9Ijg2NS42Mzk2IiB5PSItODYuMyIgZm9udC1mYW1pbHk9IlRpbWVzLHNlcmlmIiBmb250LXNpemU9IjE0LjAwIiBmaWxsPSIjMDAwMDAwIj4rP2V4aXN0c191bmFyeV9zeW1ib2wudHJ1dGg8L3RleHQ+CjwvZz4KPCEtLSBfMyYjNDU7Jmd0O182IC0tPgo8ZyBpZD0iZWRnZTQiIGNsYXNzPSJlZGdlIj4KPHRpdGxlPl8zJiM0NTsmZ3Q7XzY8L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGQ9Ik04MTEuMTI4NiwtNzQuMTEwMkM3NjcuMTYxLC02MS4yOTM3IDcwNi4wMTY5LC00My40NzAzIDY2NC41MjU3LC0zMS4zNzU3Ii8+Cjxwb2x5Z29uIGZpbGw9IiMwMDAwMDAiIHN0cm9rZT0iIzAwMDAwMCIgcG9pbnRzPSI2NjUuMjY0LC0yNy45NDUzIDY1NC42ODQsLTI4LjUwNjkgNjYzLjMwNSwtMzQuNjY1NiA2NjUuMjY0LC0yNy45NDUzIi8+CjwvZz4KPCEtLSBfNCAtLT4KPGcgaWQ9Im5vZGU1IiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT5fNDwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjExODIuNjM5NiIgY3k9Ii05MCIgcng9IjU3LjM5MDUiIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSIxMTgyLjYzOTYiIHk9Ii04Ni4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPmNvbnRyYWRpY3Rpb248L3RleHQ+CjwvZz4KPCEtLSBfNSAtLT4KPGcgaWQ9Im5vZGU2IiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT5fNTwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjEwNTIuNjM5NiIgY3k9Ii05MCIgcng9IjU0LjY5MDUiIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSIxMDUyLjYzOTYiIHk9Ii04Ni4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPm51bGxhcnkudHJ1dGg8L3RleHQ+CjwvZz4KPCEtLSBfNSYjNDU7Jmd0O182IC0tPgo8ZyBpZD0iZWRnZTUiIGNsYXNzPSJlZGdlIj4KPHRpdGxlPl81JiM0NTsmZ3Q7XzY8L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGQ9Ik0xMDEyLjIwODMsLTc3Ljc3NjlDMTAwNC40MzA4LC03NS42NjggOTk2LjMxNjYsLTczLjYzMjYgOTg4LjYzOTYsLTcyIDg3Ni45Nzk4LC00OC4yNTM3IDc0NC4xMzQ4LC0zMS42NTA2IDY3MS44OTczLC0yMy41ODIiLz4KPHBvbHlnb24gZmlsbD0iIzAwMDAwMCIgc3Ryb2tlPSIjMDAwMDAwIiBwb2ludHM9IjY3Mi4wMTI5LC0yMC4wNzM2IDY2MS42ODg5LC0yMi40NTM3IDY3MS4yNDM4LC0yNy4wMzEyIDY3Mi4wMTI5LC0yMC4wNzM2Ii8+CjwvZz4KPC9nPgo8L3N2Zz4K'><br/>
+<a href="javascript:toggleVisibility('RemoveRedundantRelationsTransformer-scc-graph-source')">(show dot source)</a>
+<div id='RemoveRedundantRelationsTransformer-scc-graph-source' style='display:none'>
+<pre>digraph {
+	_0[label = "+?exists_binary_number.truth" ];
+	_1[label = "+?exists_binary_symbol.truth" ];
+	_2[label = "+?exists_unary_number.truth" ];
+	_3[label = "+?exists_unary_symbol.truth" ];
+	_4[label = "contradiction" ];
+	_5[label = "nullary.truth" ];
+	_6[label = "tautology" ];
+	_0 -> _6;
+	_1 -> _6;
+	_2 -> _6;
+	_3 -> _6;
+	_5 -> _6;
+}</pre>
+</div>
+
+</div>
+<a id="RemoveRedundantRelationsTransformer-topological-scc-graph55"></a>
+<div class='headerdiv'>
+<h1>Topological Scc Graph</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>{
+    "StratumNames": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+    ],
+    "StratumDependencies": {
+        "0": ["6"],
+        "1": ["6"],
+        "2": ["6"],
+        "3": ["6"],
+        "4": [],
+        "5": ["6"],
+        "6": []
+    },
+    "RelationNames": [
+        "+?exists_binary_number.truth",
+        "+?exists_binary_symbol.truth",
+        "+?exists_unary_number.truth",
+        "+?exists_unary_symbol.truth",
+        "contradiction",
+        "nullary.truth",
+        "tautology"
+    ],
+    "StratumRelations": {
+        "0": ["+?exists_binary_number.truth"],
+        "1": ["+?exists_binary_symbol.truth"],
+        "2": ["+?exists_unary_number.truth"],
+        "3": ["+?exists_unary_symbol.truth"],
+        "4": ["contradiction"],
+        "5": ["nullary.truth"],
+        "6": ["tautology"]
+    },
+    "TopologicalOrderingCost": 5
+}</pre>
+
+</div>
+</div>
+<a id="ReduceExistentialsTransformer57"></a>
+<div class='headerdiv'>
+<h1>After ReduceExistentialsTransformer (0.008916s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RemoveRedundantRelationsTransformer58"></a>
+<div class='headerdiv'>
+<h1>After RemoveRedundantRelationsTransformer (0.003171s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RemoveRelationCopiesTransformer59"></a>
+<div class='headerdiv'>
+<h1>After RemoveRelationCopiesTransformer (0.003151s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="NameUnnamedVariablesTransformer60"></a>
+<div class='headerdiv'>
+<h1>After NameUnnamedVariablesTransformer (0.003694s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="PartitionBodyLiteralsTransformer61"></a>
+<div class='headerdiv'>
+<h1>After PartitionBodyLiteralsTransformer (0.019056s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="ReplaceSingletonVariablesTransformer62"></a>
+<div class='headerdiv'>
+<h1>After ReplaceSingletonVariablesTransformer (0.002059s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="MinimiseProgramTransformer71"></a>
+<div class='headerdiv'>
+<h1>After MinimiseProgramTransformer (0.024492s)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+<a id="MinimiseProgramTransformer-dl63"></a>
+<div class='headerdiv'>
+<h1>Datalog</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>// ----- Types -----
+.type Number = number
+.type Symbol = symbol
+
+// ----- Functors -----
+
+// ----- Relations -----
+
+
+// -- +?exists_binary_number.truth --
+.decl +?exists_binary_number.truth()  
+
++?exists_binary_number.truth().
+
+
+
+// -- contradiction --
+.decl contradiction()  
+
+.printsize contradiction(IO="stdoutprintsize")
+
+
+
+// -- tautology --
+.decl tautology()  
+
+tautology() :- 
+   +?exists_binary_number.truth(),
+   +?exists_binary_number.truth(),
+   +?exists_binary_number.truth(),
+   +?exists_binary_number.truth(),
+   +?exists_binary_number.truth().
+
+.printsize tautology(IO="stdoutprintsize")
+
+.output tautology
+
+</pre>
+
+</div>
+<a id="MinimiseProgramTransformer-type-analysis64"></a>
+<div class='headerdiv'>
+<h1>Type Analysis</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>-- Analysis logs --
+Clause: +?exists_binary_number.truth().
+Problem:
+{}
+Solution:
+{}
+Clause: tautology() :- 
+   +?exists_binary_number.truth(),
+   +?exists_binary_number.truth(),
+   +?exists_binary_number.truth(),
+   +?exists_binary_number.truth(),
+   +?exists_binary_number.truth().
+Problem:
+{}
+Solution:
+{}
+
+-- Result --
++?exists_binary_number.truth().
+tautology() :- 
+   +?exists_binary_number.truth(),
+   +?exists_binary_number.truth(),
+   +?exists_binary_number.truth(),
+   +?exists_binary_number.truth(),
+   +?exists_binary_number.truth().
+</pre>
+
+</div>
+<a id="MinimiseProgramTransformer-type-environment65"></a>
+<div class='headerdiv'>
+<h1>Type Environment</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>Types:
+	Number = number
+	Symbol = symbol
+	number
+	symbol
+</pre>
+
+</div>
+<a id="MinimiseProgramTransformer-redundant-relations66"></a>
+<div class='headerdiv'>
+<h1>Redundant Relations</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>{}
+</pre>
+
+</div>
+<a id="MinimiseProgramTransformer-recursive-clauses67"></a>
+<div class='headerdiv'>
+<h1>Recursive Clauses</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>{}
+</pre>
+
+</div>
+<a id="MinimiseProgramTransformer-precedence-graph68"></a>
+<div class='headerdiv'>
+<h1>Precedence Graph</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<img alt='graph image' src='data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIKICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPgo8IS0tIEdlbmVyYXRlZCBieSBncmFwaHZpeiB2ZXJzaW9uIDIuNDAuMSAoMjAxNjEyMjUuMDMwNCkKIC0tPgo8IS0tIFRpdGxlOiAlMyBQYWdlczogMSAtLT4KPHN2ZyB3aWR0aD0iMzc2cHQiIGhlaWdodD0iMTE2cHQiCiB2aWV3Qm94PSIwLjAwIDAuMDAgMzc1LjgzIDExNi4wMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+CjxnIGlkPSJncmFwaDAiIGNsYXNzPSJncmFwaCIgdHJhbnNmb3JtPSJzY2FsZSgxIDEpIHJvdGF0ZSgwKSB0cmFuc2xhdGUoNCAxMTIpIj4KPHRpdGxlPiUzPC90aXRsZT4KPHBvbHlnb24gZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSJ0cmFuc3BhcmVudCIgcG9pbnRzPSItNCw0IC00LC0xMTIgMzcxLjgzNDUsLTExMiAzNzEuODM0NSw0IC00LDQiLz4KPCEtLSArP2V4aXN0c19iaW5hcnlfbnVtYmVyLnRydXRoIC0tPgo8ZyBpZD0ibm9kZTEiIGNsYXNzPSJub2RlIj4KPHRpdGxlPis/ZXhpc3RzX2JpbmFyeV9udW1iZXIudHJ1dGg8L3RpdGxlPgo8ZWxsaXBzZSBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIGN4PSIxMTcuNjM5NiIgY3k9Ii05MCIgcng9IjExNy43NzkzIiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iMTE3LjYzOTYiIHk9Ii04Ni4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPis/ZXhpc3RzX2JpbmFyeV9udW1iZXIudHJ1dGg8L3RleHQ+CjwvZz4KPCEtLSB0YXV0b2xvZ3kgLS0+CjxnIGlkPSJub2RlMyIgY2xhc3M9Im5vZGUiPgo8dGl0bGU+dGF1dG9sb2d5PC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iMTE3LjYzOTYiIGN5PSItMTgiIHJ4PSI0NC4zOTMiIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSIxMTcuNjM5NiIgeT0iLTE0LjMiIGZvbnQtZmFtaWx5PSJUaW1lcyxzZXJpZiIgZm9udC1zaXplPSIxNC4wMCIgZmlsbD0iIzAwMDAwMCI+dGF1dG9sb2d5PC90ZXh0Pgo8L2c+CjwhLS0gKz9leGlzdHNfYmluYXJ5X251bWJlci50cnV0aCYjNDU7Jmd0O3RhdXRvbG9neSAtLT4KPGcgaWQ9ImVkZ2UxIiBjbGFzcz0iZWRnZSI+Cjx0aXRsZT4rP2V4aXN0c19iaW5hcnlfbnVtYmVyLnRydXRoJiM0NTsmZ3Q7dGF1dG9sb2d5PC90aXRsZT4KPHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBkPSJNMTE3LjYzOTYsLTcxLjgzMTRDMTE3LjYzOTYsLTY0LjEzMSAxMTcuNjM5NiwtNTQuOTc0MyAxMTcuNjM5NiwtNDYuNDE2NiIvPgo8cG9seWdvbiBmaWxsPSIjMDAwMDAwIiBzdHJva2U9IiMwMDAwMDAiIHBvaW50cz0iMTIxLjEzOTcsLTQ2LjQxMzIgMTE3LjYzOTYsLTM2LjQxMzMgMTE0LjEzOTcsLTQ2LjQxMzMgMTIxLjEzOTcsLTQ2LjQxMzIiLz4KPC9nPgo8IS0tIGNvbnRyYWRpY3Rpb24gLS0+CjxnIGlkPSJub2RlMiIgY2xhc3M9Im5vZGUiPgo8dGl0bGU+Y29udHJhZGljdGlvbjwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjMxMC42Mzk2IiBjeT0iLTkwIiByeD0iNTcuMzkwNSIgcnk9IjE4Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjMxMC42Mzk2IiB5PSItODYuMyIgZm9udC1mYW1pbHk9IlRpbWVzLHNlcmlmIiBmb250LXNpemU9IjE0LjAwIiBmaWxsPSIjMDAwMDAwIj5jb250cmFkaWN0aW9uPC90ZXh0Pgo8L2c+CjwvZz4KPC9zdmc+Cg=='><br/>
+<a href="javascript:toggleVisibility('MinimiseProgramTransformer-precedence-graph-source')">(show dot source)</a>
+<div id='MinimiseProgramTransformer-precedence-graph-source' style='display:none'>
+<pre>digraph {
+	"+?exists_binary_number.truth" [label = "+?exists_binary_number.truth"];
+	"contradiction" [label = "contradiction"];
+	"tautology" [label = "tautology"];
+	"+?exists_binary_number.truth" -> "tautology";
+}
+</pre>
+</div>
+
+</div>
+<a id="MinimiseProgramTransformer-scc-graph69"></a>
+<div class='headerdiv'>
+<h1>Scc Graph</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<img alt='graph image' src='data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIKICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPgo8IS0tIEdlbmVyYXRlZCBieSBncmFwaHZpeiB2ZXJzaW9uIDIuNDAuMSAoMjAxNjEyMjUuMDMwNCkKIC0tPgo8IS0tIFRpdGxlOiAlMyBQYWdlczogMSAtLT4KPHN2ZyB3aWR0aD0iMzc2cHQiIGhlaWdodD0iMTE2cHQiCiB2aWV3Qm94PSIwLjAwIDAuMDAgMzc1LjgzIDExNi4wMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+CjxnIGlkPSJncmFwaDAiIGNsYXNzPSJncmFwaCIgdHJhbnNmb3JtPSJzY2FsZSgxIDEpIHJvdGF0ZSgwKSB0cmFuc2xhdGUoNCAxMTIpIj4KPHRpdGxlPiUzPC90aXRsZT4KPHBvbHlnb24gZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSJ0cmFuc3BhcmVudCIgcG9pbnRzPSItNCw0IC00LC0xMTIgMzcxLjgzNDUsLTExMiAzNzEuODM0NSw0IC00LDQiLz4KPCEtLSBfMCAtLT4KPGcgaWQ9Im5vZGUxIiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT5fMDwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMDAwMCIgY3g9IjExNy42Mzk2IiBjeT0iLTkwIiByeD0iMTE3Ljc3OTMiIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSIxMTcuNjM5NiIgeT0iLTg2LjMiIGZvbnQtZmFtaWx5PSJUaW1lcyxzZXJpZiIgZm9udC1zaXplPSIxNC4wMCIgZmlsbD0iIzAwMDAwMCI+Kz9leGlzdHNfYmluYXJ5X251bWJlci50cnV0aDwvdGV4dD4KPC9nPgo8IS0tIF8yIC0tPgo8ZyBpZD0ibm9kZTMiIGNsYXNzPSJub2RlIj4KPHRpdGxlPl8yPC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iMTE3LjYzOTYiIGN5PSItMTgiIHJ4PSI0NC4zOTMiIHJ5PSIxOCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSIxMTcuNjM5NiIgeT0iLTE0LjMiIGZvbnQtZmFtaWx5PSJUaW1lcyxzZXJpZiIgZm9udC1zaXplPSIxNC4wMCIgZmlsbD0iIzAwMDAwMCI+dGF1dG9sb2d5PC90ZXh0Pgo8L2c+CjwhLS0gXzAmIzQ1OyZndDtfMiAtLT4KPGcgaWQ9ImVkZ2UxIiBjbGFzcz0iZWRnZSI+Cjx0aXRsZT5fMCYjNDU7Jmd0O18yPC90aXRsZT4KPHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBkPSJNMTE3LjYzOTYsLTcxLjgzMTRDMTE3LjYzOTYsLTY0LjEzMSAxMTcuNjM5NiwtNTQuOTc0MyAxMTcuNjM5NiwtNDYuNDE2NiIvPgo8cG9seWdvbiBmaWxsPSIjMDAwMDAwIiBzdHJva2U9IiMwMDAwMDAiIHBvaW50cz0iMTIxLjEzOTcsLTQ2LjQxMzIgMTE3LjYzOTYsLTM2LjQxMzMgMTE0LjEzOTcsLTQ2LjQxMzMgMTIxLjEzOTcsLTQ2LjQxMzIiLz4KPC9nPgo8IS0tIF8xIC0tPgo8ZyBpZD0ibm9kZTIiIGNsYXNzPSJub2RlIj4KPHRpdGxlPl8xPC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBjeD0iMzEwLjYzOTYiIGN5PSItOTAiIHJ4PSI1Ny4zOTA1IiByeT0iMTgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iMzEwLjYzOTYiIHk9Ii04Ni4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMwMDAwMDAiPmNvbnRyYWRpY3Rpb248L3RleHQ+CjwvZz4KPC9nPgo8L3N2Zz4K'><br/>
+<a href="javascript:toggleVisibility('MinimiseProgramTransformer-scc-graph-source')">(show dot source)</a>
+<div id='MinimiseProgramTransformer-scc-graph-source' style='display:none'>
+<pre>digraph {
+	_0[label = "+?exists_binary_number.truth" ];
+	_1[label = "contradiction" ];
+	_2[label = "tautology" ];
+	_0 -> _2;
+}</pre>
+</div>
+
+</div>
+<a id="MinimiseProgramTransformer-topological-scc-graph70"></a>
+<div class='headerdiv'>
+<h1>Topological Scc Graph</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>{
+    "StratumNames": [
+        "0",
+        "2",
+        "1"
+    ],
+    "StratumDependencies": {
+        "0": ["2"],
+        "2": [],
+        "1": []
+    },
+    "RelationNames": [
+        "+?exists_binary_number.truth",
+        "tautology",
+        "contradiction"
+    ],
+    "StratumRelations": {
+        "0": ["+?exists_binary_number.truth"],
+        "2": ["tautology"],
+        "1": ["contradiction"]
+    },
+    "TopologicalOrderingCost": 1
+}</pre>
+
+</div>
+</div>
+<a id="MinimiseProgramTransformer72"></a>
+<div class='headerdiv'>
+<h1>After MinimiseProgramTransformer (0.003538s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RemoveRelationCopiesTransformer73"></a>
+<div class='headerdiv'>
+<h1>After RemoveRelationCopiesTransformer (0.002317s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="ReorderLiteralsTransformer74"></a>
+<div class='headerdiv'>
+<h1>After ReorderLiteralsTransformer (0.021204s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="ResolveAliasesTransformer75"></a>
+<div class='headerdiv'>
+<h1>After ResolveAliasesTransformer (0.003854s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="MaterializeAggregationQueriesTransformer76"></a>
+<div class='headerdiv'>
+<h1>After MaterializeAggregationQueriesTransformer (0.007039s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RemoveRedundantSumsTransformer77"></a>
+<div class='headerdiv'>
+<h1>After RemoveRedundantSumsTransformer (0.001773s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RemoveEmptyRelationsTransformer78"></a>
+<div class='headerdiv'>
+<h1>After RemoveEmptyRelationsTransformer (0.001579s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="ReorderLiteralsTransformer79"></a>
+<div class='headerdiv'>
+<h1>After ReorderLiteralsTransformer (0.000797s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="AstExecutionPlanChecker80"></a>
+<div class='headerdiv'>
+<h1>After AstExecutionPlanChecker (0.037542s) (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="ram-program81"></a>
+<div class='headerdiv'>
+<h1>RAM Program (0.299444s)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>PROGRAM
+ DECLARATION
+  +?exists_binary_number.truth nullary
+  contradiction nullary
+  tautology nullary
+ END DECLARATION
+ BEGIN MAIN
+  BEGIN_STRATUM 0
+   BEGIN_DEBUG "+?exists_binary_number.truth().\nin file /home/lyndonhenry/souffle/tests/evaluation/tautology/tautology.dl [33:5-33:21]"
+    QUERY
+     PROJECT () INTO +?exists_binary_number.truth
+   END_DEBUG
+  END_STRATUM 0
+  BEGIN_STRATUM 2
+   BEGIN_DEBUG "tautology() :- \n   +?exists_binary_number.truth(),\n   +?exists_binary_number.truth(),\n   +?exists_binary_number.truth(),\n   +?exists_binary_number.truth(),\n   +?exists_binary_number.truth().\nin file /home/lyndonhenry/souffle/tests/evaluation/tautology/tautology.dl [50:1-60:35]"
+    QUERY
+     IF (tautology = ∅)
+      IF (NOT (+?exists_binary_number.truth = ∅))
+       IF (NOT (+?exists_binary_number.truth = ∅))
+        IF (NOT (+?exists_binary_number.truth = ∅))
+         IF (NOT (+?exists_binary_number.truth = ∅))
+          IF (NOT (+?exists_binary_number.truth = ∅))
+           IF (tautology = ∅)
+            PROJECT () INTO tautology
+   END_DEBUG
+   STORE DATA FOR tautology TO {{{"","default"},{"IO","stdoutprintsize"},{"append","false"},{"attributeNames",""},{"directory","."},{"extension",".csv"},{"location","output-dir"},{"name","tautology"},{"stratum","slave"}}], [{{"","default"},{"IO","file"},{"append","false"},{"attributeNames",""},{"directory","."},{"extension",".csv"},{"filename","./tautology.csv"},{"location","output-dir"},{"name","tautology"},{"stratum","slave"}}}
+   CLEAR +?exists_binary_number.truth
+  END_STRATUM 2
+  BEGIN_STRATUM 1
+   STORE DATA FOR contradiction TO {{{"","default"},{"IO","stdoutprintsize"},{"append","false"},{"attributeNames",""},{"directory","."},{"extension",".csv"},{"location","output-dir"},{"name","contradiction"},{"stratum","slave"}}}
+  END_STRATUM 1
+ END MAIN
+END PROGRAM
+</pre>
+
+</div>
+<a id="ExpandFilterTransformer82"></a>
+<div class='headerdiv'>
+<h1>After ExpandFilterTransformer  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="HoistConditionsTransformer83"></a>
+<div class='headerdiv'>
+<h1>RAM Program after HoistConditionsTransformer</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>PROGRAM
+ DECLARATION
+  +?exists_binary_number.truth nullary
+  contradiction nullary
+  tautology nullary
+ END DECLARATION
+ BEGIN MAIN
+  BEGIN_STRATUM 0
+   BEGIN_DEBUG "+?exists_binary_number.truth().\nin file /home/lyndonhenry/souffle/tests/evaluation/tautology/tautology.dl [33:5-33:21]"
+    QUERY
+     PROJECT () INTO +?exists_binary_number.truth
+   END_DEBUG
+  END_STRATUM 0
+  BEGIN_STRATUM 2
+   BEGIN_DEBUG "tautology() :- \n   +?exists_binary_number.truth(),\n   +?exists_binary_number.truth(),\n   +?exists_binary_number.truth(),\n   +?exists_binary_number.truth(),\n   +?exists_binary_number.truth().\nin file /home/lyndonhenry/souffle/tests/evaluation/tautology/tautology.dl [50:1-60:35]"
+    QUERY
+     IF (((((((tautology = ∅) AND (NOT (+?exists_binary_number.truth = ∅))) AND (NOT (+?exists_binary_number.truth = ∅))) AND (NOT (+?exists_binary_number.truth = ∅))) AND (NOT (+?exists_binary_number.truth = ∅))) AND (NOT (+?exists_binary_number.truth = ∅))) AND (tautology = ∅))
+      PROJECT () INTO tautology
+   END_DEBUG
+   STORE DATA FOR tautology TO {{{"","default"},{"IO","stdoutprintsize"},{"append","false"},{"attributeNames",""},{"directory","."},{"extension",".csv"},{"location","output-dir"},{"name","tautology"},{"stratum","slave"}}], [{{"","default"},{"IO","file"},{"append","false"},{"attributeNames",""},{"directory","."},{"extension",".csv"},{"filename","./tautology.csv"},{"location","output-dir"},{"name","tautology"},{"stratum","slave"}}}
+   CLEAR +?exists_binary_number.truth
+  END_STRATUM 2
+  BEGIN_STRATUM 1
+   STORE DATA FOR contradiction TO {{{"","default"},{"IO","stdoutprintsize"},{"append","false"},{"attributeNames",""},{"directory","."},{"extension",".csv"},{"location","output-dir"},{"name","contradiction"},{"stratum","slave"}}}
+  END_STRATUM 1
+ END MAIN
+END PROGRAM
+</pre>
+
+</div>
+<a id="MakeIndexTransformer84"></a>
+<div class='headerdiv'>
+<h1>After MakeIndexTransformer  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RamTransformerSequence85"></a>
+<div class='headerdiv'>
+<h1>After RamTransformerSequence  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RamLoopTransformer86"></a>
+<div class='headerdiv'>
+<h1>After RamLoopTransformer  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="IfConversionTransformer87"></a>
+<div class='headerdiv'>
+<h1>After IfConversionTransformer  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="ChoiceConversionTransformer88"></a>
+<div class='headerdiv'>
+<h1>After ChoiceConversionTransformer  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="CollapseFiltersTransformer89"></a>
+<div class='headerdiv'>
+<h1>After CollapseFiltersTransformer  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="TupleIdTransformer90"></a>
+<div class='headerdiv'>
+<h1>After TupleIdTransformer  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="HoistAggregateTransformer91"></a>
+<div class='headerdiv'>
+<h1>After HoistAggregateTransformer  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="TupleIdTransformer92"></a>
+<div class='headerdiv'>
+<h1>After TupleIdTransformer  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RamTransformerSequence93"></a>
+<div class='headerdiv'>
+<h1>After RamTransformerSequence  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RamLoopTransformer94"></a>
+<div class='headerdiv'>
+<h1>After RamLoopTransformer  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="ExpandFilterTransformer95"></a>
+<div class='headerdiv'>
+<h1>RAM Program after ExpandFilterTransformer</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>PROGRAM
+ DECLARATION
+  +?exists_binary_number.truth nullary
+  contradiction nullary
+  tautology nullary
+ END DECLARATION
+ BEGIN MAIN
+  BEGIN_STRATUM 0
+   BEGIN_DEBUG "+?exists_binary_number.truth().\nin file /home/lyndonhenry/souffle/tests/evaluation/tautology/tautology.dl [33:5-33:21]"
+    QUERY
+     PROJECT () INTO +?exists_binary_number.truth
+   END_DEBUG
+  END_STRATUM 0
+  BEGIN_STRATUM 2
+   BEGIN_DEBUG "tautology() :- \n   +?exists_binary_number.truth(),\n   +?exists_binary_number.truth(),\n   +?exists_binary_number.truth(),\n   +?exists_binary_number.truth(),\n   +?exists_binary_number.truth().\nin file /home/lyndonhenry/souffle/tests/evaluation/tautology/tautology.dl [50:1-60:35]"
+    QUERY
+     IF (NOT (+?exists_binary_number.truth = ∅))
+      IF (tautology = ∅)
+       IF (NOT (+?exists_binary_number.truth = ∅))
+        IF (NOT (+?exists_binary_number.truth = ∅))
+         IF (NOT (+?exists_binary_number.truth = ∅))
+          IF (NOT (+?exists_binary_number.truth = ∅))
+           IF (tautology = ∅)
+            PROJECT () INTO tautology
+   END_DEBUG
+   STORE DATA FOR tautology TO {{{"","default"},{"IO","stdoutprintsize"},{"append","false"},{"attributeNames",""},{"directory","."},{"extension",".csv"},{"location","output-dir"},{"name","tautology"},{"stratum","slave"}}], [{{"","default"},{"IO","file"},{"append","false"},{"attributeNames",""},{"directory","."},{"extension",".csv"},{"filename","./tautology.csv"},{"location","output-dir"},{"name","tautology"},{"stratum","slave"}}}
+   CLEAR +?exists_binary_number.truth
+  END_STRATUM 2
+  BEGIN_STRATUM 1
+   STORE DATA FOR contradiction TO {{{"","default"},{"IO","stdoutprintsize"},{"append","false"},{"attributeNames",""},{"directory","."},{"extension",".csv"},{"location","output-dir"},{"name","contradiction"},{"stratum","slave"}}}
+  END_STRATUM 1
+ END MAIN
+END PROGRAM
+</pre>
+
+</div>
+<a id="HoistConditionsTransformer96"></a>
+<div class='headerdiv'>
+<h1>RAM Program after HoistConditionsTransformer</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>PROGRAM
+ DECLARATION
+  +?exists_binary_number.truth nullary
+  contradiction nullary
+  tautology nullary
+ END DECLARATION
+ BEGIN MAIN
+  BEGIN_STRATUM 0
+   BEGIN_DEBUG "+?exists_binary_number.truth().\nin file /home/lyndonhenry/souffle/tests/evaluation/tautology/tautology.dl [33:5-33:21]"
+    QUERY
+     PROJECT () INTO +?exists_binary_number.truth
+   END_DEBUG
+  END_STRATUM 0
+  BEGIN_STRATUM 2
+   BEGIN_DEBUG "tautology() :- \n   +?exists_binary_number.truth(),\n   +?exists_binary_number.truth(),\n   +?exists_binary_number.truth(),\n   +?exists_binary_number.truth(),\n   +?exists_binary_number.truth().\nin file /home/lyndonhenry/souffle/tests/evaluation/tautology/tautology.dl [50:1-60:35]"
+    QUERY
+     IF (((((((NOT (+?exists_binary_number.truth = ∅)) AND (tautology = ∅)) AND (NOT (+?exists_binary_number.truth = ∅))) AND (NOT (+?exists_binary_number.truth = ∅))) AND (NOT (+?exists_binary_number.truth = ∅))) AND (NOT (+?exists_binary_number.truth = ∅))) AND (tautology = ∅))
+      PROJECT () INTO tautology
+   END_DEBUG
+   STORE DATA FOR tautology TO {{{"","default"},{"IO","stdoutprintsize"},{"append","false"},{"attributeNames",""},{"directory","."},{"extension",".csv"},{"location","output-dir"},{"name","tautology"},{"stratum","slave"}}], [{{"","default"},{"IO","file"},{"append","false"},{"attributeNames",""},{"directory","."},{"extension",".csv"},{"filename","./tautology.csv"},{"location","output-dir"},{"name","tautology"},{"stratum","slave"}}}
+   CLEAR +?exists_binary_number.truth
+  END_STRATUM 2
+  BEGIN_STRATUM 1
+   STORE DATA FOR contradiction TO {{{"","default"},{"IO","stdoutprintsize"},{"append","false"},{"attributeNames",""},{"directory","."},{"extension",".csv"},{"location","output-dir"},{"name","contradiction"},{"stratum","slave"}}}
+  END_STRATUM 1
+ END MAIN
+END PROGRAM
+</pre>
+
+</div>
+<a id="CollapseFiltersTransformer97"></a>
+<div class='headerdiv'>
+<h1>After CollapseFiltersTransformer  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="EliminateDuplicatesTransformer98"></a>
+<div class='headerdiv'>
+<h1>RAM Program after EliminateDuplicatesTransformer</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>PROGRAM
+ DECLARATION
+  +?exists_binary_number.truth nullary
+  contradiction nullary
+  tautology nullary
+ END DECLARATION
+ BEGIN MAIN
+  BEGIN_STRATUM 0
+   BEGIN_DEBUG "+?exists_binary_number.truth().\nin file /home/lyndonhenry/souffle/tests/evaluation/tautology/tautology.dl [33:5-33:21]"
+    QUERY
+     PROJECT () INTO +?exists_binary_number.truth
+   END_DEBUG
+  END_STRATUM 0
+  BEGIN_STRATUM 2
+   BEGIN_DEBUG "tautology() :- \n   +?exists_binary_number.truth(),\n   +?exists_binary_number.truth(),\n   +?exists_binary_number.truth(),\n   +?exists_binary_number.truth(),\n   +?exists_binary_number.truth().\nin file /home/lyndonhenry/souffle/tests/evaluation/tautology/tautology.dl [50:1-60:35]"
+    QUERY
+     IF ((tautology = ∅) AND (NOT (+?exists_binary_number.truth = ∅)))
+      PROJECT () INTO tautology
+   END_DEBUG
+   STORE DATA FOR tautology TO {{{"","default"},{"IO","stdoutprintsize"},{"append","false"},{"attributeNames",""},{"directory","."},{"extension",".csv"},{"location","output-dir"},{"name","tautology"},{"stratum","slave"}}], [{{"","default"},{"IO","file"},{"append","false"},{"attributeNames",""},{"directory","."},{"extension",".csv"},{"filename","./tautology.csv"},{"location","output-dir"},{"name","tautology"},{"stratum","slave"}}}
+   CLEAR +?exists_binary_number.truth
+  END_STRATUM 2
+  BEGIN_STRATUM 1
+   STORE DATA FOR contradiction TO {{{"","default"},{"IO","stdoutprintsize"},{"append","false"},{"attributeNames",""},{"directory","."},{"extension",".csv"},{"location","output-dir"},{"name","contradiction"},{"stratum","slave"}}}
+  END_STRATUM 1
+ END MAIN
+END PROGRAM
+</pre>
+
+</div>
+<a id="ReorderConditionsTransformer99"></a>
+<div class='headerdiv'>
+<h1>After ReorderConditionsTransformer  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="ReorderFilterBreak100"></a>
+<div class='headerdiv'>
+<h1>After ReorderFilterBreak  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RamLoopTransformer101"></a>
+<div class='headerdiv'>
+<h1>After RamLoopTransformer  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RamConditionalTransformer102"></a>
+<div class='headerdiv'>
+<h1>After RamConditionalTransformer  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="ReportIndexTransfomer103"></a>
+<div class='headerdiv'>
+<h1>RAM Analysis index-analysis</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+<pre>Relation +?exists_binary_number.truth
+	Number of Primitive Searches: 0
+	Number of Indexes: 1
+		
+Relation tautology
+	Number of Primitive Searches: 0
+	Number of Indexes: 1
+		
+Relation contradiction
+	Number of Primitive Searches: 0
+	Number of Indexes: 1
+		
+</pre>
+
+</div>
+<a id="ReportIndexTransfomer104"></a>
+<div class='headerdiv'>
+<h1>After ReportIndexTransfomer  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a id="RamTransformerSequence105"></a>
+<div class='headerdiv'>
+<h1>After RamTransformerSequence  (unchanged)</h1>
+<a href='#'>(return to top)</a>
+</div><div style='clear:both'></div>
+<div style='padding-left: 1em'>
+
+</div>
+<a href='#'>(return to top)</a>
+</body>
+</html>

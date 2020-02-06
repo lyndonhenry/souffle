@@ -198,7 +198,9 @@ void AggregatedAndNegatedRelations::print(std::ostream& os) const {
         if (it_i != mapOfSets.begin()) {
             os << ",";
         }
-        os << std::endl << ONE_TAB << "\"" << it_i->first->getName() << "\": [";
+        os << std::endl << ONE_TAB << "\"";
+        os << it_i->first->getName().getName();
+        os << "\": [";
         if (it_i->second.empty()) {
             os << "]";
         } else {
@@ -206,7 +208,9 @@ void AggregatedAndNegatedRelations::print(std::ostream& os) const {
                 if (it_j != it_i->second.begin()) {
                     os << ",";
                 }
-                os << std::endl << TWO_TABS << "\"" << (*it_j)->getName() << "\"";
+                os << std::endl << TWO_TABS << "\"";
+                os << (*it_j)->getName().getName();
+                os << "\"";
             }
             os << std::endl << ONE_TAB << "]";
         }

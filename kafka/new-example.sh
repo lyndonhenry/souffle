@@ -337,14 +337,6 @@ function ensure_kafka_test_case_passes() {
     EXE_EXTRA_ARGS+=" -Xcustom.disable-stderr=false "
     ${EXE} ${EXE_ARGS} ${EXE_EXTRA_ARGS}
     sleep 1s
-    #
-    #
-    # FIX THIS BUG AFTER GETTING USE GENERAL TO WORK!!!
-    #
-    #
-    # 
-    ## @@@TODO
-    exit 0
     # ensure that all program specific topics exist
     local EXE_EXTRA_ARGS=""
     EXE_EXTRA_ARGS+=" -Xmetadata.broker.list=${KAFKA_HOST} "
@@ -516,9 +508,9 @@ function main() {
 }
 
 # @TODO (lh)
-#ensure_docker_compose_is_down "${PWD}/kafka"
-#ensure_docker_compose_is_up "${PWD}/kafka"
-#export PATH="/tmp/souffle/kafka_2.12-2.3.1/bin:${PATH}"
-#ensure_testsuite_passes
+ensure_docker_compose_is_down "${PWD}/kafka"
+ensure_docker_compose_is_up "${PWD}/kafka"
+export PATH="/tmp/souffle/kafka_2.12-2.3.1/bin:${PATH}"
+ensure_testsuite_passes
 
 main ${@:-}
