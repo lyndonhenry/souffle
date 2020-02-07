@@ -281,7 +281,6 @@ private:
         {"use-kafkacat", "true"}
         };
     std::vector<std::string> topicNames_;
-    std::string uniqueId_;
 
 private:
     explicit Kafka() {}
@@ -318,7 +317,6 @@ public:
                 detail::KafkaHelper::setConf(globalConf_, it->first, it->second);
             }
         }
-        uniqueId_ = customConf_.at("unique-id");
         if (customConf_.at("create-topics") == "true") {
             for (const auto& topicName : topicNames_) {
                 createTopic(topicName, customConf_.at("bootstrap-server"));
@@ -417,7 +415,7 @@ private:
     void createTopic(const std::string& topicName, const std::string& bootstrapServer) {
         std::stringstream stringstream;
         if (customConf_.at("use-kafkacat") == "true") {
-            stringstream << "kafkacat -b \"" << bootstrapServer << "\" -t \"" << getTopicIdentifier(topicName) << "\" > /dev/null 2>&1";
+            stringstream << "kafkacat -b \"" << bootstrapServer << "\" -t \"" << getTopicIdentifier(topicName) << "\"";
         } else {
             stringstream << "kafka-topics.sh --create --bootstrap-server \"" << bootstrapServer << "\" --topic \"" << getTopicIdentifier(topicName) << "\" --replication-factor 1 --partitions 1";
         }
@@ -433,7 +431,6 @@ private:
 private:
     std::string getTopicIdentifier(const std::string& topicName) const {
         std::stringstream stringstream;
-        stringstream << uniqueId_;
         for (const auto& character : topicName) {
             if (std::isalnum(character) || character == '_') {
                 stringstream << character;

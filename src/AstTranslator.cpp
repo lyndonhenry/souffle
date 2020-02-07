@@ -1423,10 +1423,11 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                     std::unique_ptr<AstClause> r1(cl->clone());
                     r1->getHead()->setName(relNew[rel]->get()->getName());
 
-                    if (r1->getHead()->getArity() > 0) {
+                    // @TODO (lh): 
+                    // if (r1->getHead()->getArity() > 0) {
                         r1->addToBody(std::make_unique<AstNegation>(
                                 std::unique_ptr<AstAtom>(cl->getHead()->clone())));
-                    }
+                    // }
 
                     std::unique_ptr<RamStatement> rule =
                             ClauseTranslator(*this).translateClause(*r1, *cl, version);

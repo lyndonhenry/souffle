@@ -42,10 +42,10 @@ public:
             if (relation.begin() != relation.end()) {
                 writeNullary();
             }
-            return;
-        }
-        for (const auto& current : relation) {
-            writeNext(current);
+        } else {
+            for (const auto& current : relation) {
+                writeNext(current);
+            }
         }
         afterWriteAll();
     }
