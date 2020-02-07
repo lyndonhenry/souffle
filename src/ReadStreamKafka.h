@@ -95,7 +95,7 @@ protected:
 
 public:
     std::unique_ptr<RamDomain[]> readNextTuple() override {
-        if (index_ == payload_.size()) {
+        if (index_ == payload_.size() || (arity == 0 && payload_.empty())) {
             return nullptr;
         }
         std::unique_ptr<RamDomain[]> tuple = std::make_unique<RamDomain[]>(symbolMask.size());

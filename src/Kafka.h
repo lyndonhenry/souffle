@@ -277,7 +277,6 @@ private:
         {"run-program", "true"},
         // @TODO (lh): choose if to delete topics by default, don't do here for speed and debugging
         {"delete-topics", "true"},
-        {"unique-id", [](){ return std::to_string(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count()) + "."; }()},
         {"use-kafkacat", "true"}
         };
     std::vector<std::string> topicNames_;

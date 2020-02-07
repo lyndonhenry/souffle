@@ -414,8 +414,8 @@ function ensure_testsuite_passes() {
     SOUFFLE_CONFS+=",${SC} -Xuse-general -Xuse-general-producers"
     SOUFFLE_CONFS+=",${SC} -c -Xuse-general -Xuse-general-producers"
     SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-file -Xuse-general -Xuse-general-producers"
-    SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-kafka -Xuse-general -Xuse-general-producers"
-    SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-kafka -Xuse-general -Xuse-general-producers -Xuse-general-consumers"
+    #SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-kafka -Xuse-general -Xuse-general-producers"
+    #SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-kafka -Xuse-general -Xuse-general-producers -Xuse-general-consumers"
     export SOUFFLE_CATEGORY="${SOUFFLE_CATEGORY}"
     export SOUFFLE_CONFS="${SOUFFLE_CONFS}"
     make clean

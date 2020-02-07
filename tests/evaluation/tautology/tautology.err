@@ -1,78 +1,15 @@
-
-.type Symbol = symbol
-.type Number = number
-
-.comp Nullary {
-    .decl true()
-    .decl false()
-    true().
-}
-
-.comp Unary<Type> {
-    .decl true(x:Type)
-    .decl false(x:Type)
-}
-
-.comp UnaryNumber : Unary<Number> {
-    true(1).
-}
-
-.comp UnarySymbol : Unary<Symbol> {
-    true("one").
-}
-
-.comp Binary<Type> {
-    .decl true(x:Type, y:Type)
-    .decl false(x:Type, y:Type)
-}
-
-.comp BinaryNumber : Binary<Number> {
-    true(1, 1).
-}
-
-.comp BinarySymbol : Binary<Symbol> {
-    true("one", "one").
-}
-
-.init nullary = Nullary
-.init unary_number = UnaryNumber
-.init unary_symbol = UnarySymbol
-.init binary_nmber = BinaryNumber
-.init binary_symbol = BinarySymbol
-
-.decl tautology()
-.printsize tautology
-.output tautology
-
-tautology() :-
-    nullary.true(),
-   !nullary.false(),
-    unary_number.true(_),
-   !unary_number.false(_),
-    unary_symbol.true(_),
-   !unary_symbol.false(_),
-    binary_number.true(_, _),
-   !binary_number.false(_, _),
-    binary_symbol.true(_, _),
-   !binary_symbol.false(_, _).
-
-.decl contradiction()
-.printsize contradiction
-
-contradiction() :-
-   !nullary.true(),
-  !!nullary.false(),
-   !unary_number.true(_),
-  !!unary_number.false(_),
-   !unary_symbol.true(_),
-  !!unary_symbol.false(_),
-   !binary_number.true(_, _),
-  !!binary_number.false(_, _),
-   !binary_symbol.true(_, _),
-  !!binary_symbol.false(_, _).
-
-
-
-
-
-
+Warning: No rules/facts defined for relation nullary.falsehood in file tautology.dl at line 10
+    .decl falsehood()
+----------^-----------
+Warning: No rules/facts defined for relation unary_number.falsehood in file tautology.dl at line 16
+    .decl falsehood(x:Type)
+----------^-----------------
+Warning: No rules/facts defined for relation unary_symbol.falsehood in file tautology.dl at line 16
+    .decl falsehood(x:Type)
+----------^-----------------
+Warning: No rules/facts defined for relation binary_number.falsehood in file tautology.dl at line 29
+    .decl falsehood(x:Type, y:Type)
+----------^-------------------------
+Warning: No rules/facts defined for relation binary_symbol.falsehood in file tautology.dl at line 29
+    .decl falsehood(x:Type, y:Type)
+----------^-------------------------

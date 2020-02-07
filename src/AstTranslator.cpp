@@ -1423,7 +1423,10 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                     std::unique_ptr<AstClause> r1(cl->clone());
                     r1->getHead()->setName(relNew[rel]->get()->getName());
 
-                    // @TODO (lh): 
+                    // @TODO (lh):  
+                    /*
+                    THIS CAUSES IT TO EITHER LOOP FOREVER OR TO FAIL, NEED TO SEE CHANGES IN RAM PROGRAM
+                    */
                     // if (r1->getHead()->getArity() > 0) {
                         r1->addToBody(std::make_unique<AstNegation>(
                                 std::unique_ptr<AstAtom>(cl->getHead()->clone())));
