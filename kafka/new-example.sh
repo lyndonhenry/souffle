@@ -18,7 +18,9 @@ function for_each_async() {
     local x
     for x in ${xs}
     do
-        ${f} ${x} &
+        (echo "Begin '${f} ${x}'" && \
+        ${f} ${x} && \
+        echo "End '${f} ${x}'") &
     done
 }
 
@@ -331,6 +333,7 @@ function ensure_kafka_test_case_passes() {
     local RELATION_NAMES="$(echo ${JSON_DATA} | jq -r '.RelationNames | .[]')"
     local STRATUM_NAMES="$(echo ${JSON_DATA} | jq -r '.StratumNames | .[]')"
     # ensure that all program specific topics are initially empty by deleting them
+    echo "Deleting topics if they exist..."
     local EXE_EXTRA_ARGS=""
     EXE_EXTRA_ARGS+=" -Xmetadata.broker.list=${KAFKA_HOST} "
     EXE_EXTRA_ARGS+=" -Xcustom.create-topics=false "
@@ -341,6 +344,7 @@ function ensure_kafka_test_case_passes() {
     ${EXE} ${EXE_ARGS} ${EXE_EXTRA_ARGS}
     sleep 1s
     # ensure that all program specific topics exist
+    echo "Creating topics..."
     local EXE_EXTRA_ARGS=""
     EXE_EXTRA_ARGS+=" -Xmetadata.broker.list=${KAFKA_HOST} "
     EXE_EXTRA_ARGS+=" -Xcustom.create-topics=true "
@@ -350,6 +354,7 @@ function ensure_kafka_test_case_passes() {
     EXE_EXTRA_ARGS+=" -Xcustom.disable-stderr=false "
     ${EXE} ${EXE_ARGS} ${EXE_EXTRA_ARGS}
     # run all program strata as subprograms
+    echo "Running program..."
     local EXE_EXTRA_ARGS=""
     EXE_EXTRA_ARGS+=" -Xmetadata.broker.list=${KAFKA_HOST} "
     EXE_EXTRA_ARGS+=" -Xcustom.create-topics=false "
@@ -466,20 +471,20 @@ function main() {
     # run tests for no -e
 
     # normal seminaive evaluation
-    ensure_test_case_passes "${TEST_CASE}"
+    #ensure_test_case_passes "${TEST_CASE}"
     # generalized seminaive evaluation
-    ensure_test_case_passes "${TEST_CASE}" -Xuse-general
+    #ensure_test_case_passes "${TEST_CASE}" -Xuse-general
     # generalized seminaive evaluation with output relations written to files inside fixpoint loop
-    ensure_test_case_passes "${TEST_CASE}" -Xuse-general -Xuse-general-producers
+    #ensure_test_case_passes "${TEST_CASE}" -Xuse-general -Xuse-general-producers
 
     # run tests for -Xuse-engine-file
 
     # normal seminaive evaluation with intermediate results written to and read from files
-    ensure_test_case_passes "${TEST_CASE}" "-Xuse-engine-file"
+    #ensure_test_case_passes "${TEST_CASE}" "-Xuse-engine-file"
     # generalized seminaive evaluation with intermediate results written to and read from files outside of fixpoint loop
-    ensure_test_case_passes "${TEST_CASE}" "-Xuse-engine-file -Xuse-general"
+    #ensure_test_case_passes "${TEST_CASE}" "-Xuse-engine-file -Xuse-general"
     # generalized seminaive evaluation with intermediate results read from files outside of fixpoint loop and written to files inside fixpoint loop
-    ensure_test_case_passes "${TEST_CASE}" "-Xuse-engine-file -Xuse-general -Xuse-general-producers"
+    #ensure_test_case_passes "${TEST_CASE}" "-Xuse-engine-file -Xuse-general -Xuse-general-producers"
 
     # run tests for -Xuse-engine-kafka
 

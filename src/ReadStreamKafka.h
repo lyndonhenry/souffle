@@ -27,6 +27,8 @@
 #include <stdexcept>
 #include <string>
 
+#define BREAKPOINT std::cerr << __FILE__ << " " << __FUNCTION__ << " " << __LINE__
+
 namespace souffle {
 namespace kafka {
 class ReadStreamKafka : public ReadStream {
@@ -50,59 +52,88 @@ protected:
 
 private:
     void beforeReadAll() override {
+        BREAKPOINT << relationName_;
         beginReader();
     }
     void afterReadAll() override {
+        BREAKPOINT << relationName_;
         endReader();
     }
 
 protected:
     void beginConsumption() {
+        BREAKPOINT << relationName_;
         kafka_.beginConsumption(relationName_);
     }
     void endConsumption() {
+        BREAKPOINT << relationName_;
         kafka_.endConsumption(relationName_);
     }
     bool consumePayload(const int timeoutMs = -1) {
+        BREAKPOINT << relationName_;
         std::vector<RamDomain> nextPayload;
+        BREAKPOINT << relationName_;
         kafka_.consume(relationName_, nextPayload, timeoutMs);
+        BREAKPOINT << relationName_;
         if (nextPayload.empty()) {
+            BREAKPOINT << relationName_;
             return true;
         }
+        BREAKPOINT << relationName_;
         std::vector<RamDomain> nullPayload(arity ? arity : 1, std::numeric_limits<RamDomain>::max());
+        BREAKPOINT << relationName_;
         if (nextPayload == nullPayload) {
+            BREAKPOINT << relationName_;
             return false;
         } else {
+            BREAKPOINT << relationName_;
             payload_.insert(payload_.end(), nextPayload.begin(), nextPayload.end());
+            BREAKPOINT << relationName_;
             return true;
         }
+        BREAKPOINT << relationName_;
     }
     void pollConsumer() {
+        BREAKPOINT << relationName_;
         kafka_.pollConsumer();
     }
     bool hasConsumptionBegun() const {
+        BREAKPOINT << relationName_;
         return kafka_.hasConsumptionBegun(relationName_);
     }
     bool hasConsumptionEnded() const {
+        BREAKPOINT << relationName_;
         return kafka_.hasConsumptionEnded(relationName_);
     }
     void setPayload(const std::vector<RamDomain>& payload) {
+        BREAKPOINT << relationName_;
         payload_ = payload;
     }
     const std::vector<RamDomain>& getPayload() const {
+        BREAKPOINT << relationName_;
         return payload_;
     }
 
 public:
     std::unique_ptr<RamDomain[]> readNextTuple() override {
+        BREAKPOINT << relationName_;
         if (index_ == payload_.size() || (arity == 0 && payload_.empty())) {
+            BREAKPOINT << relationName_;
             return nullptr;
         }
+        if (arity == 0) {
+            index_ = payload_.size();
+        }
+        BREAKPOINT << relationName_;
         std::unique_ptr<RamDomain[]> tuple = std::make_unique<RamDomain[]>(symbolMask.size());
+        BREAKPOINT << relationName_;
         for (std::size_t column = 0; column < arity; ++column) {
+            BREAKPOINT << relationName_;
             tuple[column] = payload_[index_];
+            BREAKPOINT << relationName_;
             ++index_;
         }
+        BREAKPOINT << relationName_;
         return tuple;
     }
 };
