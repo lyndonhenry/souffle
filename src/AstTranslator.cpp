@@ -175,7 +175,7 @@ void AstTranslator::makeRamStore(std::unique_ptr<RamStatement>& current, std::si
     baseIoDirectives.set(Global::config().get("engine"), engineDirectives);
 
     baseIoDirectives.set("stratum", (scc == (size_t)-1) ? "master" : "slave");
-    if (Global::config().has("use-general-producers")) {
+    if (Global::config().has("use-general-producers") && (scc != (size_t)-3)) {
         baseIoDirectives.set("append", "true");
     } else {
         baseIoDirectives.set("append", "false");
@@ -2078,24 +2078,19 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
         // make a new ram statement for the master stratum
         std::unique_ptr<RamStatement> current;
 
-        if (Global::config().get("engine") != "file") {
-            // @TODO (lh): this is a hack for now to avoid duplicates with -efile and --use-general-producers,
-            // should also be consuming in a non-blocking loop if using kafka and general consumers here
+        // iterate over each scc and store all output relations
+        for (const auto& scc : sccOrder.order()) {
+            // get all output relations of the current scc
+            const auto& internOuts = sccGraph.getInternalOutputRelations(scc);
 
-            // iterate over each scc and store all output relations
-            for (const auto& scc : sccOrder.order()) {
-                // get all output relations of the current scc
-                const auto& internOuts = sccGraph.getInternalOutputRelations(scc);
+            // make load statements for each output relation to consume with kafka
+            for (const auto& relation : internOuts) {
+                makeRamLoad(current, masterScc, relation, "output-dir", ".csv", "null-payload");
+            }
 
-                // make load statements for each output relation to consume with kafka
-                for (const auto& relation : internOuts) {
-                    makeRamLoad(current, masterScc, relation, "output-dir", ".csv", "null-payload");
-                }
-
-                // make store statements for each output relation
-                for (const auto& relation : internOuts) {
-                    makeRamStore(current, masterScc, relation, "output-dir", ".csv", "default", "file");
-                }
+            // make store statements for each output relation
+            for (const auto& relation : internOuts) {
+                makeRamStore(current, masterScc, relation, "output-dir", ".csv", "default", "file");
             }
         }
 

@@ -1,4 +1,0 @@
-digraph {
-	"contradiction" [label = "contradiction"];
-	"tautology" [label = "tautology"];
-}

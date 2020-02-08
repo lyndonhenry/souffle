@@ -176,8 +176,11 @@ function ensure_apache_kafka_is_installed() {
     local CWD="${1}"
     local KAFKA_PATH="${2}"
     local APACHE_KAFKA_URL="http://mirror.vorboss.net/apache/kafka/2.3.1/kafka_2.12-2.3.1.tgz"
-    ensure_tarball_is_downloaded_and_unzipped "${CWD}" "${APACHE_KAFKA_URL}"
-    ensure_file_is_moved "${CWD}/kafka_2.12-2.3.1" "${KAFKA_PATH}"
+    if [ ! -e "${KAFKA_PATH}" ]
+    then
+        ensure_tarball_is_downloaded_and_unzipped "${CWD}" "${APACHE_KAFKA_URL}"
+        ensure_file_is_moved "${CWD}/kafka_2.12-2.3.1" "${KAFKA_PATH}"
+    fi
 }
 
 function ensure_jq_is_installed() {
@@ -472,11 +475,11 @@ function main() {
     # run tests for -Xuse-engine-file
 
     # normal seminaive evaluation with intermediate results written to and read from files
-    #ensure_test_case_passes "${TEST_CASE}" "-Xuse-engine-file"
+    ensure_test_case_passes "${TEST_CASE}" "-Xuse-engine-file"
     # generalized seminaive evaluation with intermediate results written to and read from files outside of fixpoint loop
-    #ensure_test_case_passes "${TEST_CASE}" "-Xuse-engine-file -Xuse-general"
+    ensure_test_case_passes "${TEST_CASE}" "-Xuse-engine-file -Xuse-general"
     # generalized seminaive evaluation with intermediate results read from files outside of fixpoint loop and written to files inside fixpoint loop
-    #ensure_test_case_passes "${TEST_CASE}" "-Xuse-engine-file -Xuse-general -Xuse-general-producers"
+    ensure_test_case_passes "${TEST_CASE}" "-Xuse-engine-file -Xuse-general -Xuse-general-producers"
 
     # run tests for -Xuse-engine-kafka
 
@@ -489,13 +492,13 @@ function main() {
     ensure_docker_compose_is_up "${KAFKA_DOCKER_PATH}"
 
     # normal seminaive evaluation with intermediate results produced to and consumed from kafka topics
-    #ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-Xuse-engine-kafka"
+    ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-Xuse-engine-kafka"
     # generalized seminaive evaluation with intermediate results produced to and consumed from kafka topics outside of fixpoint loop
-    #ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-Xuse-engine-kafka -Xuse-general"
+    ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-Xuse-engine-kafka -Xuse-general"
     # generalized seminaive evaluation with intermediate results consumed from kafka topics outside of fixpoint loop and produced to kafka topics inside of fixpoint loop
-    #ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-Xuse-engine-kafka -Xuse-general -Xuse-general-producers"
+    ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-Xuse-engine-kafka -Xuse-general -Xuse-general-producers"
     # generalized seminaive evaluation with intermediate results produced to and consumed from kafka topics inside of fixpoint loop
-    #ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-Xuse-engine-kafka -Xuse-general -Xuse-general-producers -Xuse-general-consumers"
+    ensure_kafka_test_case_passes "${KAFKA_HOST}" "${TEST_CASE}" "-Xuse-engine-kafka -Xuse-general -Xuse-general-producers -Xuse-general-consumers"
 
     # run the testsuite
     ensure_testsuite_passes
@@ -508,9 +511,9 @@ function main() {
 }
 
 # @TODO (lh)
-ensure_docker_compose_is_down "${PWD}/kafka"
-ensure_docker_compose_is_up "${PWD}/kafka"
-export PATH="/tmp/souffle/kafka_2.12-2.3.1/bin:${PATH}"
-ensure_testsuite_passes
+#ensure_docker_compose_is_down "${PWD}/kafka"
+#ensure_docker_compose_is_up "${PWD}/kafka"
+#export PATH="/tmp/souffle/kafka_2.12-2.3.1/bin:${PATH}"
+#ensure_testsuite_passes
 
 main ${@:-}
