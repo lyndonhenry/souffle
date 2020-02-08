@@ -156,6 +156,24 @@ std::set<const AstRelation*> getAggregatedRelationsInClause(
         const AstClause* clause, const AstProgram* program);
 
 /**
+ * Returns the set of nullary relations in all clauses of the given relation.
+ * @param relation the relation to search the clauses of
+ * @param program the program containing the relations
+ */
+std::set<const AstRelation*> getNullaryRelationsInClausesOfRelation(
+        const AstRelation* relation, const AstProgram* program);
+
+/**
+ * Returns the set of nullary relations involved in the clause.
+ * @param clause the clause to search within
+ * @param program the program containing the relations
+ */
+std::set<const AstRelation*> getNullaryRelationsInClause(
+        const AstClause* clause, const AstProgram* program);
+
+
+
+/**
  * Returns the set of relations involved in an aggregation in all clauses of the given relation.
  * @param relation the relation to search the clauses of
  * @param program the program containing the relations

@@ -471,20 +471,20 @@ function main() {
     # run tests for no -e
 
     # normal seminaive evaluation
-    #ensure_test_case_passes "${TEST_CASE}"
+    ensure_test_case_passes "${TEST_CASE}"
     # generalized seminaive evaluation
-    #ensure_test_case_passes "${TEST_CASE}" -Xuse-general
+    ensure_test_case_passes "${TEST_CASE}" -Xuse-general
     # generalized seminaive evaluation with output relations written to files inside fixpoint loop
-    #ensure_test_case_passes "${TEST_CASE}" -Xuse-general -Xuse-general-producers
+    ensure_test_case_passes "${TEST_CASE}" -Xuse-general -Xuse-general-producers
 
     # run tests for -Xuse-engine-file
 
     # normal seminaive evaluation with intermediate results written to and read from files
-    #ensure_test_case_passes "${TEST_CASE}" "-Xuse-engine-file"
+    ensure_test_case_passes "${TEST_CASE}" "-Xuse-engine-file"
     # generalized seminaive evaluation with intermediate results written to and read from files outside of fixpoint loop
-    #ensure_test_case_passes "${TEST_CASE}" "-Xuse-engine-file -Xuse-general"
+    ensure_test_case_passes "${TEST_CASE}" "-Xuse-engine-file -Xuse-general"
     # generalized seminaive evaluation with intermediate results read from files outside of fixpoint loop and written to files inside fixpoint loop
-    #ensure_test_case_passes "${TEST_CASE}" "-Xuse-engine-file -Xuse-general -Xuse-general-producers"
+    ensure_test_case_passes "${TEST_CASE}" "-Xuse-engine-file -Xuse-general -Xuse-general-producers"
 
     # run tests for -Xuse-engine-kafka
 

@@ -162,6 +162,30 @@ std::set<const AstRelation*> getAggregatedRelationsInClausesOfRelation(
     return aggregatedRelationsInClausesOfRelation;
 }
 
+std::set<const AstRelation*> getNullaryRelationsInClause(
+        const AstClause* clause, const AstProgram* program) {
+    std::set<const AstRelation*> nullaryRelationsInClause;
+    visitDepthFirst(*clause, [&](const AstLiteral& current) {
+        visitDepthFirst(current, [&](const AstAtom& atom) {
+            const auto* relation = getAtomRelation(&atom, program);
+            if (relation->getArity() == 0) {
+                nullaryRelationsInClause.insert(relation);
+            }
+        });
+    });
+    return nullaryRelationsInClause;
+}
+
+std::set<const AstRelation*> getNullaryRelationsInClausesOfRelation(
+        const AstRelation* relation, const AstProgram* program) {
+    std::set<const AstRelation*> nullaryRelationsInClausesOfRelation;
+    for (const AstClause* clause : relation->getClauses()) {
+        const auto nullaryRelations = getNullaryRelationsInClause(clause, program);
+        nullaryRelationsInClausesOfRelation.insert(nullaryRelations.begin(), nullaryRelations.end());
+    }
+    return nullaryRelationsInClausesOfRelation;
+}
+
 std::set<const AstRelation*> getAggregatedAndNegatedRelationsInClausesOfRelation(
         const AstRelation* relation, const AstProgram* program) {
     std::set<const AstRelation*> aggregatedAndNegatedRelationsInClausesOfRelation;
@@ -176,6 +200,15 @@ std::set<const AstRelation*> getAggregatedAndNegatedRelationsInClausesOfRelation
                 getNegatedRelationsInClausesOfRelation(relation, program);
         aggregatedAndNegatedRelationsInClausesOfRelation.insert(
                 negatedRelationsInClausesOfRelation.begin(), negatedRelationsInClausesOfRelation.end());
+    }
+    // @TODO (lh): need to rename functions and variables here and in precedence graph file
+    if (Global::config().has("use-general-consumers")) {
+        {
+            const auto nullaryRelationsInClausesOfRelation =
+                    getNullaryRelationsInClausesOfRelation(relation, program);
+            aggregatedAndNegatedRelationsInClausesOfRelation.insert(
+                    nullaryRelationsInClausesOfRelation.begin(), nullaryRelationsInClausesOfRelation.end());
+        }
     }
     return aggregatedAndNegatedRelationsInClausesOfRelation;
 }
