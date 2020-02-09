@@ -26,8 +26,6 @@
 #include <ostream>
 #include <string>
 
-#define BREAKPOINT std::cerr << __FILE__ << " " << __FUNCTION__ << " " << __LINE__
-
 namespace souffle {
 namespace kafka {
 class WriteStreamKafka : public WriteStream {
@@ -49,52 +47,52 @@ protected:
 
 private:
     void beforeWriteAll() override {
-            BREAKPOINT << relationName_;
+            
         beginWriter();
     }
     void afterWriteAll() override {
-            BREAKPOINT << relationName_;
+            
         endWriter();
     }
 
 protected:
     void beginProduction() {
-        BREAKPOINT << relationName_;
+        
         kafka_.beginProduction(relationName_);
     }
     void endProduction() {
-        BREAKPOINT << relationName_;
+        
         kafka_.endProduction(relationName_);
     }
     void producePayload() {
-        BREAKPOINT << relationName_;
+        
         kafka_.produce(relationName_, payload_);
     }
     void produceNullPayload() {
-        BREAKPOINT << relationName_;
+        
         std::vector<RamDomain> nullPayload(arity ? arity : 1, std::numeric_limits<RamDomain>::max());
         kafka_.produce(relationName_, nullPayload);
     }
     void pollProducer() {
-        BREAKPOINT << relationName_;
+        
         kafka_.pollProducer();
     }
     void pollProducerNonBlocking() {
-        BREAKPOINT << relationName_;
+        
         kafka_.pollProducer(0);
     }
     void pollProducerUntilEmpty() {
-        BREAKPOINT << relationName_;
+        
         kafka_.pollProducerUntilEmpty();
     }
 
 public:
     void writeNullary() override {
-        BREAKPOINT << relationName_;
+        
         payload_.push_back(1);
     }
     void writeNextTuple(const RamDomain* tuple) override {
-        BREAKPOINT << relationName_;
+        
         for (std::size_t column = 0; column < arity; ++column) {
             payload_.push_back(tuple[column]);
         }
