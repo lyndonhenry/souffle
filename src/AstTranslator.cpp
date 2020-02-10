@@ -2072,7 +2072,10 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
         }
     }
 
-    if (Global::config().has("engine")) {
+    if (Global::config().has("engine") || Global::config().has("use-general-producers")) {
+
+        // note that for non-distributed execution, this merely ensures the existence of output files
+
         std::size_t masterScc = -3;
 
         // make a new ram statement for the master stratum
