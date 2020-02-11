@@ -28,7 +28,7 @@ template <typename K, typename V>
 class BaseTable {
 public:
     /* Empty constructor. */
-    BaseTable() : _default(V()), _data(std::map<K, V>()) {}
+    BaseTable() : _default(V()), _data(std::map<K, V>()), _mutated = false {}
     /* Copy constructor. */
     BaseTable(const BaseTable& other) {
         data(other.data());
@@ -44,6 +44,7 @@ public:
     }
     /* Set the raw data. */
     void data(const std::map<K, V>& otherData) {
+        mutated_ = true;
         _data = otherData;
     }
     /* Get a value by its key, if not found return a reference to an object of the value class called with an
@@ -76,18 +77,22 @@ public:
     /* Set the entry in the table for the specified key to an object of the value class called with an empty
      * constructor. */
     void set(const K& key) {
+        mutated_ = true;
         _data[key] = _default;
     }
     /* Set the entry in the table for the specified key to the specified value. */
     void set(const K& key, const V& value) {
+        mutated_ = true;
         _data[key] = value;
     }
     /* Erase the entry in the table for the specified key. */
     void unset(const K& key) {
+        mutated_ = true;
         _data.erase(key);
     }
     /* Erase the entry in the table for the specified keys. */
     void unset(const std::initializer_list<K>& keys) {
+        mutated_ = true;
         for (const auto& key : keys) {
             _data.erase(key);
         }
@@ -96,12 +101,17 @@ public:
     void print(std::ostream& os) {
         os << _data << std::endl;
     }
-
+    /* If the instance has been mutated. */
+    bool mutated() const {
+        return mutated_;
+    }
 private:
     /* Default object made by empty constructor to return by reference. */
     const V _default;
     /* The raw data backing this table. */
     std::map<K, V> _data;
+    /* If the instance has been mustated. */
+    bool mutated_;
 };
 
 /* Struct to represent an option given to the main function by command line arguments. */

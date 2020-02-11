@@ -277,6 +277,7 @@ private:
         {"run-program", "true"},
         // @TODO (lh): choose if to delete topics by default, don't do here for speed and debugging
         {"delete-topics", "true"},
+        {"unique-id", std::to_string(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count()) },
         {"use-kafkacat", "true"}
         };
     std::vector<std::string> topicNames_;
@@ -430,6 +431,7 @@ private:
 private:
     std::string getTopicIdentifier(const std::string& topicName) const {
         std::stringstream stringstream;
+        stringstream << customConf_.at("unique-id") << "_";
         for (const auto& character : topicName) {
             if (std::isalnum(character) || character == '_') {
                 stringstream << character;

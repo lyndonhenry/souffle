@@ -341,6 +341,7 @@ function ensure_kafka_test_case_passes() {
     EXE_EXTRA_ARGS+=" -Xcustom.delete-topics=true "
     EXE_EXTRA_ARGS+=" -Xcustom.disable-stdout=false "
     EXE_EXTRA_ARGS+=" -Xcustom.disable-stderr=false "
+    EXE_EXTRA_ARGS+=" -Xcustom.unique-id=XXX "
     ${EXE} ${EXE_ARGS} ${EXE_EXTRA_ARGS}
     sleep 1s
     # ensure that all program specific topics exist
@@ -352,6 +353,7 @@ function ensure_kafka_test_case_passes() {
     EXE_EXTRA_ARGS+=" -Xcustom.delete-topics=false "
     EXE_EXTRA_ARGS+=" -Xcustom.disable-stdout=false "
     EXE_EXTRA_ARGS+=" -Xcustom.disable-stderr=false "
+    EXE_EXTRA_ARGS+=" -Xcustom.unique-id=XXX "
     ${EXE} ${EXE_ARGS} ${EXE_EXTRA_ARGS}
     # run all program strata as subprograms
     echo "Running program..."
@@ -360,6 +362,7 @@ function ensure_kafka_test_case_passes() {
     EXE_EXTRA_ARGS+=" -Xcustom.create-topics=false "
     EXE_EXTRA_ARGS+=" -Xcustom.run-program=true "
     EXE_EXTRA_ARGS+=" -Xcustom.delete-topics=false "
+    EXE_EXTRA_ARGS+=" -Xcustom.unique-id=XXX "
     for_each_async "${EXE} ${EXE_ARGS} ${EXE_EXTRA_ARGS} -i" -2 -3 ${STRATUM_NAMES}
     wait
     # show the line count of the actual output files, the user should compare this to the expected produced above
@@ -412,35 +415,17 @@ function ensure_testsuite_passes() {
     #SC+=" -Xuse-immutable-global-config "
     local SOUFFLE_CONFS=""
     SOUFFLE_CONFS+="${SC}"
-    SOUFFLE_CONFS+=",${SC} -c"
-    SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-file"
-    SOUFFLE_CONFS+=",${SC} -Xuse-general"
-    SOUFFLE_CONFS+=",${SC} -c -Xuse-general"
-    SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-file -Xuse-general"
-    SOUFFLE_CONFS+=",${SC} -Xuse-general -Xuse-general-producers"
-    SOUFFLE_CONFS+=",${SC} -c -Xuse-general -Xuse-general-producers"
-    SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-file -Xuse-general -Xuse-general-producers"
-    export SOUFFLE_CATEGORY="${SOUFFLE_CATEGORY}"
-    export SOUFFLE_CONFS="${SOUFFLE_CONFS}"
-    make clean
-    ./bootstrap
-    SOUFFLE_CATEGORY=${SOUFFLE_CATEGORY} SOUFFLE_CONFS=${SOUFFLE_CONFS} ./configure --enable-kafka
-    make -j${JOBS}
-    TESTSUITEFLAGS="-j${JOBS}" make check -j${JOBS}
-}
-
-function ensure_kafka_testsuite_passes() {
-    # @TODO (lh): get testing right here
-    local JOBS=$(nproc || sysctl -n hw.ncpu || echo 2)
-    local SOUFFLE_CATEGORY="FastEvaluation"
-    local SC=""
-    SC+=" -j${JOBS} "
-    # @TODO (lh): test with and without this
-    #SC+=" -Xuse-immutable-global-config "
-    local SOUFFLE_CONFS=""
-    SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-kafka"
-    SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-kafka -Xuse-general"
-    SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-kafka -Xuse-general -Xuse-general-producers"
+   #SOUFFLE_CONFS+=",${SC} -c"
+   #SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-file"
+   #SOUFFLE_CONFS+=",${SC} -Xuse-general"
+   #SOUFFLE_CONFS+=",${SC} -c -Xuse-general"
+   #SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-file -Xuse-general"
+   #SOUFFLE_CONFS+=",${SC} -Xuse-general -Xuse-general-producers"
+   #SOUFFLE_CONFS+=",${SC} -c -Xuse-general -Xuse-general-producers"
+   #SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-file -Xuse-general -Xuse-general-producers"
+   #SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-kafka"
+   #SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-kafka -Xuse-general"
+   #SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-kafka -Xuse-general -Xuse-general-producers"
     SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-kafka -Xuse-general -Xuse-general-producers -Xuse-general-consumers"
     export SOUFFLE_CATEGORY="${SOUFFLE_CATEGORY}"
     export SOUFFLE_CONFS="${SOUFFLE_CONFS}"
@@ -448,7 +433,7 @@ function ensure_kafka_testsuite_passes() {
     ./bootstrap
     SOUFFLE_CATEGORY=${SOUFFLE_CATEGORY} SOUFFLE_CONFS=${SOUFFLE_CONFS} ./configure --enable-kafka
     make -j${JOBS}
-    TESTSUITEFLAGS="-j1" make check -j${JOBS}
+    TESTSUITEFLAGS="-j${JOBS}" make check -j${JOBS}
 }
 
 function ensure_sudo_permissions() {
@@ -536,11 +521,10 @@ function main() {
 
 }
 
-# @TODO (lh): all tests pass without kafka except evaluation/counter and evaluation/neg6
-ensure_testsuite_passes
 ensure_docker_compose_is_down "${PWD}/kafka"
 ensure_docker_compose_is_up "${PWD}/kafka"
 export PATH="/tmp/souffle/kafka_2.12-2.3.1/bin:${PATH}"
-ensure_kafka_testsuite_passes
+# @TODO (lh): all tests pass without kafka except evaluation/counter and evaluation/neg6
+ensure_testsuite_passes
 
 main ${@:-}

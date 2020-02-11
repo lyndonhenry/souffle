@@ -343,6 +343,13 @@ void AstSemanticChecker::checkProgram(AstTranslationUnit& translationUnit) {
             }
         }
     }
+
+    // @@@TODO (LH)
+    if (!Global::config().has("experimental.use-immutable-global-config")) {
+        if (Global::config().mutated()) {
+            // std::cerr << "Error: Global config mutated!" << std::endl;
+        }
+    }
 }
 
 void AstSemanticChecker::checkAtom(ErrorReport& report, const AstProgram& program, const AstAtom& atom) {
