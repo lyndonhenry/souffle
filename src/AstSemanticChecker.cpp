@@ -190,6 +190,8 @@ void AstSemanticChecker::checkProgram(AstTranslationUnit& translationUnit) {
         }
     });
 
+    // @TODO (lh): refactor all unsets into their own method, walk all nodes just like is done here
+
     // record initializations have the same size as their types
     visitDepthFirst(nodes, [&](const AstRecordInit& cnst) {
 // @TODO (lh): enable records and aggregates with experimental features

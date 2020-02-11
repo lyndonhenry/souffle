@@ -1177,9 +1177,9 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
 
     if (!hasEngine && hasUseGeneral) {
         for (const AstRelation* relation : externPreds) {
-            if (!externAggNegPreds.count(relation)) {
+            //if (!externAggNegPreds.count(relation)) {
                 appendStmt(preamble, genMerge(relDelta[relation].get(), rrel[relation].get()));
-            }
+            //}
         }
     }
 
@@ -1200,6 +1200,8 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                 // body, also should add clear statements also
                 appendStmt(preamble, std::make_unique<RamSequence>(
                                              genMerge(rrel[relation].get(), relDelta[relation].get())));
+            } else {
+                appendStmt(preamble, genMerge(relDelta[relation].get(), rrel[relation].get()));
             }
         }
         // load all external non-output predecessor relations from the output dir with a .facts
@@ -1213,6 +1215,8 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                 // body, also should add clear statements also
                 appendStmt(preamble, std::make_unique<RamSequence>(
                                              genMerge(rrel[relation].get(), relDelta[relation].get())));
+            } else {
+                appendStmt(preamble, genMerge(relDelta[relation].get(), rrel[relation].get()));
             }
         }
     }
