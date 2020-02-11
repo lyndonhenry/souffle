@@ -1246,6 +1246,8 @@ std::unique_ptr<RamStatement> AstTranslator::translateRecursiveRelation(
                                     return tmp;
                                 })(),
                                 std::make_unique<RamExit>(std::make_unique<RamTrue>())));
+            } else {
+                appendStmt(preamble, genMerge(relDelta[rel].get(), rrel[rel].get()));
             }
         }
         // exit if any interns have new facts

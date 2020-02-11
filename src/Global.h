@@ -28,7 +28,7 @@ template <typename K, typename V>
 class BaseTable {
 public:
     /* Empty constructor. */
-    BaseTable() : _default(V()), _data(std::map<K, V>()), _mutated = false {}
+    BaseTable() : _default(V()), _data(std::map<K, V>()), mutated_(false) {}
     /* Copy constructor. */
     BaseTable(const BaseTable& other) {
         data(other.data());
