@@ -505,7 +505,6 @@ function main() {
     ensure_test_case_passes "${TEST_CASE}" "-Xuse-engine-file -Xuse-general -Xuse-general-producers"
 
     # run tests for -Xuse-engine-kafka
-    exit
 
     # set variables for kafka
     local KAFKA_HOST="localhost:9092"
@@ -538,10 +537,10 @@ function main() {
 }
 
 # @TODO (lh): all tests pass without kafka except evaluation/counter and evaluation/neg6
-#ensure_testsuite_passes
-#ensure_docker_compose_is_down "${PWD}/kafka"
-#ensure_docker_compose_is_up "${PWD}/kafka"
-#export PATH="/tmp/souffle/kafka_2.12-2.3.1/bin:${PATH}"
-#ensure_kafka_testsuite_passes
+ensure_testsuite_passes
+ensure_docker_compose_is_down "${PWD}/kafka"
+ensure_docker_compose_is_up "${PWD}/kafka"
+export PATH="/tmp/souffle/kafka_2.12-2.3.1/bin:${PATH}"
+ensure_kafka_testsuite_passes
 
 main ${@:-}
