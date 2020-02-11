@@ -665,7 +665,24 @@ void AstSemanticChecker::checkClause(ErrorReport& report, const AstProgram& prog
         }
     }
     // check auto-increment
-    if (recursiveClauses.recursive(&clause)) {
+    if (!Global::config().has("experimental.use-immutable-global-config")) {
+        // @TODO (lh): allow use of counter with generalised execution
+        auto hasCounter = false;
+        visitDepthFirst(clause, [&](const AstCounter& ctr) {
+            (void) ctr;
+            hasCounter = true;
+        });
+        if (hasCounter) {
+            Global::config().unset({ 
+                "use-general",
+                "experimental.use-general",
+                "use-general-producer",
+                "experimental.use-general-producers",
+                "use-general-consumers",
+                "experimental.use-general-consumers"
+            });
+        }
+    } else if (recursiveClauses.recursive(&clause)) {
         visitDepthFirst(clause, [&](const AstCounter& ctr) {
             report.addError("Auto-increment functor in a recursive rule", ctr.getSrcLoc());
         });
