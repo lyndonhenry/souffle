@@ -525,7 +525,7 @@ function main() {
 #ensure_docker_compose_is_up "${PWD}/kafka"
 export PATH="${HOME}/.kafka/bin:${PATH}"
 make -j8 
-ensure_kafka_test_case_passes "localhost:9092" "evaluation/neg6" "-Xuse-engine-kafka -Xuse-general -Xuse-general-producers -Xuse-general-consumers"
+ensure_kafka_test_case_passes "localhost:9092" "evaluation/independent_body1" "-Xuse-engine-kafka -Xuse-general -Xuse-general-producers -Xuse-general-consumers"
 cd tests 
 ./testsuite 38 42 44 50 56 72 78
 exit
