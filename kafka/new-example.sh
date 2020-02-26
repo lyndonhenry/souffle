@@ -508,6 +508,7 @@ function main() {
 
 }
 
+ensure_souffle_is_built_for_kafka "${PWD}"
 ensure_docker_compose_is_down "${PWD}/kafka"
 ensure_docker_compose_is_up "${PWD}/kafka"
 export PATH="${HOME}/.kafka/bin:${PATH}"
