@@ -185,18 +185,6 @@ function ensure_apache_kafka_is_installed() {
     fi
 }
 
-function ensure_jq_is_installed() {
-    local CWD="${1}"
-    local GITHUB_REPO="stedolan/jq"
-    local AUTORECONF_FLAGS="-fi"
-    if [ ! $(which jq) ]
-    then
-        ensure_github_repo_is_cloned_and_updated "${CWD}" "${GITHUB_REPO}"
-        ensure_autoreconf_is_called "${CWD}/${GITHUB_REPO}" "${AUTORECONF_FLAGS}"
-        ensure_autoconf_project_is_installed "${CWD}/${GITHUB_REPO}"
-    fi
-}
-
 function ensure_souffle_is_built_for_kafka() {
     local CWD="${1}"
     ensure_bootstrap_is_called "${CWD}"
@@ -466,7 +454,6 @@ function main() {
 
     # ensure dependencies are installed
     ensure_kafka_depencencies_are_installed "${TMP_PATH}" "${KAFKA_PATH}"
-    ensure_jq_is_installed "${TMP_PATH}"
 
     # ensure that souffle is built for kafka
     ensure_souffle_is_built_for_kafka "${PWD}"
