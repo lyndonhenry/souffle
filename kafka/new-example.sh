@@ -37,8 +37,8 @@ function ensure_autoconf_project_is_built() {
     local CONFIGURE_FLAGS="${2:-}"
     local MAKE_FLAGS="-j8"
     cd "${CWD}"
-    ./configure "${CONFIGURE_FLAGS}"
-    make "${MAKE_FLAGS}"
+    ./configure ${CONFIGURE_FLAGS}
+    make ${MAKE_FLAGS}
     cd -
 }
 
