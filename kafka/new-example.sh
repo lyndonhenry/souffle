@@ -48,7 +48,7 @@ function ensure_autoconf_project_is_installed() {
     ensure_autoconf_project_is_built "${CWD}" "${CONFIGURE_FLAGS}"
     cd "${CWD}"
     sudo make install
-  ##  sudo ldconfig
+    sudo ldconfig
     cd -
 }
 
@@ -200,7 +200,7 @@ function ensure_jq_is_installed() {
 function ensure_souffle_is_built_for_kafka() {
     local CWD="${1}"
     ensure_bootstrap_is_called "${CWD}"
-    ensure_autoconf_project_is_built "${CWD}" "--enable-kafka"
+    ensure_autoconf_project_is_built "${CWD}" "--enable-kafka --enable-debug --disable-libz --disable-sqlite"
 }
 
 function ensure_souffle_program_is_built() {
@@ -431,7 +431,7 @@ function ensure_testsuite_passes() {
     export SOUFFLE_CONFS="${SOUFFLE_CONFS}"
     make clean || :
     ./bootstrap
-    SOUFFLE_CATEGORY=${SOUFFLE_CATEGORY} SOUFFLE_CONFS=${SOUFFLE_CONFS} ./configure --enable-kafka --disable-libz --enable-debug
+    SOUFFLE_CATEGORY=${SOUFFLE_CATEGORY} SOUFFLE_CONFS=${SOUFFLE_CONFS} ./configure --enable-kafka --enable-debug --disable-libz --disable-sqlite
     make -j${JOBS}
     TESTSUITEFLAGS="-j${JOBS}" make check -j${JOBS}
 }
@@ -521,15 +521,15 @@ function main() {
 
 }
 
-ensure_docker_compose_is_down "${PWD}/kafka"
-ensure_docker_compose_is_up "${PWD}/kafka"
-export PATH="${HOME}/.kafka/bin:${PATH}"
-make -j8 
+#ensure_docker_compose_is_down "${PWD}/kafka"
+#ensure_docker_compose_is_up "${PWD}/kafka"
+#export PATH="${HOME}/.kafka/bin:${PATH}"
+#make -j8 
 # @TODO: this appears to work, but the file contains only blank lines, the problem is that symbols do not seem to be resolved from the table
 #ensure_kafka_test_case_passes "localhost:9092" "evaluation/independent_body1" "-Xuse-engine-kafka -Xuse-general -Xuse-general-producers -Xuse-general-consumers"
-cd tests 
-./testsuite 38 42 44 50 56 72 78
-exit
-ensure_testsuite_passes
+#cd tests 
+#./testsuite 38 42 44 50 56 72 78
+#exit
+#ensure_testsuite_passes
 
 main ${@:-}
