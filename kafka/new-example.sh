@@ -517,6 +517,6 @@ function main() {
 #cd tests 
 #./testsuite 38 42 44 50 56 72 78
 #exit
-#ensure_testsuite_passes
+ensure_testsuite_passes
 
 main ${@:-}
