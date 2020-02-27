@@ -2052,17 +2052,23 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
         if (!Global::config().has("provenance")) {
             // if a communication engine is enabled...
             if (Global::config().has("engine")) {
-                // drop all internal relations
-                for (const auto& relation : allInterns) {
-                    makeRamClear(current, relation);
-                }
-                // drop external output predecessor relations
-                for (const auto& relation : externOutPreds) {
-                    makeRamClear(current, relation);
-                }
-                // drop external non-output predecessor relations
-                for (const auto& relation : externNonOutPreds) {
-                    makeRamClear(current, relation);
+                // @TODO (lh)
+                // and if not using general producers or using a distributed symbol table
+                if (!Global::config().has("experimental.use-general-consumers") || Global::config().has("experimental.use-distributed-symbol-table")) {
+
+                    // drop all internal relations
+                    for (const auto& relation : allInterns) {
+                        makeRamClear(current, relation);
+                    }
+                    // drop external output predecessor relations
+                    for (const auto& relation : externOutPreds) {
+                        makeRamClear(current, relation);
+                    }
+                    // drop external non-output predecessor relations
+                    for (const auto& relation : externNonOutPreds) {
+                        makeRamClear(current, relation);
+                    }
+
                 }
             } else {
                 // otherwise, drop all  relations expired as per the topological order
@@ -2090,7 +2096,7 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
 
         // @TODO (lh): this ensures that symbols are written correctly, other
         // populate the symbol table from input fact files
-        if (!Global::config().has("experimental.use-distributed-symbol-table")) {
+        if (Global::config().has("experimental.use-general-consumers") && !Global::config().has("experimental.use-distributed-symbol-table")) {
             // iterate over each scc and load all input relations
             for (const auto& scc : sccOrder.order()) {
                 const auto &internIns = sccGraph.getInternalInputRelations(scc);
