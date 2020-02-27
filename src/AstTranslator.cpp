@@ -2087,8 +2087,23 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
         // make a new ram statement for the master stratum
         std::unique_ptr<RamStatement> current;
 
+
+        // @TODO (lh): this ensures that symbols are written correctly, other
+        // populate the symbol table from input fact files
+        if (!Global::config().has("experimental.use-distributed-symbol-table")) {
+            // iterate over each scc and load all input relations
+            for (const auto& scc : sccOrder.order()) {
+                const auto &internIns = sccGraph.getInternalInputRelations(scc);
+                // make load statements for each input relation
+                for (const auto &relation : internIns) {
+                    makeRamLoad(current, masterScc, relation, "fact-dir", ".facts", "default", "file");
+                }
+            }
+        }
+
         // iterate over each scc and store all output relations
         for (const auto& scc : sccOrder.order()) {
+
             // get all output relations of the current scc
             const auto& internOuts = sccGraph.getInternalOutputRelations(scc);
 
