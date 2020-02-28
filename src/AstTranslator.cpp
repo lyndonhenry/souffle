@@ -2052,9 +2052,9 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
         if (!Global::config().has("provenance")) {
             // if a communication engine is enabled...
             if (Global::config().has("engine")) {
-                // @TODO (lh)
+                // @TODO (lh): enabling the if block does not actually make it possible to run things with the testsuite and not as a separate process
                 // and if not using general producers or using a distributed symbol table
-                if (!Global::config().has("experimental.use-general-consumers") || Global::config().has("experimental.use-distributed-symbol-table")) {
+//                if (!Global::config().has("experimental.use-general-consumers") || Global::config().has("experimental.use-distributed-symbol-table")) {
 
                     // drop all internal relations
                     for (const auto& relation : allInterns) {
@@ -2069,7 +2069,7 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
                         makeRamClear(current, relation);
                     }
 
-                }
+  //              }
             } else {
                 // otherwise, drop all  relations expired as per the topological order
                 for (const auto& relation : internExps) {
@@ -2094,7 +2094,7 @@ void AstTranslator::translateProgram(const AstTranslationUnit& translationUnit) 
         std::unique_ptr<RamStatement> current;
 
 
-        // @TODO (lh): this ensures that symbols are written correctly, other
+        // @TODO (lh): this ensures that symbols are written correctly, it works for each stratum run as a separate process
         // populate the symbol table from input fact files
         if (Global::config().has("experimental.use-general-consumers") && !Global::config().has("experimental.use-distributed-symbol-table")) {
             // iterate over each scc and load all input relations
