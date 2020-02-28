@@ -254,14 +254,14 @@ function ensure_test_case_passes() {
     rm -rf "${TESTSUITE_DIR}"
     # ensute that test case is built
     ensure_souffle_test_case_is_built "${PWD}" "${TEST_CASE}" "${SOUFFLE_ARGS}"
-    # show the line count of the expected output files
-    wc -l "${TEST_CASE_ROOT}"/*.csv > "${TEST_CASE_ROOT}"/expected.txt
+    # record the expected output files
+    cat "${TEST_CASE_ROOT}"/*.csv | sort > "${TEST_CASE_ROOT}"/expected.txt
     # remove the expected output files, these are overridden by actual outputs on execution
     rm -rf "${TEST_CASE_ROOT}"/*.csv
     # run the program
     ${EXE} ${EXE_ARGS}
-    # show the line count of the actual output files, the user should compare this to the expected produced above
-    wc -l "${TEST_CASE_ROOT}"/*.csv > "${TEST_CASE_ROOT}"/actual.txt
+    # record the actual output files
+    cat "${TEST_CASE_ROOT}"/*.csv | sort > "${TEST_CASE_ROOT}"/actual.txt
     # diff the actual vs expected output
     if [ "$(diff "${TEST_CASE_ROOT}"/actual.txt "${TEST_CASE_ROOT}"/expected.txt)" ]
     then
@@ -312,8 +312,8 @@ function ensure_kafka_test_case_passes() {
     rm -rf "${TESTSUITE_DIR}"
     # ensute that test case is built
     ensure_souffle_test_case_is_built "${PWD}" "${TEST_CASE}" "${SOUFFLE_ARGS}"
-    # show the line count of the expected output files
-    wc -l "${TEST_CASE_ROOT}"/*.csv > "${TEST_CASE_ROOT}"/expected.txt
+    # record the expected output files
+    cat "${TEST_CASE_ROOT}"/*.csv | sort > "${TEST_CASE_ROOT}"/expected.txt
     # remove the expected output files, these are overridden by actual outputs on execution
     rm -rf "${TEST_CASE_ROOT}"/*.csv
     # extract stratum names and relation names from json metadata
@@ -353,8 +353,8 @@ function ensure_kafka_test_case_passes() {
     EXE_EXTRA_ARGS+=" -Xcustom.unique-id=XXX "
     for_each_async "${EXE} ${EXE_ARGS} ${EXE_EXTRA_ARGS} -i" -2 -3 ${STRATUM_NAMES}
     wait
-    # show the line count of the actual output files, the user should compare this to the expected produced above
-    wc -l "${TEST_CASE_ROOT}"/*.csv > "${TEST_CASE_ROOT}"/actual.txt
+    # record the actual output files
+    cat "${TEST_CASE_ROOT}"/*.csv | sort > "${TEST_CASE_ROOT}"/actual.txt
     # diff the actual vs expected output
     if [ "$(diff "${TEST_CASE_ROOT}"/actual.txt "${TEST_CASE_ROOT}"/expected.txt)" ]
     then
@@ -508,15 +508,23 @@ function main() {
 
 }
 
-ensure_docker_compose_is_down "${PWD}/kafka"
-ensure_docker_compose_is_up "${PWD}/kafka"
-export PATH="${HOME}/.kafka/bin:${PATH}"
-make -j8
-# @TODO: this appears to work, but the file contains only blank lines, the problem is that symbols do not seem to be resolved from the table
-ensure_kafka_test_case_passes "localhost:9092" "evaluation/independent_body1" "-Xuse-engine-kafka -Xuse-general -Xuse-general-producers -Xuse-general-consumers"
-cd tests
-./testsuite 38 42 44 50 56 72 78
+function ensure_tests_pass_for_kafka_with_producers_and_consumers() {
+  local TEST_CASES="${1}"
+  local TEST_GROUP="${2}"
+  export PATH="${HOME}/.kafka/bin:${PATH}"
+  ensure_docker_compose_is_down "${PWD}/kafka"
+  ensure_docker_compose_is_up "${PWD}/kafka"
+  make -j8
+  local TEST_CASE
+  for TEST_CASE in $(./tests/testsuite -l ${TEST_CASES} | cut -d' ' -f5 | grep '^[a-z].*')
+  do
+    ensure_kafka_test_case_passes "localhost:9092" "${TEST_GROUP}/${TEST_CASE}" "-Xuse-engine-kafka -Xuse-general -Xuse-general-producers -Xuse-general-consumers"
+  done
+}
+
+ensure_tests_pass_for_kafka_with_producers_and_consumers "38 42 44 50 56 72 78" "evaluation"
 exit
 ensure_testsuite_passes
-
 main ${@:-}
+
+}
