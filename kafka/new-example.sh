@@ -35,7 +35,7 @@ function ensure_autoreconf_is_called() {
 function ensure_autoconf_project_is_built() {
     local CWD="${1}"
     local CONFIGURE_FLAGS="${2:-}"
-    local MAKE_FLAGS="-j8"
+    local MAKE_FLAGS="-j4"
     cd "${CWD}"
     ./configure ${CONFIGURE_FLAGS}
     make ${MAKE_FLAGS}
@@ -161,6 +161,7 @@ function ensure_apt_package_installed() {
 }
 
 function ensure_librdkafka_is_installed() {
+  # @TODO: really need to see if there is a package for this, do it properly
     local CWD="${1}"
     local GITHUB_REPO="edenhill/librdkafka"
     if [ ! -e "/usr/local/lib/librdkafka.a" ]
@@ -514,7 +515,7 @@ function ensure_tests_pass_for_kafka_with_producers_and_consumers() {
   export PATH="${HOME}/.kafka/bin:${PATH}"
   ensure_docker_compose_is_down "${PWD}/kafka"
   ensure_docker_compose_is_up "${PWD}/kafka"
-  make -j8
+  make -j4
   local TEST_CASE
   for TEST_CASE in $(./tests/testsuite -l ${TEST_CASES} | cut -d' ' -f5 | grep '^[a-z].*')
   do
@@ -522,9 +523,10 @@ function ensure_tests_pass_for_kafka_with_producers_and_consumers() {
   done
 }
 
+# @@@TODO: need to move as much provisioning as possible to the Dockerfile, see if you can get rid of the git clone on librdkafka
 ensure_tests_pass_for_kafka_with_producers_and_consumers "38 42 44 50 56 72 78" "evaluation"
 exit
 ensure_testsuite_passes
 main ${@:-}
 
-}
+
