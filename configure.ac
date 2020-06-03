@@ -79,6 +79,16 @@ if test "$BUILD_TYPE" == "Debug" ; then
   CXXFLAGS="$CXXFLAGS -O0 -g3"
 fi
 
+# Enable kakfa
+AC_ARG_ENABLE(
+  [kafka],
+  [AS_HELP_STRING([--enable-kafka], [Enable kafka])]
+)
+AS_IF([test "x$enable_kafka" = "xyes"], [
+  LIBS="$LIBS -lrdkafka++"
+  AS_VAR_APPEND(CXXFLAGS, [" -DUSE_KAFKA "])
+])
+
 # Enable SWIG
 AC_ARG_ENABLE(
   [swig],
@@ -290,6 +300,7 @@ AC_CONFIG_LINKS([include/souffle/EquivalenceRelation.h:src/EquivalenceRelation.h
 AC_CONFIG_LINKS([include/souffle/IODirectives.h:src/IODirectives.h])
 AC_CONFIG_LINKS([include/souffle/IOSystem.h:src/IOSystem.h])
 AC_CONFIG_LINKS([include/souffle/IterUtils.h:src/IterUtils.h])
+AC_CONFIG_LINKS([include/souffle/Kafka.h:src/Kafka.h])
 AC_CONFIG_LINKS([include/souffle/LambdaBTree.h:src/LambdaBTree.h])
 AC_CONFIG_LINKS([include/souffle/Logger.h:src/Logger.h])
 AC_CONFIG_LINKS([include/souffle/ParallelUtils.h:src/ParallelUtils.h])
@@ -299,6 +310,7 @@ AC_CONFIG_LINKS([include/souffle/ProfileEvent.h:src/ProfileEvent.h])
 AC_CONFIG_LINKS([include/souffle/RamTypes.h:src/RamTypes.h])
 AC_CONFIG_LINKS([include/souffle/ReadStream.h:src/ReadStream.h])
 AC_CONFIG_LINKS([include/souffle/ReadStreamCSV.h:src/ReadStreamCSV.h])
+AC_CONFIG_LINKS([include/souffle/ReadStreamKafka.h:src/ReadStreamKafka.h])
 AC_CONFIG_LINKS([include/souffle/ReadStreamSQLite.h:src/ReadStreamSQLite.h])
 AC_CONFIG_LINKS([include/souffle/SignalHandler.h:src/SignalHandler.h])
 AC_CONFIG_LINKS([include/souffle/SouffleInterface.h:src/SouffleInterface.h])
@@ -309,6 +321,7 @@ AC_CONFIG_LINKS([include/souffle/UnionFind.h:src/UnionFind.h])
 AC_CONFIG_LINKS([include/souffle/Util.h:src/Util.h])
 AC_CONFIG_LINKS([include/souffle/WriteStream.h:src/WriteStream.h])
 AC_CONFIG_LINKS([include/souffle/WriteStreamCSV.h:src/WriteStreamCSV.h])
+AC_CONFIG_LINKS([include/souffle/WriteStreamKafka.h:src/WriteStreamKafka.h])
 AC_CONFIG_LINKS([include/souffle/WriteStreamSQLite.h:src/WriteStreamSQLite.h])
 AC_CONFIG_LINKS([include/souffle/gzfstream.h:src/gzfstream.h])
 AC_CONFIG_LINKS([include/souffle/json11.h:src/json11.h])

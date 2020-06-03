@@ -2,19 +2,27 @@
 
 set -oue pipefail
 
-if [ ! $(which clang-format) ]
-then
-    echo "Error: program 'clang-format' not found!"
+function error() {
+    local MESSAGE="${1:-}"
+    if [ "${MESSAGE}" ]
+    then
+        echo "Error: ${MESSAGE}" >&2
+    fi
     exit 1
-fi
+}
 
-if [ "$(clang-format --version | sed 's/.*version //;s/\..*//')" -lt "7" ]
-then
-   echo "Error: program 'clang-format' must be version 7 or later!"
-   exit 1
-fi
-
-clang-format \
+function clang_format_hook() {
+    local COMMAND="clang-format"
+    local VERSION="7"
+    if [ ! $(which "${COMMAND}") ]
+    then
+        error "'${COMMAND}' is not installed!"
+    fi
+    if [ "$(${COMMAND} --version | sed 's/.*version //;s/\..*//')" -lt "${VERSION}" ]
+    then
+        error "'${COMMAND}' is not of version '${VERSION}' or later!"
+    fi
+    ${COMMAND} \
         -i \
         -style=file \
         src/*.h \
@@ -22,3 +30,10 @@ clang-format \
         src/test/*.h \
         src/test/*.cpp \
         tests/interface/*/*.cpp
+}
+
+function main() {
+    clang_format_hook
+}
+
+main "${@:-}"

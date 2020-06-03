@@ -1,0 +1,76 @@
+
+#define TRUE_NUMBER 1
+#define TRUE_SYMBOL "1"
+
+.type Symbol = symbol
+.type Number = number
+
+.comp Nullary {
+    .decl truth()
+    .decl falsehood()
+    truth().
+}
+
+.comp Unary<Type> {
+    .decl truth(x:Type)
+    .decl falsehood(x:Type)
+}
+
+.comp UnaryNumber : Unary<Number> {
+    truth(TRUE_NUMBER).
+}
+
+.comp UnarySymbol : Unary<Symbol> {
+    truth(TRUE_SYMBOL).
+}
+
+.comp Binary<Type> {
+    .decl truth(x:Type, y:Type)
+    .decl falsehood(x:Type, y:Type)
+}
+
+.comp BinaryNumber : Binary<Number> {
+    truth(TRUE_NUMBER, TRUE_NUMBER).
+}
+
+.comp BinarySymbol : Binary<Symbol> {
+    truth(TRUE_SYMBOL, TRUE_SYMBOL).
+}
+
+.init nullary = Nullary
+.init unary_number = UnaryNumber
+.init unary_symbol = UnarySymbol
+.init binary_number = BinaryNumber
+.init binary_symbol = BinarySymbol
+
+.decl tautology()
+.printsize tautology
+.output tautology
+
+tautology() :-
+    nullary.truth(),
+   !nullary.falsehood(),
+    unary_number.truth(_),
+   !unary_number.falsehood(_),
+    unary_symbol.truth(_),
+   !unary_symbol.falsehood(_),
+    binary_number.truth(_, _),
+   !binary_number.falsehood(_, _),
+    binary_symbol.truth(_, _),
+   !binary_symbol.falsehood(_, _).
+
+.decl contradiction()
+.printsize contradiction
+.output contradiction
+
+contradiction() :-
+   !nullary.truth(),
+  !!nullary.falsehood(),
+   !unary_number.truth(_),
+  !!unary_number.falsehood(_),
+   !unary_symbol.truth(_),
+  !!unary_symbol.falsehood(_),
+   !binary_number.truth(_, _),
+  !!binary_number.falsehood(_, _),
+   !binary_symbol.truth(_, _),
+  !!binary_symbol.falsehood(_, _).

@@ -32,17 +32,21 @@ public:
               auxiliaryArity(auxiliaryArity) {}
     template <typename T>
     void readAll(T& relation) {
+        beforeReadAll();
         auto lease = symbolTable.acquireLock();
         (void)lease;
         while (const auto next = readNextTuple()) {
             const RamDomain* ramDomain = next.get();
             relation.insert(ramDomain);
         }
+        afterReadAll();
     }
 
     virtual ~ReadStream() = default;
 
 protected:
+    virtual void beforeReadAll() {}
+    virtual void afterReadAll() {}
     virtual std::unique_ptr<RamDomain[]> readNextTuple() = 0;
     const std::vector<bool>& symbolMask;
     SymbolTable& symbolTable;

@@ -181,8 +181,46 @@ bool RecursiveClauses::computeIsRecursive(
     return false;
 }
 
+void AggregatedAndNegatedRelations::run(const AstTranslationUnit& translationUnit) {
+    const AstProgram* program = translationUnit.getProgram();
+    for (const AstRelation* relation : program->getRelations()) {
+        aggregatedAndNegatedRelationsInClausesOfRelation.insert(
+                {relation, souffle::getAggregatedAndNegatedRelationsInClausesOfRelation(relation, program)});
+    }
+}
+
+void AggregatedAndNegatedRelations::print(std::ostream& os) const {
+    constexpr auto ONE_TAB = "    ";
+    constexpr auto TWO_TABS = "        ";
+    const auto& mapOfSets = aggregatedAndNegatedRelationsInClausesOfRelation;
+    os << std::endl << "{";
+    for (auto it_i = mapOfSets.begin(); it_i != mapOfSets.end(); ++it_i) {
+        if (it_i != mapOfSets.begin()) {
+            os << ",";
+        }
+        os << std::endl << ONE_TAB << "\"";
+        os << it_i->first->getName().getName();
+        os << "\": [";
+        if (it_i->second.empty()) {
+            os << "]";
+        } else {
+            for (auto it_j = it_i->second.begin(); it_j != it_i->second.end(); ++it_j) {
+                if (it_j != it_i->second.begin()) {
+                    os << ",";
+                }
+                os << std::endl << TWO_TABS << "\"";
+                os << (*it_j)->getName().getName();
+                os << "\"";
+            }
+            os << std::endl << ONE_TAB << "]";
+        }
+    }
+    os << std::endl << "}" << std::endl;
+}
+
 void SCCGraph::run(const AstTranslationUnit& translationUnit) {
     precedenceGraph = translationUnit.getAnalysis<PrecedenceGraph>();
+    aggregatedAndNegatedRelations = translationUnit.getAnalysis<AggregatedAndNegatedRelations>();
     ioType = translationUnit.getAnalysis<IOType>();
     sccToRelation.clear();
     relationToScc.clear();
@@ -396,29 +434,99 @@ void TopologicallySortedSCCGraph::run(const AstTranslationUnit& translationUnit)
 }
 
 void TopologicallySortedSCCGraph::print(std::ostream& os) const {
-    os << "--- partial order of strata as list of pairs ---" << std::endl;
-    for (size_t sccIndex = 0; sccIndex < sccOrder.size(); sccIndex++) {
-        const auto& successorSccs = sccGraph->getSuccessorSCCs(sccOrder.at(sccIndex));
-        // use a self-loop to indicate that an SCC has no successors or predecessors
-        if (successorSccs.empty() && sccGraph->getPredecessorSCCs(sccOrder.at(sccIndex)).empty()) {
-            os << sccIndex << " " << sccIndex << std::endl;
-            continue;
-        }
-        for (const auto successorScc : successorSccs) {
-            const auto successorSccIndex = *std::find(sccOrder.begin(), sccOrder.end(), successorScc);
-            os << sccIndex << " " << successorSccIndex << std::endl;
-        }
+    // TODO (lyndonhenry): use more appropriate field names and print more information
+
+    constexpr auto ONE_TAB = "    ";
+    constexpr auto TWO_TABS = "        ";
+
+    os << "{" << std::endl;
+
+    /**
+     * Print the stratum order.
+     */
+    {
+        os << ONE_TAB << "\"StratumNames\": [" << std::endl
+           << join(sccOrder, ",\n",
+                      [](std::ostream& out, const std::size_t scc) {
+                          out << TWO_TABS << "\"" << scc << "\"";
+                      })
+           << std::endl
+           << ONE_TAB << "]," << std::endl;
     }
-    os << "--- total order with relations of each strata ---" << std::endl;
-    for (size_t i = 0; i < sccOrder.size(); i++) {
-        os << i << ": [";
-        os << join(sccGraph->getInternalRelations(sccOrder[i]), ", ",
-                [](std::ostream& out, const AstRelation* rel) { out << rel->getName(); });
-        os << "]" << std::endl;
+
+    /*
+     * Print the stratum dependencies.
+     */
+    {
+        os << ONE_TAB << "\"StratumDependencies\": {" << std::endl;
+        os << join(sccOrder,
+                [&]() {
+                    std::stringstream ss;
+                    ss << "," << std::endl;
+                    return ss.str();
+                }(),
+                [&](std::ostream& os1, const std::size_t scc) {
+                    os1 << TWO_TABS << "\"" << scc << "\": ";
+                    if (sccGraph->getSuccessorSCCs(scc).empty()) {
+                        os1 << "[]";
+                    } else {
+                        os << "[\"";
+                        os1 << join(sccGraph->getSuccessorSCCs(scc), "\", \"",
+                                [&](std::ostream& os2, const std::size_t successorScc) {
+                                    os2 << successorScc;
+                                });
+                        os1 << "\"]";
+                    }
+                });
+        os << std::endl << ONE_TAB << "}," << std::endl;
     }
-    os << std::endl;
-    os << "--- statistics of topological order ---" << std::endl;
-    os << "cost: " << topologicalOrderingCost(sccOrder) << std::endl;
+
+    /*
+     * Print the relation names;
+     */
+    {
+        os << ONE_TAB << "\"RelationNames\": [" << std::endl;
+        for (std::size_t i = 0; i < sccOrder.size(); ++i) {
+            const auto scc = sccOrder.at(i);
+            os << join(sccGraph->getInternalRelations(scc), ",\n",
+                    [](std::ostream& out, const AstRelation* rel) {
+                        out << TWO_TABS << "\"" << rel->getName() << "\"";
+                    });
+            if (i != sccOrder.size() - 1) {
+                os << ",\n";
+            }
+        }
+        os << "\n" << ONE_TAB << "]," << std::endl;
+    }
+
+    /*
+     * Print the relations contained in each stratum.
+     */
+    {
+        os << ONE_TAB << "\"StratumRelations\": {" << std::endl;
+        os << join(sccOrder,
+                [&]() {
+                    std::stringstream ss;
+                    ss << "," << std::endl;
+                    return ss.str();
+                }(),
+                [&](std::ostream& os1, const std::size_t scc) {
+                    os1 << TWO_TABS << "\"" << scc << "\": [\"";
+                    os1 << join(sccGraph->getInternalRelations(scc), "\", \"",
+                            [&](std::ostream& os2, const AstRelation* relation) {
+                                os2 << relation->getName();
+                            });
+                    os1 << "\"]";
+                });
+        os << std::endl << ONE_TAB << "}," << std::endl;
+    }
+
+    /*
+     * Print the topological ordering cost.
+     */
+    { os << ONE_TAB << "\"TopologicalOrderingCost\": " << topologicalOrderingCost(sccOrder) << std::endl; }
+
+    os << "}";
 }
 
 void RelationScheduleStep::print(std::ostream& os) const {

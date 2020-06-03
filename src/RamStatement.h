@@ -235,6 +235,8 @@ public:
         for (size_t i = 0; i < first->get()->getArity(); i++) {
             assert(type1[i] == type2[i] && "mismatching type");
         }
+        assert(first != nullptr && "First relation is a null-pointer");
+        assert(second != nullptr && "Second relation is a null-pointer");
     }
 
     /** @brief Get first relation */

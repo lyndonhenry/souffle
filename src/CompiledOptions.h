@@ -21,6 +21,7 @@
 
 #include <iostream>
 #include <string>
+#include <unordered_map>
 
 #include <getopt.h>
 #include <sys/stat.h>
@@ -73,12 +74,24 @@ protected:
      */
     size_t stratumIndex;
 
+    // @TODO (lh): document and suport Kafka config properties/extra options be# @TODO (lh): 
+
+    // @TODO (lh): have everything on this branch go through --custom/-X or --experimental/-X in both compiled and regular souffle, remove stratum index and engine option
+
+    /**
+     * Extra options, currently only used by Kafka engine.
+     * These set global configuration properties in the librdkafka library.
+     * @see Kafka.h for more information
+     */
+    std::unordered_map<std::string, std::string> extraOptions;
+
 public:
     // all argument constructor
     CmdOptions(const char* s, const char* id, const char* od, bool pe, const char* pfn, size_t nj,
-            size_t si = (size_t)-1)
+            size_t si = (size_t)-1,
+            std::unordered_map<std::string, std::string> eo = std::unordered_map<std::string, std::string>())
             : src(s), input_dir(id), output_dir(od), profiling(pe), profile_name(pfn), num_jobs(nj),
-              stratumIndex(si) {}
+              stratumIndex(si), extraOptions(eo) {}
 
     /**
      * get source code name
@@ -130,6 +143,13 @@ public:
     }
 
     /**
+     * get extra options
+     */
+    const std::unordered_map<std::string, std::string>& getExtraOptions() const {
+        return extraOptions;
+    }
+
+    /**
      * Parses the given command line parameters, handles -h help requests or errors
      * and returns whether the parsing was successful or not.
      */
@@ -150,6 +170,7 @@ public:
         // long options
         option longOptions[] = {{"facts", true, nullptr, 'F'}, {"output", true, nullptr, 'D'},
                 {"profile", true, nullptr, 'p'}, {"jobs", true, nullptr, 'j'}, {"index", true, nullptr, 'i'},
+                {"extra", true, nullptr, 'X'},
                 // the terminal option -- needs to be null
                 {nullptr, false, nullptr, 0}};
 #pragma GCC diagnostic pop
@@ -158,7 +179,7 @@ public:
         bool ok = true;
 
         int c; /* command-line arguments processing */
-        while ((c = getopt_long(argc, argv, "D:F:hp:j:i:", longOptions, nullptr)) != EOF) {
+        while ((c = getopt_long(argc, argv, "D:F:hp:j:i:X:", longOptions, nullptr)) != EOF) {
             switch (c) {
                 /* Fact directories */
                 case 'F':
@@ -204,6 +225,25 @@ public:
                 case 'i':
                     stratumIndex = (size_t)std::stoull(optarg);
                     break;
+                case 'X': {
+                    const auto optargString = std::string(optarg);
+                    auto key = std::string();
+                    auto value = std::string();
+                    auto* current = &key;
+                    for (const auto character : optargString) {
+                        switch (character) {
+                            case '=': {
+                                current = &value;
+                                break;
+                            }
+                            default: {
+                                (*current) += character;
+                                break;
+                            }
+                        }
+                    }
+                    extraOptions.insert({key, value});
+                } break;
                 default:
                     printHelpPage(exec_name);
                     return false;
@@ -246,6 +286,7 @@ private:
 #endif
         std::cerr << "    -i <N>, --index=<N>          -- Specify index of stratum to be executed\n";
         std::cerr << "                                    (or each in order if omitted)\n";
+        std::cerr << "    -X <KEY>=<VAL>, --extra=<KEY>=<VAL> -- Specify extra options\n";
         std::cerr << "    -h                           -- prints this help page.\n";
         std::cerr << "--------------------------------------------------------------------\n";
         std::cout << " Copyright (c) 2016-20 The Souffle Developers." << std::endl;

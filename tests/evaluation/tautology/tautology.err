@@ -1,0 +1,15 @@
+Warning: No rules/facts defined for relation nullary.falsehood in file tautology.dl at line 10
+    .decl falsehood()
+----------^-----------
+Warning: No rules/facts defined for relation unary_number.falsehood in file tautology.dl at line 16
+    .decl falsehood(x:Type)
+----------^-----------------
+Warning: No rules/facts defined for relation unary_symbol.falsehood in file tautology.dl at line 16
+    .decl falsehood(x:Type)
+----------^-----------------
+Warning: No rules/facts defined for relation binary_number.falsehood in file tautology.dl at line 29
+    .decl falsehood(x:Type, y:Type)
+----------^-------------------------
+Warning: No rules/facts defined for relation binary_symbol.falsehood in file tautology.dl at line 29
+    .decl falsehood(x:Type, y:Type)
+----------^-------------------------

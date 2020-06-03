@@ -42,11 +42,15 @@ cmake-build-debug/
 *.tgz
 *-pak
 *.deb
-#macosx
 .DS_Store
 
 stamp-h1
 /CMakeLists.txt
+
+.vscode
+GTAGS
+GRTAGS
+GPATH
 
 /man/souffle-compile.1
 /man/souffle-config.1

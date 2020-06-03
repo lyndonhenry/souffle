@@ -157,15 +157,13 @@ public:
             : ReadStreamCSV(fileHandle, symbolMask, symbolTable, ioDirectives, auxiliaryArity),
               baseName(souffle::baseName(getFileName(ioDirectives))),
               fileHandle(getFileName(ioDirectives), std::ios::in | std::ios::binary) {
-        if (!ioDirectives.has("intermediate")) {
-            if (!fileHandle.is_open()) {
-                throw std::invalid_argument("Cannot open fact file " + baseName + "\n");
-            }
-            // Strip headers if we're using them
-            if (ioDirectives.has("headers") && ioDirectives.get("headers") == "true") {
-                std::string line;
-                getline(file, line);
-            }
+        if (!fileHandle.is_open() && ioDirectives.get("location") != "output-dir") {
+            throw std::invalid_argument("Cannot open fact file " + baseName + "\n");
+        }
+        // Strip headers if we're using them
+        if (ioDirectives.has("headers") && ioDirectives.get("headers") == "true") {
+            std::string line;
+            getline(file, line);
         }
     }
     /**

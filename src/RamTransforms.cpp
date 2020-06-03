@@ -32,6 +32,10 @@
 #include <utility>
 #include <vector>
 
+// @@@TODO: NEED TO FIND AND DISABLE THE SPECIFIC RAM TRANSFORM THAT CAUSES THE INFINITE LOOP!!!
+/*
+*/
+
 namespace souffle {
 
 bool ExpandFilterTransformer::expandFilters(RamProgram& program) {

@@ -75,6 +75,11 @@ private:
     /** RAM relations */
     std::map<std::string, std::unique_ptr<RamRelation>> ramRels;
 
+    /** Mappings for temporary relations. */
+    std::map<const AstRelation*, std::unique_ptr<RamRelationReference>> rrel;
+    std::map<const AstRelation*, std::unique_ptr<RamRelationReference>> relDelta;
+    std::map<const AstRelation*, std::unique_ptr<RamRelationReference>> relNew;
+
     /**
      * Concrete attribute
      */
@@ -287,15 +292,16 @@ private:
     std::string getRelationName(const AstRelationIdentifier& id) {
         return toString(join(id.getNames(), "."));
     }
-
-    void makeIODirective(IODirectives& ioDirective, const AstRelation* rel, const std::string& filePath,
-            const std::string& fileExt, const bool isIntermediate);
-
-    std::vector<IODirectives> getInputIODirectives(const AstRelation* rel,
-            std::string filePath = std::string(), const std::string& fileExt = std::string());
-
-    std::vector<IODirectives> getOutputIODirectives(const AstRelation* rel,
-            std::string filePath = std::string(), const std::string& fileExt = std::string());
+    // a function to load relations
+    void makeRamLoad(std::unique_ptr<RamStatement>& current, std::size_t indexOfScc,
+            const AstRelation* relation, const std::string& inputDirectory, const std::string& fileExtension,
+            const std::string& engineDirectives, const std::string& ioType,
+            std::unique_ptr<RamRelationReference> ramRelationReference);
+    // a function to store relations
+    void makeRamStore(std::unique_ptr<RamStatement>& current, std::size_t indexOfScc,
+            const AstRelation* relation, const std::string& outputDirectory, const std::string& fileExtension,
+            const std::string& engineDirectives, const std::string& ioType,
+            std::unique_ptr<RamRelationReference> ramRelationReference);
 
     /** create a reference to a RAM relation */
     std::unique_ptr<RamRelationReference> createRelationReference(const std::string name, const size_t arity,
@@ -380,11 +386,11 @@ private:
      * @return a corresponding statement or null if there are no non-recursive clauses.
      */
     std::unique_ptr<RamStatement> translateNonRecursiveRelation(
-            const AstRelation& rel, const RecursiveClauses* recursiveClauses);
+            const AstTranslationUnit& translationUnit, const AstRelation& rel);
 
     /** translate RAM code for recursive relations in a strongly-connected component */
     std::unique_ptr<RamStatement> translateRecursiveRelation(
-            const std::set<const AstRelation*>& scc, const RecursiveClauses* recursiveClauses);
+            const AstTranslationUnit& translationUnit, std::size_t indexOfScc);
 
     /** translate RAM code for subroutine to get subproofs */
     std::unique_ptr<RamStatement> makeSubproofSubroutine(const AstClause& clause);
