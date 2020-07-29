@@ -256,7 +256,7 @@ function _exe_run_one_program() {
   ARGS+=" -Xcustom.run-program=true "
   ARGS+=" -Xcustom.delete-topics=false "
   ARGS+=" -Xcustom.unique-id=${ID} "
-  "${EXE} ${ARGS} -i" ${STRATUM_NAME}
+  ${EXE} ${ARGS} -i ${STRATUM_NAME}
 }
 
 function _kafka_create_topic() {
