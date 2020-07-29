@@ -659,7 +659,7 @@ function _tutorial_header() {
 function _tutorial() {
   #
   # TODO (lh): fix the bug and remove call to _tutorial_header
-  _tutorial_header
+  #_tutorial_header
   #
   local DOCKER_USER="default"
   #
