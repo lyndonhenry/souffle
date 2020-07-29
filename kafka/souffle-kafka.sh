@@ -423,7 +423,9 @@ function _run_with_clients() {
   _kafka_create_topic "${KAFKA_HOST}" "OK"
   _kafka_wait_for_topic "${KAFKA_HOST}" "OK"
   _kafka_produce_log_message "${KAFKA_HOST}" "Beginning program at broker..."
-  _exe_run_many_programs "${KAFKA_HOST}" "${ID}" "${EXE}" "-2 -3" "${VERBOSE}"
+  # @@@TODO (lh): here!!!
+  #_exe_run_many_programs "${KAFKA_HOST}" "${ID}" "${EXE}" "-2 -3" "${VERBOSE}"
+  _exe_run_one_program "${KAFKA_HOST}" "${ID}" "${EXE}" "0" "${VERBOSE}"
   _kafka_produce_log_message "${KAFKA_HOST}" "Ending program at broker..."
   read -p "CONTINUE? "
   cd "${TMP}"
