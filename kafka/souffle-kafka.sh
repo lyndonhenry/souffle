@@ -399,8 +399,8 @@ function _run_with_clients() {
   local KAFKA_HOST="localhost:9092"
   local DOCKER_USER="default"
   local GITHUB_USER="lyndonmhenry"
-  # TODO (lh): change this during development
-  local GITHUB_BRANCH="lh/kafka"
+  # TODO (lh): change this after development
+  local GITHUB_BRANCH="lh/wip"
   local NAME="$(basename ${EXE} | sed 's/\./_/g')"
   local ID="$(date +%s)_${NAME}"
   local STRATUM_NAMES="$(${EXE} -Xcustom.print-metadata=true)"
@@ -491,8 +491,8 @@ function _docker_run() {
 function _docker() {
   local DOCKER_USER="default"
   local GITHUB_USER="lyndonmhenry"
-  # TODO (lh): change this during development
-  local GITHUB_BRANCH="lh/kafka"
+  # TODO (lh): change this after development
+  local GITHUB_BRANCH="lh/wip"
   _docker_build "${DOCKER_USER}" "${GITHUB_USER}" "${GITHUB_BRANCH}" "souffle" "./kafka/Dockerfile"
   _docker_run "${DOCKER_USER}" "souffle" "${@:-}"
 }
