@@ -438,7 +438,8 @@ function _run_as_client() {
   local ID="${1}"
   local STRATUM_NAME="${2}"
   local VERBOSE="${3:-}"
-  local KAFKA_HOST="kafka:29092"
+  ### @TODO (lh): HERE
+  local KAFKA_HOST="kafka:9092"
   local EXE="${ID}"
   _kafka_wait_for_topic "${KAFKA_HOST}" "OK"
   _kafka_produce_log_message "${KAFKA_HOST}" "Beginning program at client ${STRATUM_NAME}..."
