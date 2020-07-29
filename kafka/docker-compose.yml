@@ -1,0 +1,30 @@
+version: '3.7'
+#version: '3.3'
+
+networks:
+  app-tier:
+    driver: bridge
+
+services:
+  zookeeper:
+    image: 'zookeeper:3.5'
+    networks:
+      - app-tier
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+  kafka:
+    image: wurstmeister/kafka
+    ports:
+      - '9092:9092'  
+    environment:
+        KAFKA_LISTENERS: LISTENER_INTER://kafka:29092,LISTENER_OUTER://kafka:9092
+        KAFKA_ADVERTISED_LISTENERS: LISTENER_INTER://kafka:29092,LISTENER_OUTER://localhost:9092
+        KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_INTER:PLAINTEXT,LISTENER_OUTER:PLAINTEXT
+        KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_INTER
+        KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    # volumes:
+    #   - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - app-tier
+
+

@@ -45,7 +45,7 @@ public:
     WriteFileCSV(const std::vector<bool>& symbolMask, const SymbolTable& symbolTable,
             const IODirectives& ioDirectives, const size_t auxiliaryArity = 0)
             : WriteStream(symbolMask, symbolTable, auxiliaryArity), delimiter(getDelimiter(ioDirectives)),
-              file(ioDirectives.getFileName(), std::ios::out | std::ios::binary) {
+              file(ioDirectives.getFileName(), (ioDirectives.get("append") == "true" ? std::ios::app : std::ios::out) | std::ios::binary) {
         if (ioDirectives.has("headers") && ioDirectives.get("headers") == "true") {
             file << ioDirectives.get("attributeNames") << std::endl;
         }

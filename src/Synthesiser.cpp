@@ -439,9 +439,27 @@ void Synthesiser::emitCode(std::ostream& out, const RamStatement& stmt) {
 
         void visitExit(const RamExit& exit, std::ostream& out) override {
             PRINT_BEGIN_COMMENT(out);
-            out << "if(";
-            visit(exit.getCondition(), out);
-            out << ") break;\n";
+            std::set<const RamRelation*> referencedRelations;
+            visitDepthFirst(exit.getCondition(), [&](const RamNode& node) {
+                if (auto exists = dynamic_cast<const RamExistenceCheck*>(&node)) {
+                    referencedRelations.insert(&exists->getRelation());
+                }
+            });
+            if (!referencedRelations.empty()) {
+                out << "if ([&]() {";
+                for (const RamRelation* rel : referencedRelations) {
+                    out << "CREATE_OP_CONTEXT(" << synthesiser.getOpContextName(*rel);
+                    out << "," << synthesiser.getRelationName(*rel);
+                    out << "->createContext());\n";
+                }
+                out << "return (";
+                visit(exit.getCondition(), out);
+                out << "); }()) break;\n";
+            } else {
+                out << "if(";
+                visit(exit.getCondition(), out);
+                out << ") break;\n";
+            }
             PRINT_END_COMMENT(out);
         }
 
@@ -1936,13 +1954,13 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
             hasAtLeastOneStrata = true;
             // go to stratum of index in switch
             auto i = stratum.getIndex();
-            ss << "case " << i << ":\ngoto STRATUM_" << i << ";\nbreak;\n";
+            ss << "case  (size_t)" << i << ":\ngoto STRATUM_" << (size_t)i << ";\nbreak;\n";
         });
         if (hasAtLeastOneStrata) {
             os << "switch (stratumIndex) {\n";
             {
-                // otherwise use stratum 0 if index is -1
-                os << "case (size_t) -1:\ngoto STRATUM_0;\nbreak;\n";
+                const size_t startStratum = (Global::config().has("engine")) ? (size_t)-2 : 0;
+                os << "case (size_t) -1:\ngoto STRATUM_" << startStratum << ";\nbreak;\n";
             }
             os << ss.str();
             os << "}\n";
@@ -1955,7 +1973,7 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
         if (Global::config().has("engine")) {
             // go to the stratum with the max value for int as a suffix if calling the master stratum
             auto i = stratum.getIndex();
-            os << "STRATUM_" << i << ":\n";
+            os << "STRATUM_" << (size_t) i << ":\n";
         }
         os << "[&]() {\n";
         emitCode(os, stratum.getBody());
@@ -2211,8 +2229,7 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
         os << "false,\n";
         os << "R\"()\",\n";
     }
-    os << std::stoi(Global::config().get("jobs")) << ",\n";
-    os << "-1";
+    os << std::stoi(Global::config().get("jobs"));
     os << ");\n";
 
     os << "if (!opt.parse(argc,argv)) return 1;\n";
@@ -2240,7 +2257,23 @@ void Synthesiser::generateCode(std::ostream& os, const std::string& id, bool& wi
         os << R"_(souffle::ProfileEventSingleton::instance().makeConfigRecord("version", ")_"
            << Global::config().get("version") << R"_(");)_" << '\n';
     }
-    os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), opt.getStratumIndex());\n";
+
+    if (Global::config().get("engine") == "kafka") {
+        os << "{" << std::endl;
+        os << "auto& kafka = souffle::kafka::Kafka::getInstance();" << std::endl;
+        os << "kafka.withSouffleProgram(obj);" << std::endl;
+        os << "kafka.withMetadata(" << Global::config().get("experimental.topsort-info") << ");" << std::endl;
+        os << "kafka.beginClient(opt.getExtraOptions());" << std::endl;
+        os << "if (kafka.runSouffleProgram()) {" << std::endl;
+        os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), opt.getStratumIndex());"
+           << std::endl;
+        os << "}" << std::endl;
+        os << "kafka.endClient();" << std::endl;
+        os << "}" << std::endl;
+    } else {
+        os << "obj.runAll(opt.getInputFileDir(), opt.getOutputFileDir(), opt.getStratumIndex());"
+           << std::endl;
+    }
 
     if (Global::config().get("provenance") == "explain") {
         os << "explain(obj, false, false);\n";

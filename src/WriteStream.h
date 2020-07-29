@@ -32,6 +32,7 @@ public:
               arity(symbolMask.size() - auxiliaryArity) {}
     template <typename T>
     void writeAll(const T& relation) {
+        beforeWriteAll();
         if (summary) {
             return writeSize(relation.size());
         }
@@ -41,11 +42,12 @@ public:
             if (relation.begin() != relation.end()) {
                 writeNullary();
             }
-            return;
+        } else {
+            for (const auto& current : relation) {
+                writeNext(current);
+            }
         }
-        for (const auto& current : relation) {
-            writeNext(current);
-        }
+        afterWriteAll();
     }
     template <typename T>
     void writeSize(const T& relation) {
@@ -59,7 +61,8 @@ protected:
     const SymbolTable& symbolTable;
     const bool summary;
     const size_t arity;
-
+    virtual void beforeWriteAll() {}
+    virtual void afterWriteAll() {}
     virtual void writeNullary() = 0;
     virtual void writeNextTuple(const RamDomain* tuple) = 0;
     virtual void writeSize(std::size_t size) {

@@ -8,10 +8,13 @@
 .type Node
 
 .decl a  (node1:Node)
+.input a  ()
 .output a  ()
 .decl b  (node1:Node)
+.input b  ()
 .output b  ()
 .decl c  (node1:Node, node2:Node)
+.input c  ()
 .output c  ()
 .decl projection  (node1:Node)
 .output projection  ()
@@ -19,18 +22,6 @@
 .output cartesian   ()
 .decl inner_join  (node1:Node)
 .output inner_join  ()
-
-a("a1").
-a("a2").
-a("a3").
-
-b("b1").
-b("b2").
-b("a1").
-
-c("a1","b2").
-c("a1","a1").
-c("a2","b2").
 
 // (Extended) Relational Algebra Operations
 

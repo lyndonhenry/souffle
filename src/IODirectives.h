@@ -67,6 +67,24 @@ public:
         return get("name");
     }
 
+    const std::string getRelationNamePrefix() const {
+        const auto& name = getRelationName();
+        if (name.at(0) == '@') {
+            return std::string(name.begin(), name.begin() + name.find('_'));
+        } else {
+            return name;
+        }
+    }
+
+    const std::string getRelationNameSuffix() const {
+        const auto& name = getRelationName();
+        if (name.at(0) == '@') {
+            return std::string(name.begin() + name.find('_'), name.end());
+        } else {
+            return name;
+        }
+    }
+
     void setRelationName(const std::string& name) {
         directives["name"] = name;
     }

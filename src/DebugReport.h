@@ -166,6 +166,32 @@ public:
             const std::string& id, std::string title, const std::string& dotSpec);
 
 private:
+    /*
+     * Generate a title for a given AstAnalysis subclass.
+     */
+    template <typename AstAnalysisSubclass>
+    static const std::string getTitleForAstAnalysisPhase();
+    /*
+     * Generate a section body for a given AstAnalysis subclass.
+     */
+    template <typename AstAnalysisSubclass>
+    static const std::string getBodyForAstAnalysisPhase(AstTranslationUnit& translationUnit);
+
+public:
+    /*
+     * Generate a debug report section for code for a given AstAnalysis subclass.
+     */
+    template <typename AstAnalysisSubclass>
+    static DebugReportSection getCodeSectionForAstAnalysisPhase(
+            AstTranslationUnit& translationUnit, const std::string& id);
+    /*
+     * Generate a debug report section for a dot graph for a given AstAnalysis subclass.
+     */
+    template <typename AstAnalysisSubclass>
+    static DebugReportSection getDotGraphSectionForAstAnalysisPhase(
+            AstTranslationUnit& translationUnit, const std::string& id);
+
+private:
     std::unique_ptr<AstTransformer> wrappedTransformer;
 
     bool transform(AstTranslationUnit& translationUnit) override;

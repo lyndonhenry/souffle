@@ -400,5 +400,11 @@ test_ram_arithmetic_test_CXXFLAGS = $(souffle_bin_CPPFLAGS) -I @abs_top_srcdir@/
 test_ram_arithmetic_test_SOURCES = test/ram_arithmetic_test.cpp
 test_ram_arithmetic_test_LDADD = libsouffle.la
 
+# kafka test
+check_PROGRAMS += test/kafka_test
+test_kafka_test_CXXFLAGS = $(souffle_bin_CPPFLAGS) -I @abs_top_srcdir@/src/test -DBUILDDIR='"@abs_top_builddir@/src/"'
+test_kafka_test_SOURCES = test/kafka_test.cpp
+test_kafka_test_LDADD = libsouffle.la
+
 # make all check-programs tests
 TESTS = $(check_PROGRAMS)

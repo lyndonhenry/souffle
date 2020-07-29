@@ -173,8 +173,16 @@ void AstSemanticChecker::checkProgram(AstTranslationUnit& translationUnit) {
 
     // all null constants are used as records
     visitDepthFirst(nodes, [&](const AstNullConstant& cnst) {
-        // TODO (#467) remove the next line to enable subprogram compilation for record types
-        Global::config().unset("engine");
+        if (!Global::config().has("experimental.use-immutable-global-config")) {
+            Global::config().unset({
+                                           "engine",
+                                           "experimental.use-engine",
+                                           "experimental.use-engine-file",
+                                           "experimental.use-engine-kafka",
+                                           "use-general-consumers",
+                                           "experimental.use-general-consumers"
+                                   });
+        }
         TypeSet types = typeAnalysis.getTypes(&cnst);
         if (!isRecordType(types)) {
             report.addError("Null constant used as a non-record", cnst.getSrcLoc());
@@ -183,8 +191,16 @@ void AstSemanticChecker::checkProgram(AstTranslationUnit& translationUnit) {
 
     // record initializations have the same size as their types
     visitDepthFirst(nodes, [&](const AstRecordInit& cnst) {
-        // TODO (#467) remove the next line to enable subprogram compilation for record types
-        Global::config().unset("engine");
+        if (!Global::config().has("experimental.use-immutable-global-config")) {
+            Global::config().unset({
+                                           "engine",
+                                           "experimental.use-engine",
+                                           "experimental.use-engine-file",
+                                           "experimental.use-engine-kafka",
+                                           "use-general-consumers",
+                                           "experimental.use-general-consumers"
+                                   });
+        }
         TypeSet types = typeAnalysis.getTypes(&cnst);
         if (isRecordType(types)) {
             for (const Type& type : types) {
@@ -301,8 +317,8 @@ void AstSemanticChecker::checkProgram(AstTranslationUnit& translationUnit) {
                 // Negations and aggregations need to be stratified
                 const AstLiteral* foundLiteral = nullptr;
                 bool hasNegation = hasClauseWithNegatedRelation(cyclicRelation, cur, &program, foundLiteral);
-                if (hasNegation ||
-                        hasClauseWithAggregatedRelation(cyclicRelation, cur, &program, foundLiteral)) {
+                bool hasAggregation = hasClauseWithAggregatedRelation(cyclicRelation, cur, &program, foundLiteral);
+                if (hasNegation || hasAggregation) {
                     auto const& relSet = sccGraph.getInternalRelations(scc);
                     std::set<const AstRelation*, AstNameComparison> sortedRelSet(
                             relSet.begin(), relSet.end());
@@ -455,6 +471,13 @@ bool AstSemanticChecker::isDependent(const AstClause& agg1, const AstClause& agg
 
 void AstSemanticChecker::checkAggregator(
         ErrorReport& report, const AstProgram& program, const AstAggregator& aggregator) {
+    if (!Global::config().has("experimental.use-immutable-global-config")) {
+        Global::config().unset({
+                                       "use-general-consumers",
+                                       "experimental.use-general-consumers"
+                               });
+    }
+
     const AstAggregator* inner = nullptr;
 
     // check for disallowed nested aggregates
@@ -637,7 +660,23 @@ void AstSemanticChecker::checkClause(ErrorReport& report, const AstProgram& prog
         }
     }
     // check auto-increment
-    if (recursiveClauses.recursive(&clause)) {
+    if (!Global::config().has("experimental.use-immutable-global-config")) {
+        auto hasCounter = false;
+        visitDepthFirst(clause, [&](const AstCounter& ctr) {
+            (void) ctr;
+            hasCounter = true;
+        });
+        if (hasCounter) {
+            Global::config().unset({
+                                           "use-general",
+                                           "experimental.use-general",
+                                           "use-general-producer",
+                                           "experimental.use-general-producers",
+                                           "use-general-consumers",
+                                           "experimental.use-general-consumers"
+                                   });
+        }
+    } else if (recursiveClauses.recursive(&clause)) {
         visitDepthFirst(clause, [&](const AstCounter& ctr) {
             report.addError("Auto-increment functor in a recursive rule", ctr.getSrcLoc());
         });
@@ -670,9 +709,16 @@ void AstSemanticChecker::checkRelationDeclaration(ErrorReport& report, const Typ
         if (typeEnv.isType(typeName)) {
             const Type& type = typeEnv.getType(typeName);
             if (isRecordType(type)) {
-                // TODO (#467) remove the next line to enable subprogram compilation for record types
-                Global::config().unset("engine");
-
+                if (!Global::config().has("experimental.use-immutable-global-config")) {
+                    Global::config().unset({
+                                                   "engine",
+                                                   "experimental.use-engine",
+                                                   "experimental.use-engine-file",
+                                                   "experimental.use-engine-kafka",
+                                                   "use-general-consumers",
+                                                   "experimental.use-general-consumers"
+                                           });
+                }
                 if (ioTypes.isInput(&relation)) {
                     report.addError(
                             "Input relations must not have record types. "
