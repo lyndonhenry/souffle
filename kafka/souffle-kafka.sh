@@ -256,7 +256,7 @@ function _exe_run_one_program() {
   ARGS+=" -Xcustom.run-program=true "
   ARGS+=" -Xcustom.delete-topics=false "
   ARGS+=" -Xcustom.unique-id=${ID} "
-  ${EXE} ${ARGS} -i ${STRATUM_NAME}
+  ${EXE} ${ARGS} -i${STRATUM_NAME}
 }
 
 function _kafka_create_topic() {
@@ -423,9 +423,7 @@ function _run_with_clients() {
   _kafka_create_topic "${KAFKA_HOST}" "OK"
   _kafka_wait_for_topic "${KAFKA_HOST}" "OK"
   _kafka_produce_log_message "${KAFKA_HOST}" "Beginning program at broker..."
-  # @@@TODO (lh): here!!!
-  #_exe_run_many_programs "${KAFKA_HOST}" "${ID}" "${EXE}" "-2 -3" "${VERBOSE}"
-  _exe_run_one_program "${KAFKA_HOST}" "${ID}" "${EXE}" "0" "${VERBOSE}"
+  _exe_run_many_programs "${KAFKA_HOST}" "${ID}" "${EXE}" "-2 -3" "${VERBOSE}"
   _kafka_produce_log_message "${KAFKA_HOST}" "Ending program at broker..."
   read -p "CONTINUE? "
   cd "${TMP}"
@@ -689,12 +687,9 @@ function _tutorial() {
   cp "tests/evaluation/relop/relop.dl" "${HOME}/${DATALOG_FILE}"
   ./kafka/souffle-kafka.sh --docker ./src/souffle -F"/home/${DOCKER_USER}/${FACT_DIR}" -D"/home/${DOCKER_USER}/${OUTPUT_DIR}" -c -Xuse-engine-kafka -Xrun-with-clients -Xuse-general -Xuse-general-producers -Xuse-general-consumers "/home/${DOCKER_USER}/${DATALOG_FILE}"
   #
-  # TODO (lh): fix the bug and remove call to _tutorial_footer
-  _tutorial_footer
+  # TODO (lh): comment (running souffle testsuite)
   #
-}
-
-function _tutorial_footer() {
+  read -p "CONTINUE? "
   #
   ./kafka/souffle-kafka.sh --test
   #
