@@ -850,7 +850,7 @@ function _tutorial_todo() {
 # While debugging, comment out the tutorial-done call.
 # When debugging is complete, merge the done and todo functions.
 #
-function tutorial_() {
+function _tutorial() {
   tutorial_done_;
   tutorial_todo_;
 }
