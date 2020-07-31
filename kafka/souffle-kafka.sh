@@ -851,7 +851,7 @@ function _tutorial_todo() {
 # When debugging is complete, merge the done and todo functions.
 #
 function _tutorial() {
-  _tutorial_done;
+  #_tutorial_done;
   _tutorial_todo;
 }
 
