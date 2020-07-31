@@ -3,9 +3,12 @@
 set -ue
 
 #
-# Utility Functions
+# == Utilities ==
 #
 
+#
+# Sequential for loop.
+#
 function _for_each() {
   local f="${1}"
   local xs="${@:2}"
@@ -16,6 +19,9 @@ function _for_each() {
   done
 }
 
+#
+# Parallel for loop.
+#
 function _for_each_async() {
   local f="${1}"
   local xs="${@:2}"
@@ -26,29 +32,45 @@ function _for_each_async() {
   done
 }
 
+#
+# Get number of jobs for make -j.
+# This is the number of CPUs or 2.
+#
 function _get_make_jobs() {
   nproc || sysctl -n hw.ncpu || echo 2
 }
 
 #
-# Build Command
+# == Build Command ==
 #
 
+#
+# Ensures that the user has sudo permissions.
+#
 function _ensure_we_have_sudo_permissions() {
   sudo echo
 }
 
+#
+# Ensures that the Ubuntu system is up to date.
+#
 function _ensure_ubuntu_is_up_to_date() {
   sudo apt-get update -y
   sudo apt-get upgrade -y
   sudo apt-get dist-upgrade -y
 }
 
+#
+# Ensures that all Docker related dependencies are installed.
+#
 function _ensure_docker_dependencies_are_installed() {
   sudo apt-get install -y \
     docker-compose
 }
 
+#
+# Ensures that all Souffle related dependencies are installed.
+#
 function _ensure_souffle_dependencies_are_installed() {
    sudo apt-get install -y \
     autoconf \
@@ -73,6 +95,10 @@ function _ensure_souffle_dependencies_are_installed() {
     zlib1g-dev
 }
 
+#
+# Ensures that Apache Kafka is installed.
+# The installation location is ~/.kafka.
+#
 function _ensure_apache_kafka_is_installed() {
   local KAFKA_PATH="/home/${USER}/.kafka"
   if [ ! -e "${KAFKA_PATH}" ]
@@ -84,6 +110,9 @@ function _ensure_apache_kafka_is_installed() {
   fi
 }
 
+#
+# Ensures that the RdKafka C++ library is installed.
+#
 function _ensure_librdkafka_is_installed() {
   if [ ! -e "/usr/local/lib/librdkafka.a" ]
   then
@@ -98,25 +127,35 @@ function _ensure_librdkafka_is_installed() {
   fi
 }
 
+#
+# Ensures that Kafkacat is installed.
+#
 function _ensure_kafkacat_is_installed() {
   sudo apt-get install -y \
     kafkacat
 }
 
-
+#
+# Ensures that all Kafka related dependencies are installed.
+#
 function _ensure_kafka_dependencies_are_installed() {
   _ensure_apache_kafka_is_installed
   _ensure_librdkafka_is_installed
   _ensure_kafkacat_is_installed
 }
 
-
+#
+# Ensures that the Ubuntu package cache is clear.
+#
 function _ensure_ubuntu_package_cache_is_clear() {
   sudo apt-get autoremove -y
   sudo apt-get autoclean -y
   sudo apt-get clean -y
 }
 
+#
+# Ensures that Souffle is built for use with Kafka.
+#
 function _ensure_souffle_is_built_for_kafka() {
   make clean || :
   ./bootstrap
@@ -124,6 +163,10 @@ function _ensure_souffle_is_built_for_kafka() {
   make -j"$(_get_make_jobs)"
 }
 
+#
+# The build command itself.
+# This installs the Souffle on Kafka system.
+#
 function _build() {
   _ensure_we_have_sudo_permissions
   _ensure_ubuntu_is_up_to_date
@@ -135,27 +178,46 @@ function _build() {
 }
 
 #
-# Test Command
+# == Test Command ==
 #
 
+#
+# The test function itself
+# Runs the Souffle testsuite with Souffle on Kafka features.
+# Each valid combination of interpreter/compiler, engine, and strategy is tested.
+#
 function _test() {
   local OLDPWD="${PWD}"
   local SOUFFLE_CATEGORY="FastEvaluation"
   local SC=""
+  # all tests are in parallel
   SC+=" -j${JOBS} "
   local SOUFFLE_CONFS=""
+  # interpreter
   SOUFFLE_CONFS+="${SC}"
+  # compiler
   SOUFFLE_CONFS+=",${SC} -c"
+  # file engine, compiler
   SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-file"
+  # general strategy, interpreter
   SOUFFLE_CONFS+=",${SC} -Xuse-general"
+  # general strategy, compiler
   SOUFFLE_CONFS+=",${SC} -c -Xuse-general"
+  # general strategy, file engine, compiler
   SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-file -Xuse-general"
+  # general producers strategy, interpreter
   SOUFFLE_CONFS+=",${SC} -Xuse-general -Xuse-general-producers"
+  # general producers strategy, compiler
   SOUFFLE_CONFS+=",${SC} -c -Xuse-general -Xuse-general-producers"
+  # general producers strategy, file engine, compiler
   SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-file -Xuse-general -Xuse-general-producers"
+  # kafka engine, compiler
   SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-kafka"
+  # kafka engine, general strategy, compiler
   SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-kafka -Xuse-general"
+  # kafka engine, general producers strategy, compiler
   SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-kafka -Xuse-general -Xuse-general-producers"
+  # kafka engine, general consumers strategy, compiler
   SOUFFLE_CONFS+=",${SC} -c -Xuse-engine-kafka -Xuse-general -Xuse-general-producers -Xuse-general-consumers"
   export SOUFFLE_CATEGORY="${SOUFFLE_CATEGORY}"
   export SOUFFLE_CONFS="${SOUFFLE_CONFS}"
@@ -171,9 +233,12 @@ function _test() {
 }
 
 #
-# Run Commands
+# == Run Commands ==
 #
 
+#
+# Delete all Kafka topics using the compiled program executable.
+#
 function _exe_delete_topics() {
   local KAFKA_HOST="${1}"
   local ID="${2}"
@@ -194,6 +259,9 @@ function _exe_delete_topics() {
   ${EXE} ${ARGS}
 }
 
+#
+# Create all Kafka topics using the compiled program executable.
+#
 function _exe_create_topics() {
   local KAFKA_HOST="${1}"
   local ID="${2}"
@@ -214,6 +282,9 @@ function _exe_create_topics() {
   ${EXE} ${ARGS}
 }
 
+#
+# Run each strata as a process in parallel using the compiled program executable.
+#
 function _exe_run_many_programs() {
   local KAFKA_HOST="${1}"
   local ID="${2}"
@@ -237,6 +308,9 @@ function _exe_run_many_programs() {
   wait
 }
 
+#
+# Run a single stratum as a process using the compiled program executable.
+#
 function _exe_run_one_program() {
   local KAFKA_HOST="${1}"
   local ID="${2}"
@@ -259,12 +333,18 @@ function _exe_run_one_program() {
   ${EXE} ${ARGS} -i${STRATUM_NAME}
 }
 
+#
+# Create a Kafka topic using the kafka-topics.sh script.
+#
 function _kafka_create_topic() {
   local KAFKA_HOST="${1}"
   local TOPIC="${2}"
   kafka-topics.sh --create --bootstrap-server "${KAFKA_HOST}" --replication-factor 1 --partitions 1 --topic "${TOPIC}"
 }
 
+#
+# Wait for a Kafka topic to exist using the kafka-topics.sh script.
+#
 function _kafka_wait_for_topic() {
   local KAFKA_HOST="${1}"
   local TOPIC="${2}"
@@ -277,6 +357,9 @@ function _kafka_wait_for_topic() {
   done
 }
 
+#
+# Produce a file to a topic using Kafkacat.
+#
 function _kafka_produce_file() {
   local KAFKA_HOST="${1}"
   local TOPIC="${2}"
@@ -287,6 +370,9 @@ function _kafka_produce_file() {
   cat "${FILE}" | kafkacat -b "${KAFKA_HOST}" -P -t "${TOPIC}"
 }
 
+#
+# Produce a message to a topic using Kafkacat.
+#
 function _kafka_produce_message() {
   local KAFKA_HOST="${1}"
   local TOPIC="${2}"
@@ -295,6 +381,9 @@ function _kafka_produce_message() {
   echo "${MESSAGE}" | kafkacat -b "${KAFKA_HOST}" -P -t "${TOPIC}"
 }
 
+#
+# Consume a file from a topic using Kafkacat.
+#
 function _kafka_consume_file() {
   local KAFKA_HOST="${1}"
   local TOPIC="${2}"
@@ -305,6 +394,9 @@ function _kafka_consume_file() {
   kafkacat -b "${KAFKA_HOST}" -c "${SIZE}" -X topic.auto.offset.reset=earliest "${TOPIC}" > "${FILE}"
 }
 
+#
+# Consume a message from a topic using Kafkacat.
+#
 function _kafka_consume_message() {
   local KAFKA_HOST="${1}"
   local TOPIC="${2}"
@@ -313,6 +405,9 @@ function _kafka_consume_message() {
   echo "${MESSAGE}"
 }
 
+#
+# Extend the docker-compose.yml file to include the given stratum as a Docker container.
+#
 function _docker_compose_extend_for_one() {
   local DOCKER_USER="${1}"
   local IMAGE_NAME="${2}"
@@ -330,6 +425,9 @@ cat >> "${DIR}/docker-compose.yml" << EOF
 EOF
 }
 
+#
+# Extend the docker-compose.yml file to include all strata as Docker containers.
+#
 function _docker_compose_extend_for_all() {
   local DOCKER_USER="${1}"
   local IMAGE_NAME="${2}"
@@ -341,6 +439,9 @@ function _docker_compose_extend_for_all() {
   _for_each "_docker_compose_extend_for_one ${DOCKER_USER} ${IMAGE_NAME} ${ID} ${DIR} " ${STRATUM_NAMES}
 }
 
+#
+# Extend the Dockerfile to copy the executable to the image on build.
+#
 function _docker_file_extend_for_one() {
   local DOCKER_USER="${1}"
   local IMAGE_NAME="${2}"
@@ -354,12 +455,18 @@ COPY ${EXE} /home/${DOCKER_USER}/souffle/${ID}
 EOF
 }
 
+#
+# Create a Kafka topic for logging.
+#
 function _kafka_create_log_topic() {
   local KAFKA_HOST="${1}"
   local LOG_TOPIC="souffle"
   _kafka_create_topic "${KAFKA_HOST}" "${LOG_TOPIC}"
 }
 
+#
+# Produce a message to the Kafka log topic.
+#
 function _kafka_produce_log_message() {
   local KAFKA_HOST="${1}"
   local MESSAGE="${2}"
@@ -367,6 +474,12 @@ function _kafka_produce_log_message() {
   _kafka_produce_message "${KAFKA_HOST}" "${LOG_TOPIC}" "${MESSAGE}"
 }
 
+#
+# The run function itself.
+# It runs a Souffle on Kafka program on the host.
+# It is only ever called by Souffle.
+# The user is responsible for managing the Kafka broker.
+#
 function _run() {
   local EXE="${1}"
   local VERBOSE="${2:-}"
@@ -380,6 +493,12 @@ function _run() {
   _exe_run_many_programs "${KAFKA_HOST}" "${ID}" "${EXE}" "-2 -3 ${STRATUM_NAMES}" "${VERBOSE}"
 }
 
+#
+# This is the run-with-broker function.
+# It runs a Souffle on Kafka program on the host.
+# It is called by Souffle when run with the option -Xrun-with-broker.
+# Here, the user is NOT responsible for managing the Kafka broker.
+#
 function _run_with_broker() {
   local OLDPWD="${PWD}"
   cd "kafka"
@@ -392,6 +511,11 @@ function _run_with_broker() {
   cd "${OLDPWD}"
 }
 
+#
+# This is the run-with-clients function.
+# It runs a Souffle on Kafka program both on the host and over Docker containers (clients).
+# It is called by Souffle when run with the option -Xrun-with-clients.
+#
 function _run_with_clients() {
   local OLDPWD="${PWD}"
   local EXE="${1}"
@@ -431,6 +555,12 @@ function _run_with_clients() {
   cd "${OLDPWD}"
 }
 
+#
+# This is the run-as-client function.
+# It runs a single stratum of a Souffle executable.
+# It is only ever called by the command in docker-compose.yml.
+# This is triggered by a call to the run-with-clients function.
+#
 function _run_as_client() {
   local ID="${1}"
   local STRATUM_NAME="${2}"
@@ -444,15 +574,22 @@ function _run_as_client() {
 }
 
 #
-# Docker Command
+# == Docker Commands ==
 #
 
+#
+# The clean command itself.
+# This deletes all Docker containers and images.
+#
 function _clean() {
   sudo docker stop $(sudo docker ps -a -q)
   sudo docker rm $(sudo docker ps -a -q)
   sudo docker rmi $(docker images -q -a)
 }
 
+#
+# Build a Souffle on Kafka Docker image.
+#
 function _docker_build() {
   local DOCKER_USER="${1}"
   local GITHUB_USER="${2}"
@@ -469,6 +606,9 @@ function _docker_build() {
   .
 }
 
+#
+# Run a Souffle on Kafka Docker container.
+#
 function _docker_run() {
   local DOCKER_USER="${1}"
   local IMAGE_NAME="${2}"
@@ -488,6 +628,10 @@ function _docker_run() {
   "${@:-}"
 }
 
+#
+# The docker command itself.
+# This passes any arguments given to a Souffle on Kafka Docker container.
+#
 function _docker() {
   local DOCKER_USER="default"
   local GITHUB_USER="lyndonmhenry"
@@ -497,7 +641,11 @@ function _docker() {
   _docker_run "${DOCKER_USER}" "souffle" "${@:-}"
 }
 
-function _tutorial_header() {
+#
+# = Tutorial Command =
+#
+
+function _tutorial_done() {
   #
   # = Introduction =
   #
@@ -654,10 +802,7 @@ function _tutorial_header() {
   read -p "CONTINUE? "
 }
 
-function _tutorial() {
-  #
-  # TODO (lh): fix the bug and remove call to _tutorial_header
-  #_tutorial_header
+function _tutorial_todo() {
   #
   local DOCKER_USER="default"
   #
@@ -698,6 +843,21 @@ function _tutorial() {
   read -p "EXIT? "
 }
 
+# TODO (lh): merge tutorial-done and tutorial-done functions here
+#
+# The tutorial function itself.
+# This calls the tutorial-done and tutorial-todo functions.
+# While debugging, comment out the tutorial-done call.
+# When debugging is complete, merge the done and todo functions.
+#
+function tutorial_() {
+  tutorial_done_;
+  tutorial_todo_;
+}
+
+#
+# This function prints the help text.
+#
 function _help() {
 cat << EOF
 
@@ -719,6 +879,9 @@ cat << EOF
 EOF
 }
 
+#
+# The main function, invokes each of the possible commands.
+#
 function _main() {
   local SOUFFLE_PATH="${PWD}"
   local CMD="${1}"
