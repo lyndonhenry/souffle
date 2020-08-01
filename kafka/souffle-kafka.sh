@@ -569,7 +569,11 @@ function _run_as_client() {
   local EXE="${ID}"
   _kafka_wait_for_topic "${KAFKA_HOST}" "OK"
   _kafka_produce_log_message "${KAFKA_HOST}" "Beginning program at client ${STRATUM_NAME}..."
-  _exe_run_one_program "${KAFKA_HOST}" "${ID}" "${EXE}" "${STRATUM_NAME}"
+  local STDOUT="$(mktemp)"
+  local STDERR="$(mktemp)"
+  exe_run_one_program "${KAFKA_HOST}" "${ID}" "${EXE}" "${STRATUM_NAME}" > "${STDOUT}" 2>"${STDERR}" || :
+  _kakfa_produce_log_message "Standard output at client ${STRATUM_NAME}... $(echo $(cat ${STDOUT}))"
+  _kafka_produce_log_message "Standard error at client ${STRATUM_NAME}... $(echo $(cat ${STDERR}))"
   _kafka_produce_log_message "${KAFKA_HOST}" "Ending program at client ${STRATUM_NAME}..."
 }
 
