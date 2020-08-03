@@ -585,9 +585,9 @@ function _run_as_client() {
 # This deletes all Docker containers and images.
 #
 function _clean() {
-  sudo docker stop $(sudo docker ps -a -q)
-  sudo docker rm $(sudo docker ps -a -q)
-  sudo docker rmi $(sudo docker images -q -a)
+  sudo docker stop $(sudo docker ps -a -q) || :
+  sudo docker rm $(sudo docker ps -a -q) || :
+  sudo docker rmi $(sudo docker images -q -a) || :
 }
 
 #
