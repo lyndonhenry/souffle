@@ -598,16 +598,16 @@ private:
     Vec<String> topicNames_;
     Metadata metadata_;
 #ifdef KAFKA_DEBUG
-        bool debugState_ = false;
-        RdKafka::Topic* debugTopic_;
-        Vec<String> debugMessageQueue_;
+    mutable bool debugState_ = false;
+    mutable RdKafka::Topic* debugTopic_;
+    mutable Vec<String> debugMessageQueue_;
 #endif
 
 private:
     explicit Kafka() {}
 
 private:
-    inline void beginDebug() {
+    inline void beginDebug() const {
         assert(debugState_ = false);
 #ifdef KAFKA_DEBUG
         debugTopic_ = detail::KafkaHelper::createTopic(topicConf_, producer_, customConf_.at("debug-topic"));
@@ -615,7 +615,7 @@ private:
         debugState_ = true;
     }
 
-    inline void endDebug() {
+    inline void endDebug() const {
         assert(debugState_ = true);
 #ifdef KAFKA_DEBUG
         delete debugTopic_;
@@ -623,7 +623,7 @@ private:
         debugState_ = false;
     }
 public:
-    inline void debug(const String& message) {
+    inline void debug(const String& message) const {
         (void) message;
 #ifdef KAFKA_DEBUG
         if (!debugState_) {
@@ -632,7 +632,7 @@ public:
             auto produceDebugMessage = [&](const String& msg) -> void {
                 auto payload = Vec<char>(msg.begin(), msg.end());
                 detail::KafkaHelper::produceProducer(producer_, debugTopic_, payload);
-            }
+            };
             if (!debugMessageQueue_.empty()) {
                 for (auto& msg : debugMessageQueue_) {
                     produceDebugMessage(msg);
@@ -776,21 +776,21 @@ public:
     }
     template <typename T>
     void consume(const String& topicName, Vec<T>& payload, const int timeoutMs = -1) {
-        debug("Begin function Kafka::consume(" + topicName + ", ..., " + timeoutMs + ")");
+        debug("Begin function Kafka::consume(" + topicName + ", ..., " + std::to_string(timeoutMs) + ")");
         RdKafka::Topic* topic = consumerTopics_.at(topicName);
         assert(topic);
         detail::KafkaHelper::consumeConsumer(consumer_, topic, payload, timeoutMs);
-        debug("End function Kafka::consume(" + topicName + ", ..., " + timeoutMs + ")");
+        debug("End function Kafka::consume(" + topicName + ", ..., " + std::to_string(timeoutMs) + ")");
     }
     void pollProducer(const int timeoutMs = 1000) {
-        debug("Begin function Kafka::pollProducer(" + timeoutMs + ")");
+        debug("Begin function Kafka::pollProducer(" + std::to_string(timeoutMs) + ")");
         detail::KafkaHelper::pollHandle(producer_, timeoutMs);
-        debug("End function Kafka::pollProducer(" + timeoutMs + ")");
+        debug("End function Kafka::pollProducer(" + std::to_string(timeoutMs) + ")");
     }
     void pollConsumer(const int timeoutMs = 1000) {
-        debug("Begin function Kafka::pollConsumer(" + timeoutMs + ")");
+        debug("Begin function Kafka::pollConsumer(" + std::to_string(timeoutMs) + ")");
         detail::KafkaHelper::pollHandle(consumer_, timeoutMs);
-        debug("End function Kafka::pollConsumer(" + timeoutMs + ")");
+        debug("End function Kafka::pollConsumer(" + std::to_string(timeoutMs) + ")");
     }
     void pollProducerUntilEmpty() {
         debug("Begin function Kafka::pollProducerUntilEmpty()");
