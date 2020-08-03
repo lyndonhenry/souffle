@@ -330,7 +330,8 @@ function _exe_run_one_program() {
   ARGS+=" -Xcustom.run-program=true "
   ARGS+=" -Xcustom.delete-topics=false "
   ARGS+=" -Xcustom.unique-id=${ID} "
-  ${EXE} ${ARGS} -i${STRATUM_NAME}
+  # note that we prevent exit on program failure here
+  ${EXE} ${ARGS} -i${STRATUM_NAME} || :
 }
 
 #
@@ -544,6 +545,7 @@ function _run_with_clients() {
   _exe_create_topics "${KAFKA_HOST}" "${ID}" "${EXE}" "--verbose"
   sleep 1s
   _kafka_produce_log_message "${KAFKA_HOST}" "Waiting for topics at broker..."
+  # create "ready" topic
   _kafka_create_topic "${KAFKA_HOST}" "OK"
   _kafka_wait_for_topic "${KAFKA_HOST}" "OK"
   _kafka_produce_log_message "${KAFKA_HOST}" "Beginning program at broker..."
@@ -567,14 +569,10 @@ function _run_as_client() {
   local VERBOSE="${3:-}"
   local KAFKA_HOST="kafka:29092"
   local EXE="${ID}"
+  # wait for "ready" topic
   _kafka_wait_for_topic "${KAFKA_HOST}" "OK"
-  local STDOUT="$(mktemp)"
-  local STDERR="$(mktemp)"
   _kafka_produce_log_message "${KAFKA_HOST}" "Beginning program at client ${STRATUM_NAME}..."
-  _kafka_produce_log_message "${KAFKA_HOST}" "HERE!!! DEBUG ${STRATUM_NAME}"
-  (exe_run_one_program "${KAFKA_HOST}" "${ID}" "${EXE}" "${STRATUM_NAME}" > "${STDOUT}" 2>"${STDERR}") || :
-  _kakfa_produce_log_message "Logging stdout at client ${STRATUM_NAME}... $(echo $(cat ${STDOUT}))"
-  _kafka_produce_log_message "Logging stderr at client ${STRATUM_NAME}... $(echo $(cat ${STDERR}))"
+  exe_run_one_program "${KAFKA_HOST}" "${ID}" "${EXE}" "${STRATUM_NAME}"
   _kafka_produce_log_message "${KAFKA_HOST}" "Ending program at client ${STRATUM_NAME}..."
 }
 
