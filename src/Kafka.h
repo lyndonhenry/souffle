@@ -608,7 +608,7 @@ private:
 
 private:
     inline void beginDebug() const {
-        assert(debugState_ = false);
+        assert(!debugState_);
 #ifdef KAFKA_DEBUG
         debugTopic_ = detail::KafkaHelper::createTopic(topicConf_, producer_, customConf_.at("debug-topic"));
 #endif
@@ -616,7 +616,7 @@ private:
     }
 
     inline void endDebug() const {
-        assert(debugState_ = true);
+        assert(debugState_);
 #ifdef KAFKA_DEBUG
         delete debugTopic_;
 #endif
