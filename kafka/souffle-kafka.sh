@@ -846,7 +846,7 @@ function _tutorial_todo() {
   read -p "EXIT? "
 }
 
-# TODO (lh): merge tutorial-done and tutorial-done functions here
+# TODO (lh): merge tutorial-done and tutorial-todo functions here
 #
 # The tutorial function itself.
 # This calls the tutorial-done and tutorial-todo functions.
