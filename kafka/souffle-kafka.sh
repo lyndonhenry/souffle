@@ -587,7 +587,7 @@ function _run_as_client() {
 function _clean() {
   sudo docker stop $(sudo docker ps -a -q)
   sudo docker rm $(sudo docker ps -a -q)
-  sudo docker rmi $(docker images -q -a)
+  sudo docker rmi $(sudo docker images -q -a)
 }
 
 #
