@@ -572,7 +572,7 @@ function _run_as_client() {
   # wait for "ready" topic
   _kafka_wait_for_topic "${KAFKA_HOST}" "OK"
   _kafka_produce_log_message "${KAFKA_HOST}" "Beginning program at client ${STRATUM_NAME}..."
-  exe_run_one_program "${KAFKA_HOST}" "${ID}" "${EXE}" "${STRATUM_NAME}"
+  _exe_run_one_program "${KAFKA_HOST}" "${ID}" "${EXE}" "${STRATUM_NAME}"
   _kafka_produce_log_message "${KAFKA_HOST}" "Ending program at client ${STRATUM_NAME}..."
 }
 
