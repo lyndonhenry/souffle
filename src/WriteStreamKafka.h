@@ -68,7 +68,7 @@ protected:
     }
     void producePayload() {
         kafka_.produce(relationName_, payload_);
-        if (!strings.empty()) {
+        if (!strings_.empty()) {
             kafka_.produce(std::to_string(clientId_), strings_);
         }
     }
