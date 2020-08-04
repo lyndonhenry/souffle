@@ -68,7 +68,9 @@ protected:
     }
     void producePayload() {
         kafka_.produce(relationName_, payload_);
-        kafka_.produce(std::to_string(clientId_), strings_);
+        if (!strings.empty()) {
+            kafka_.produce(std::to_string(clientId_), strings_);
+        }
     }
     void produceNullPayload() {
         std::vector<RamDomain> nullPayload(arity ? arity : 1, std::numeric_limits<RamDomain>::max());
@@ -89,14 +91,18 @@ public:
         payload_.push_back(1);
     }
     void writeNextTuple(const RamDomain* tuple) override {
-        auto& metadata = kafka_.getMetadata();
-        const auto begin = metadata.getOrElse(clientId_, 0);
-        const auto end = symbolTable.size();
-        strings_.reserve(end - begin);
-        for (auto i = begin; i < end; ++i) {
-            strings_.push_back(symbolTable.unsafeResolve(i));
+        if (!symbolTable.size() != 0) {
+            auto &metadata = kafka_.getMetadata();
+            const auto begin = metadata.getOrElse(clientId_, 0);
+            const auto end = symbolTable.size();
+            if (begin != end) {
+                strings_.reserve(end - begin);
+                for (auto i = begin; i < end; ++i) {
+                    strings_.push_back(symbolTable.unsafeResolve(i));
+                }
+            }
+            metadata.set(clientId_, end);
         }
-        metadata.set(clientId_, end);
         for (std::size_t column = 0; column < arity; ++column) {
             payload_.push_back(tuple[column]);
         }

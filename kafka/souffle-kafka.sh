@@ -809,20 +809,6 @@ function _tutorial_todo() {
   #
   local DOCKER_USER="default"
   #
-  # TODO (lh): comment (all are number types)
-  #
-  local FACT_DIR=".souffle/binop/facts"
-  local OUTPUT_DIR=".souffle/binop"
-  local DATALOG_FILE=".souffle/binop/binop.dl"
-  #
-  rm -rf "${HOME}/${OUTPUT_DIR}"
-  mkdir -p "${HOME}/${OUTPUT_DIR}"
-  cp -r "tests/evaluation/binop/facts" "${HOME}/${FACT_DIR}"
-  cp "tests/evaluation/binop/binop.dl" "${HOME}/${DATALOG_FILE}"
-  ./kafka/souffle-kafka.sh --docker ./src/souffle -F"/home/${DOCKER_USER}/${FACT_DIR}" -D"/home/${DOCKER_USER}/${OUTPUT_DIR}" -c -Xuse-engine-kafka -Xrun-with-clients -Xuse-general -Xuse-general-producers -Xuse-general-consumers "/home/${DOCKER_USER}/${DATALOG_FILE}"
-  #
-  read -p "CONTINUE? "
-  #
   # TODO (lh): comment (all are string types)
   #
   local FACT_DIR=".souffle/relop/facts"
@@ -836,6 +822,20 @@ function _tutorial_todo() {
   ./kafka/souffle-kafka.sh --docker ./src/souffle -F"/home/${DOCKER_USER}/${FACT_DIR}" -D"/home/${DOCKER_USER}/${OUTPUT_DIR}" -c -Xuse-engine-kafka -Xrun-with-clients -Xuse-general -Xuse-general-producers -Xuse-general-consumers "/home/${DOCKER_USER}/${DATALOG_FILE}"
   #
   # TODO (lh): comment (running souffle testsuite)
+  #
+  read -p "CONTINUE? "
+  #
+  # TODO (lh): comment (all are number types)
+  #
+  local FACT_DIR=".souffle/binop/facts"
+  local OUTPUT_DIR=".souffle/binop"
+  local DATALOG_FILE=".souffle/binop/binop.dl"
+  #
+  rm -rf "${HOME}/${OUTPUT_DIR}"
+  mkdir -p "${HOME}/${OUTPUT_DIR}"
+  cp -r "tests/evaluation/binop/facts" "${HOME}/${FACT_DIR}"
+  cp "tests/evaluation/binop/binop.dl" "${HOME}/${DATALOG_FILE}"
+  ./kafka/souffle-kafka.sh --docker ./src/souffle -F"/home/${DOCKER_USER}/${FACT_DIR}" -D"/home/${DOCKER_USER}/${OUTPUT_DIR}" -c -Xuse-engine-kafka -Xrun-with-clients -Xuse-general -Xuse-general-producers -Xuse-general-consumers "/home/${DOCKER_USER}/${DATALOG_FILE}"
   #
   read -p "CONTINUE? "
   #
