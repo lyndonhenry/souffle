@@ -100,8 +100,8 @@ public:
                 for (auto i = begin; i < end; ++i) {
                     strings_.push_back(symbolTable.unsafeResolve(i));
                 }
+                metadata.set(clientId_, end);
             }
-            metadata.set(clientId_, end);
         }
         for (std::size_t column = 0; column < arity; ++column) {
             payload_.push_back(tuple[column]);

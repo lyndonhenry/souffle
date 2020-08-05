@@ -549,7 +549,8 @@ function _run_with_clients() {
   _kafka_create_topic "${KAFKA_HOST}" "OK"
   _kafka_wait_for_topic "${KAFKA_HOST}" "OK"
   _kafka_produce_log_message "${KAFKA_HOST}" "Beginning program at broker..."
-  _exe_run_many_programs "${KAFKA_HOST}" "${ID}" "${EXE}" "-2 -3" "${VERBOSE}"
+  # @@@TODO (lh): note we run all in verbose mode
+  _exe_run_many_programs "${KAFKA_HOST}" "${ID}" "${EXE}" "-2 -3" "--verbose"
   _kafka_produce_log_message "${KAFKA_HOST}" "Ending program at broker..."
   read -p "CONTINUE? "
   cd "${TMP}"
@@ -572,7 +573,8 @@ function _run_as_client() {
   # wait for "ready" topic
   _kafka_wait_for_topic "${KAFKA_HOST}" "OK"
   _kafka_produce_log_message "${KAFKA_HOST}" "Beginning program at client ${STRATUM_NAME}..."
-  _exe_run_one_program "${KAFKA_HOST}" "${ID}" "${EXE}" "${STRATUM_NAME}"
+  # @@@TODO (lh): note we run all in verbose mode
+  _exe_run_one_program "${KAFKA_HOST}" "${ID}" "${EXE}" "${STRATUM_NAME}" "--verbose"
   _kafka_produce_log_message "${KAFKA_HOST}" "Ending program at client ${STRATUM_NAME}..."
 }
 
