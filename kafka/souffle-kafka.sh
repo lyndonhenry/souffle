@@ -251,7 +251,7 @@ function _exe_delete_topics() {
   ARGS+=" -Xcustom.disable-stdout=false "
   ARGS+=" -Xcustom.disable-stderr=false "
   fi
-  ARGS+=" -Xmetadata.broker.list=${KAFKA_HOST} "
+  ARGS+=" -Xbootstrap.servers=${KAFKA_HOST} "
   ARGS+=" -Xcustom.create-topics=false "
   ARGS+=" -Xcustom.run-program=false "
   ARGS+=" -Xcustom.delete-topics=true "
@@ -274,7 +274,7 @@ function _exe_create_topics() {
   ARGS+=" -Xcustom.disable-stdout=false "
   ARGS+=" -Xcustom.disable-stderr=false "
   fi
-  ARGS+=" -Xmetadata.broker.list=${KAFKA_HOST} "
+  ARGS+=" -Xbootstrap.servers=${KAFKA_HOST} "
   ARGS+=" -Xcustom.create-topics=true "
   ARGS+=" -Xcustom.run-program=false "
   ARGS+=" -Xcustom.delete-topics=false "
@@ -299,7 +299,7 @@ function _exe_run_many_programs() {
   ARGS+=" -Xcustom.disable-stderr=false "
   fi
   local ARGS=""
-  ARGS+=" -Xmetadata.broker.list=${KAFKA_HOST} "
+  ARGS+=" -Xbootstrap.servers=${KAFKA_HOST} "
   ARGS+=" -Xcustom.create-topics=false "
   ARGS+=" -Xcustom.run-program=true "
   ARGS+=" -Xcustom.delete-topics=false "
@@ -325,7 +325,7 @@ function _exe_run_one_program() {
   ARGS+=" -Xcustom.disable-stderr=false "
   fi
   local ARGS=""
-  ARGS+=" -Xmetadata.broker.list=${KAFKA_HOST} "
+  ARGS+=" -Xbootstrap.servers=${KAFKA_HOST} "
   ARGS+=" -Xcustom.create-topics=false "
   ARGS+=" -Xcustom.run-program=true "
   ARGS+=" -Xcustom.delete-topics=false "
@@ -776,7 +776,10 @@ function _tutorial_done() {
   #
   # TODO (lh): comment (running souffle in docker, note that ${HOME}/.souffle on host is mounted at ${HOME}/.souffle in container)
   #
-  local DOCKER_USER="default"
+}
+
+function _tutorial_todo() {
+    local DOCKER_USER="default"
   #
   # TODO (lh): comment (all are number types)
   #
@@ -805,9 +808,6 @@ function _tutorial_done() {
   ./kafka/souffle-kafka.sh --docker ./src/souffle -F"/home/${DOCKER_USER}/${FACT_DIR}" -D"/home/${DOCKER_USER}/${OUTPUT_DIR}" -c -Xuse-engine-kafka -Xrun-with-broker -Xuse-general -Xuse-general-producers -Xuse-general-consumers "/home/${DOCKER_USER}/${DATALOG_FILE}"
   #
   read -p "CONTINUE? "
-}
-
-function _tutorial_todo() {
   #
   local DOCKER_USER="default"
   #

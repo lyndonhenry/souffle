@@ -666,7 +666,7 @@ public:
             exit(0);
         }
         globalConf_ = detail::KafkaHelper::createGlobalConf();
-        customConf_["metadata.broker.list"] = (globalConf.count("metadata.broker.list")) ? globalConf.at("metadata.broker.list") : "localhost:9092";
+        customConf_["bootstrap.servers"] = (globalConf.count("bootstrap.servers")) ? globalConf.at("bootstrap.servers") : "localhost:9092";
 
         for (auto it = globalConf.begin(); it != globalConf.end(); ++it) {
             const String prefix = "custom.";
@@ -828,10 +828,10 @@ private:
     void createTopic(const String& topicName) {
         StringStream stringstream;
         if (customConf_.at("use-kafkacat") == "true") {
-            stringstream << "kafkacat -b \"" << customConf_.at("metadata.broker.list") << "\" -t \"" << getTopicIdentifier(topicName)
+            stringstream << "kafkacat -b \"" << customConf_.at("bootstrap.servers") << "\" -t \"" << getTopicIdentifier(topicName)
                          << "\"";
         } else {
-            stringstream << "kafka-topics.sh --create --bootstrap-server \"" << customConf_.at("metadata.broker.list")
+            stringstream << "kafka-topics.sh --create --bootstrap-server \"" << customConf_.at("bootstrap.servers")
                          << "\" --topic \"" << getTopicIdentifier(topicName)
                          << "\" --replication-factor 1 --partitions 1";
         }
@@ -840,7 +840,7 @@ private:
     }
     void deleteTopic(const String& topicName) {
         StringStream stringstream;
-        stringstream << "kafka-topics.sh --delete --bootstrap-server \"" << customConf_.at("metadata.broker.list") << "\" --topic \""
+        stringstream << "kafka-topics.sh --delete --bootstrap-server \"" << customConf_.at("bootstrap.servers") << "\" --topic \""
                      << getTopicIdentifier(topicName) << "\"";
         addIoRedirect(stringstream);
         system(stringstream.str().c_str());
