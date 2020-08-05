@@ -331,7 +331,7 @@ function _exe_run_one_program() {
   ARGS+=" -Xcustom.delete-topics=false "
   ARGS+=" -Xcustom.unique-id=${ID} "
   # note that we prevent exit on program failure here
-  ${EXE} ${ARGS} -i${STRATUM_NAME} || :
+  ./${EXE} ${ARGS} -i${STRATUM_NAME} || :
 }
 
 #
