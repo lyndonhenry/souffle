@@ -776,10 +776,7 @@ function _tutorial_done() {
   #
   # TODO (lh): comment (running souffle in docker, note that ${HOME}/.souffle on host is mounted at ${HOME}/.souffle in container)
   #
-}
-
-function _tutorial_todo() {
-    local DOCKER_USER="default"
+  local DOCKER_USER="default"
   #
   # TODO (lh): comment (all are number types)
   #
@@ -794,6 +791,11 @@ function _tutorial_todo() {
   ./kafka/souffle-kafka.sh --docker ./src/souffle -F"/home/${DOCKER_USER}/${FACT_DIR}" -D"/home/${DOCKER_USER}/${OUTPUT_DIR}" -c -Xuse-engine-kafka -Xrun-with-broker -Xuse-general -Xuse-general-producers -Xuse-general-consumers "/home/${DOCKER_USER}/${DATALOG_FILE}"
   #
   read -p "CONTINUE? "
+
+}
+
+function _tutorial_todo() {
+  local DOCKER_USER="default"
   #
   # TODO (lh): comment (all are string types)
   #
@@ -809,7 +811,6 @@ function _tutorial_todo() {
   #
   read -p "CONTINUE? "
   #
-  local DOCKER_USER="default"
   #
   # TODO (lh): comment (all are string types)
   #
