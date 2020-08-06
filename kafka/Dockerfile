@@ -27,12 +27,8 @@ RUN git clone https://github.com/${GITHUB_USER}/souffle && \
 
 WORKDIR /home/${DOCKER_USER}/souffle
 
-ENV PATH="/home/${DOCKER_USER}/.kafka/bin:${PATH}"
+# adds kafka scripts and souffle-kafka.sh to path
+ENV PATH="/home/${DOCKER_USER}/.kafka/bin:/home/${DOCKER_USER}/souffle/kafka:${PATH}"
 
 RUN ./kafka/souffle-kafka.sh --build
-
-# TODO (lh): remove this after development, it is for convenience only
-RUN rm ./kafka/souffle-kafka.sh
-COPY ./kafka/souffle-kafka.sh ./kafka/souffle-kafka.sh
-
 

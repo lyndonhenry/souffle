@@ -187,8 +187,11 @@ function _build() {
 # Each valid combination of interpreter/compiler, engine, and strategy is tested.
 #
 function _test() {
+  # ensure that souffle kafka is on path, assume ${PWD} is souffle home
+  export PATH="${PWD}/kafka:${PATH}"
   local OLDPWD="${PWD}"
   local SOUFFLE_CATEGORY="FastEvaluation"
+  local JOBS="$(_get_make_jobs)"
   local SC=""
   # all tests are in parallel
   SC+=" -j${JOBS} "
@@ -225,7 +228,6 @@ function _test() {
   cd kafka
   sudo docker-compose up -d --remove-orphans
   cd ..
-  local JOBS=$(_get_make_jobs)
   TESTSUITEFLAGS="-j${JOBS}" make check -j${JOBS}
   cd kafka
   sudo docker-compose down --remove-orphans
@@ -256,7 +258,7 @@ function _exe_delete_topics() {
   ARGS+=" -Xcustom.run-program=false "
   ARGS+=" -Xcustom.delete-topics=true "
   ARGS+=" -Xcustom.unique-id=${ID} "
-  ${EXE} ${ARGS}
+  ./${EXE} ${ARGS}
 }
 
 #
@@ -279,7 +281,7 @@ function _exe_create_topics() {
   ARGS+=" -Xcustom.run-program=false "
   ARGS+=" -Xcustom.delete-topics=false "
   ARGS+=" -Xcustom.unique-id=${ID} "
-  ${EXE} ${ARGS}
+  ./${EXE} ${ARGS}
 }
 
 #
@@ -304,7 +306,7 @@ function _exe_run_many_programs() {
   ARGS+=" -Xcustom.run-program=true "
   ARGS+=" -Xcustom.delete-topics=false "
   ARGS+=" -Xcustom.unique-id=${ID} "
-  _for_each_async "${EXE} ${ARGS} -i" ${STRATUM_NAMES}
+  _for_each_async "./${EXE} ${ARGS} -i" ${STRATUM_NAMES}
   wait
 }
 
@@ -330,8 +332,7 @@ function _exe_run_one_program() {
   ARGS+=" -Xcustom.run-program=true "
   ARGS+=" -Xcustom.delete-topics=false "
   ARGS+=" -Xcustom.unique-id=${ID} "
-  # note that we prevent exit on program failure here
-  ${EXE} ${ARGS} -i${STRATUM_NAME} || :
+  ./${EXE} ${ARGS} -i${STRATUM_NAME}
 }
 
 #
@@ -551,9 +552,8 @@ function _run_with_clients() {
   _kafka_produce_log_message "${KAFKA_HOST}" "Beginning program at broker..."
   _exe_run_many_programs "${KAFKA_HOST}" "${ID}" "${EXE}" "-2 -3" "${VERBOSE}"
   _kafka_produce_log_message "${KAFKA_HOST}" "Ending program at broker..."
-  read -p "CONTINUE? "
-  cd "${TMP}"
-  docker-compose down --remove-orphans
+  cd "${DIR}"
+  sudo docker-compose down --remove-orphans
   cd "${OLDPWD}"
 }
 
@@ -572,7 +572,7 @@ function _run_as_client() {
   # wait for "ready" topic
   _kafka_wait_for_topic "${KAFKA_HOST}" "OK"
   _kafka_produce_log_message "${KAFKA_HOST}" "Beginning program at client ${STRATUM_NAME}..."
-  exe_run_one_program "${KAFKA_HOST}" "${ID}" "${EXE}" "${STRATUM_NAME}"
+  _exe_run_one_program "${KAFKA_HOST}" "${ID}" "${EXE}" "${STRATUM_NAME}"
   _kafka_produce_log_message "${KAFKA_HOST}" "Ending program at client ${STRATUM_NAME}..."
 }
 
@@ -648,7 +648,11 @@ function _docker() {
 # = Tutorial Command =
 #
 
-function _tutorial_done() {
+#
+# The tutorial function itself.
+#
+function _tutorial() {
+
   #
   # = Introduction =
   #
@@ -677,6 +681,12 @@ function _tutorial_done() {
   # This tutorial will also cover how Souffle triggers
   # each of the non-user commands.
   #
+  # You must also ensure that this script in on your PATH
+  # for it to work via such calls to Souffle.
+  #
+  export PATH="${PWD}/kafka:${PATH}"
+  #
+  #
   # Without further ado, we begin the tutorial content.
   #
   # = Build =
@@ -702,9 +712,9 @@ function _tutorial_done() {
   # For good measure, we make sure that the output directory
   # is exists and is empty.
   #
-  local FACT_DIR="tests/evaluation/relop/facts"
-  local OUTPUT_DIR="tests/testsuite.dir/evaluation/relop"
-  local DATALOG_FILE="tests/evaluation/relop/relop.dl"
+  local FACT_DIR="tests/example/relop/facts"
+  local OUTPUT_DIR="tests/testsuite.dir/example/relop"
+  local DATALOG_FILE="tests/example/relop/relop.dl"
   #
   rm -rf "${OUTPUT_DIR}"
   mkdir -p "${OUTPUT_DIR}"
@@ -720,7 +730,7 @@ function _tutorial_done() {
   # To run a Souffle program on Kafka, we use the kafka engine.
   #
   # Souffle on Kafka uses the concept of 'engines' to define
-  # alternative evaluation models for the programs it runs.
+  # alternative example models for the programs it runs.
   #
   # These are then modified by 'strategies', which we shall
   # come to in a moment.
@@ -738,18 +748,16 @@ function _tutorial_done() {
   #
   # TODO (lh): comment (check csv files in output dir, running in parallel)
   #
-  read -p "CONTINUE? "
-  #
-  local FACT_DIR_1="tests/evaluation/relop/facts"
-  local OUTPUT_DIR_1="tests/testsuite.dir/evaluation/relop"
-  local DATALOG_FILE_1="tests/evaluation/relop/relop.dl"
+  local FACT_DIR_1="tests/example/relop/facts"
+  local OUTPUT_DIR_1="tests/testsuite.dir/example/relop"
+  local DATALOG_FILE_1="tests/example/relop/relop.dl"
   #
   rm -rf "${OUTPUT_DIR_1}"
   mkdir -p "${OUTPUT_DIR_1}"
   #
-  local FACT_DIR_2="tests/evaluation/binop/facts"
-  local OUTPUT_DIR_2="tests/testsuite.dir/evaluation/binop"
-  local DATALOG_FILE_2="tests/evaluation/binop/binop.dl"
+  local FACT_DIR_2="tests/example/binop/facts"
+  local OUTPUT_DIR_2="tests/testsuite.dir/example/binop"
+  local DATALOG_FILE_2="tests/example/binop/binop.dl"
   #
   rm -rf "${OUTPUT_DIR_2}"
   mkdir -p "${OUTPUT_DIR_2}"
@@ -784,11 +792,9 @@ function _tutorial_done() {
   #
   rm -rf "${HOME}/${OUTPUT_DIR}"
   mkdir -p "${HOME}/${OUTPUT_DIR}"
-  cp -r "tests/evaluation/binop/facts" "${HOME}/${FACT_DIR}"
-  cp "tests/evaluation/binop/binop.dl" "${HOME}/${DATALOG_FILE}"
+  cp -r "tests/example/binop/facts" "${HOME}/${FACT_DIR}"
+  cp "tests/example/binop/binop.dl" "${HOME}/${DATALOG_FILE}"
   ./kafka/souffle-kafka.sh --docker ./src/souffle -F"/home/${DOCKER_USER}/${FACT_DIR}" -D"/home/${DOCKER_USER}/${OUTPUT_DIR}" -c -Xuse-engine-kafka -Xrun-with-broker -Xuse-general -Xuse-general-producers -Xuse-general-consumers "/home/${DOCKER_USER}/${DATALOG_FILE}"
-  #
-  read -p "CONTINUE? "
   #
   # TODO (lh): comment (all are string types)
   #
@@ -798,16 +804,9 @@ function _tutorial_done() {
   #
   rm -rf "${HOME}/${OUTPUT_DIR}"
   mkdir -p "${HOME}/${OUTPUT_DIR}"
-  cp -r "tests/evaluation/relop/facts" "${HOME}/${FACT_DIR}"
-  cp "tests/evaluation/relop/relop.dl" "${HOME}/${DATALOG_FILE}"
+  cp -r "tests/example/relop/facts" "${HOME}/${FACT_DIR}"
+  cp "tests/example/relop/relop.dl" "${HOME}/${DATALOG_FILE}"
   ./kafka/souffle-kafka.sh --docker ./src/souffle -F"/home/${DOCKER_USER}/${FACT_DIR}" -D"/home/${DOCKER_USER}/${OUTPUT_DIR}" -c -Xuse-engine-kafka -Xrun-with-broker -Xuse-general -Xuse-general-producers -Xuse-general-consumers "/home/${DOCKER_USER}/${DATALOG_FILE}"
-  #
-  read -p "CONTINUE? "
-}
-
-function _tutorial_todo() {
-  #
-  local DOCKER_USER="default"
   #
   # TODO (lh): comment (all are number types)
   #
@@ -817,11 +816,9 @@ function _tutorial_todo() {
   #
   rm -rf "${HOME}/${OUTPUT_DIR}"
   mkdir -p "${HOME}/${OUTPUT_DIR}"
-  cp -r "tests/evaluation/binop/facts" "${HOME}/${FACT_DIR}"
-  cp "tests/evaluation/binop/binop.dl" "${HOME}/${DATALOG_FILE}"
+  cp -r "tests/example/binop/facts" "${HOME}/${FACT_DIR}"
+  cp "tests/example/binop/binop.dl" "${HOME}/${DATALOG_FILE}"
   ./kafka/souffle-kafka.sh --docker ./src/souffle -F"/home/${DOCKER_USER}/${FACT_DIR}" -D"/home/${DOCKER_USER}/${OUTPUT_DIR}" -c -Xuse-engine-kafka -Xrun-with-clients -Xuse-general -Xuse-general-producers -Xuse-general-consumers "/home/${DOCKER_USER}/${DATALOG_FILE}"
-  #
-  read -p "CONTINUE? "
   #
   # TODO (lh): comment (all are string types)
   #
@@ -831,31 +828,17 @@ function _tutorial_todo() {
   #
   rm -rf "${HOME}/${OUTPUT_DIR}"
   mkdir -p "${HOME}/${OUTPUT_DIR}"
-  cp -r "tests/evaluation/relop/facts" "${HOME}/${FACT_DIR}"
-  cp "tests/evaluation/relop/relop.dl" "${HOME}/${DATALOG_FILE}"
+  cp -r "tests/example/relop/facts" "${HOME}/${FACT_DIR}"
+  cp "tests/example/relop/relop.dl" "${HOME}/${DATALOG_FILE}"
   ./kafka/souffle-kafka.sh --docker ./src/souffle -F"/home/${DOCKER_USER}/${FACT_DIR}" -D"/home/${DOCKER_USER}/${OUTPUT_DIR}" -c -Xuse-engine-kafka -Xrun-with-clients -Xuse-general -Xuse-general-producers -Xuse-general-consumers "/home/${DOCKER_USER}/${DATALOG_FILE}"
   #
-  # TODO (lh): comment (running souffle testsuite)
   #
-  read -p "CONTINUE? "
+  # TODO (lh): comment (running souffle testsuite)
   #
   ./kafka/souffle-kafka.sh --test
   #
   # TODO (lh): comment (this is the end of the tutorial)
   #
-  read -p "EXIT? "
-}
-
-# TODO (lh): merge tutorial-done and tutorial-todo functions here
-#
-# The tutorial function itself.
-# This calls the tutorial-done and tutorial-todo functions.
-# While debugging, comment out the tutorial-done call.
-# When debugging is complete, merge the done and todo functions.
-#
-function _tutorial() {
-  #_tutorial_done;
-  _tutorial_todo;
 }
 
 #

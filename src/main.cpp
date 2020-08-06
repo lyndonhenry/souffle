@@ -81,8 +81,8 @@ void executeBinary(const std::string& binaryFilename) {
         }
         std::stringstream executeCmd;
         if (Global::config().has("experimental.use-engine-kafka")) {
-            // TODO (lh): this assumes that you are in the root souffle directory
-            executeCmd << "./kafka/souffle-kafka.sh";
+            // TODO (lh): this assumes that souffle-kafka.sh is on PATH
+            executeCmd << "souffle-kafka.sh";
             if (Global::config().has("experimental.run-with-broker")) {
                 assert(!Global::config().has("experimental.run-with-clients"));
                 executeCmd << " --run-with-broker ";
