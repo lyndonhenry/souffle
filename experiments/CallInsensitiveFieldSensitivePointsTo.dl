@@ -1,18 +1,18 @@
 
-.type Variable <: symbol
-.type Allocation <: symbol
-.type Field <: symbol
+.symbol_type Variable
+.symbol_type Allocation
+.symbol_type Field 
 
 .decl AssignAlloc(var:Variable, heap:Allocation)
-.output AssignAlloc()
+.input AssignAlloc()
 .decl Assign(source:Variable, destination:Variable)
 .output Assign()
 .decl PrimitiveAssign(source:Variable, dest:Variable)
-.output PrimitiveAssign()
+.input PrimitiveAssign()
 .decl Load(base:Variable, dest:Variable, field:Field)
-.output Load()
+.input Load()
 .decl Store(source:Variable, base:Variable, field:Field)
-.output Store()
+.input Store()
 .decl VarPointsTo(var:Variable, heap:Allocation)
 .output VarPointsTo()
 .decl Alias(x:Variable,y:Variable)
