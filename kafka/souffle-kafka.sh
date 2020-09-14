@@ -625,6 +625,7 @@ function _docker_run() {
   --interactive \
   --tty \
   --net=host \
+  --volume "${HOME}/.aws:/home/${DOCKER_USER}/.aws" \
   --volume "/var/run/docker.sock:/var/run/docker.sock" \
   --volume "${FROM_DIR}:${TO_DIR}" \
   "${DOCKER_USER}/${IMAGE_NAME}:latest" \

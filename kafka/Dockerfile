@@ -32,3 +32,12 @@ ENV PATH="/home/${DOCKER_USER}/.kafka/bin:/home/${DOCKER_USER}/souffle/kafka:${P
 
 RUN ./kafka/souffle-kafka.sh --build
 
+# install the aws cli
+WORKDIR /tmp
+
+RUN sudo apt-get install -y zip
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+RUN unzip awscliv2.zip
+RUN sudo ./aws/install
+
+WORKDIR /home/${DOCKER_USER}/souffle

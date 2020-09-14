@@ -1,0 +1,5 @@
+.decl E(a:number,b:number)
+.input E
+.decl S(a:number,b:number)
+.output S
+S(a,a):-E(a,_);E(_,a).S(a,b):-E(x,a),E(x,b),S(a,b).

@@ -1,0 +1,44 @@
+.decl E(a:number,b:number)
+.input E
+.decl P(a:number,b:number)
+.output P
+.decl E_0(a:number,b:number)
+E_0(a,b) :- E(a,b), a % 8 = 0.
+.decl P_0(a:number,b:number)
+P_0(a,b) :- E_0(a,b). P_0(a,b) :- P_0(a,x), P_0(x,b). 
+.decl E_1(a:number,b:number)
+E_1(a,b) :- E(a,b), a % 8 = 1.
+.decl P_1(a:number,b:number)
+P_1(a,b) :- E_1(a,b). P_1(a,b) :- P_1(a,x), P_1(x,b). 
+.decl E_2(a:number,b:number)
+E_2(a,b) :- E(a,b), a % 8 = 2.
+.decl P_2(a:number,b:number)
+P_2(a,b) :- E_2(a,b). P_2(a,b) :- P_2(a,x), P_2(x,b). 
+.decl E_3(a:number,b:number)
+E_3(a,b) :- E(a,b), a % 8 = 3.
+.decl P_3(a:number,b:number)
+P_3(a,b) :- E_3(a,b). P_3(a,b) :- P_3(a,x), P_3(x,b). 
+.decl E_4(a:number,b:number)
+E_4(a,b) :- E(a,b), a % 8 = 4.
+.decl P_4(a:number,b:number)
+P_4(a,b) :- E_4(a,b). P_4(a,b) :- P_4(a,x), P_4(x,b). 
+.decl E_5(a:number,b:number)
+E_5(a,b) :- E(a,b), a % 8 = 5.
+.decl P_5(a:number,b:number)
+P_5(a,b) :- E_5(a,b). P_5(a,b) :- P_5(a,x), P_5(x,b). 
+.decl E_6(a:number,b:number)
+E_6(a,b) :- E(a,b), a % 8 = 6.
+.decl P_6(a:number,b:number)
+P_6(a,b) :- E_6(a,b). P_6(a,b) :- P_6(a,x), P_6(x,b). 
+.decl E_7(a:number,b:number)
+E_7(a,b) :- E(a,b), a % 8 = 7.
+.decl P_7(a:number,b:number)
+P_7(a,b) :- E_7(a,b). P_7(a,b) :- P_7(a,x), P_7(x,b). 
+P_1(a,b) :- P_0(a,b).
+P_2(a,b) :- P_1(a,b).
+P_3(a,b) :- P_2(a,b).
+P_4(a,b) :- P_3(a,b).
+P_5(a,b) :- P_4(a,b).
+P_6(a,b) :- P_5(a,b).
+P_7(a,b) :- P_6(a,b).
+P(a,b) :- P_7(a,b).

@@ -1,0 +1,5 @@
+.decl E(a:number,b:number)
+.input E
+.decl M(a:number,b:number,c:number)
+.output M
+M(a,b,c):-E(a,c),E(b,c).

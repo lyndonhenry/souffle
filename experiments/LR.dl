@@ -1,0 +1,5 @@
+.decl E(a:number,b:number)
+.input E
+.decl P(a:number,b:number)
+.output P
+P(a,b):-E(a,b).P(a,b):-E(a,x),P(x,b).

@@ -1,0 +1,5 @@
+.decl P(a:number,b:number)
+.input P
+.decl S(a:number,b:number)
+.output S
+S(a,b):-P(a,b),P(b,a).
