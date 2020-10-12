@@ -6,10 +6,8 @@ set -ouex pipefail
 # == Global Variables ===
 #
 
-# @@@TODO (lh): change the github branch here
-
 GITHUB_USER="lyndonmhenry"
-GITHUB_BRANCH="lh/wip"
+GITHUB_BRANCH="lh/kafka"
 DOCKER_USER="default"
 DOCKER_FILE="./kafka/Dockerfile"
 IMAGE_NAME="lyndonmhenry/souffle-on-kafka"

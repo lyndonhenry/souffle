@@ -4,6 +4,186 @@ set -ouex pipefail
 
 function _generate_benchmarks() {
 
+  local DATASETS
+  local BENCHMARKS
+  local TYPES
+  local THREADS
+  local SPLITS
+  local JOINS
+
+  #
+  # First round of experiments
+  #
+  # - with kafka and GPCSNE in one docker vs no kafka and SNE
+  # - no splits or joins
+  # - all datasets
+  # - all benchmark programs
+  # - with and without strings
+  # - with 1 thread or n threads
+  #
+
+  DATASETS=""
+  DATASETS+="cit-Patents"
+  DATASETS+="com-Orkut"
+  DATASETS+="com-Youtube"
+  DATASETS+="prog-jenkins"
+  DATASETS+="prog-jython"
+  DATASETS+="prog-openjdk8"
+  DATASETS+="roadNet-CA"
+  DATASETS+="roadNet-PA"
+  DATASETS+="roadNet-TX"
+  DATASETS+="soc-Epinions1"
+  DATASETS+="soc-LiveJournal1"
+  DATASETS+="soc-Pokec"
+  DATASETS+="web-BerkStan"
+  DATASETS+="web-Google"
+  DATASETS+="web-NotreDame"
+  DATASETS+="web-Stanford"
+  DATASETS+="wiki-Talk"
+  DATASETS+="wiki-topcats"
+
+  BENCHMARKS=""
+  BENCHMARKS+="LR"
+  BENCHMARKS+="RR"
+  BENCHMARKS+="NR"
+  BENCHMARKS+="SG"
+  BENCHMARKS+="RSG"
+  BENCHMARKS+="TC"
+  BENCHMARKS+="SCC"
+  BENCHMARKS+="MN"
+
+  TYPES=""
+  TYPES+="number"
+  TYPES+="symbol"
+
+  THREADS=""
+  THREADS+="1 $(nproc)"
+
+  SPLITS=""
+  SPLITS+="0"
+
+  JOINS=""
+  JOINS+="none"
+
+  # Experiments without kafka
+  local BENCHMARK
+  for BENCHMARK in ${BENCHMARKS}
+  do
+    local DATASET
+    for DATASET in ${DATASETS}
+    do
+      local TYPE
+      for TYPE in ${TYPES}
+      do
+        for SPLIT in ${SPLITS}
+        do
+          for JOIN in ${JOINS}
+          do
+            local THREAD
+            for THREAD in ${THREADS}
+            do
+              ./kafka/souffle-on-kafka.sh \
+              --benchmark "${BENCHMARK}" \
+              --type "${TYPE}" \
+              --split "${SPLIT}" \
+              --join "${JOIN}" \
+              --mode "no-kafka" \
+              --algorithm "SNE" \
+              --data "${DATASET}" \
+              --threads "${THREAD}"
+            done
+          done
+        done
+      done
+    done
+  done
+
+  # Experiments with kafka
+  local BENCHMARK
+  for BENCHMARK in ${BENCHMARKS}
+  do
+    local DATASET
+    for DATASET in ${DATASETS}
+    do
+      local TYPE
+      for TYPE in ${TYPES}
+      do
+        for SPLIT in ${SPLITS}
+        do
+          for JOIN in ${JOINS}
+          do
+            local THREAD
+            for THREAD in ${THREADS}
+            do
+              ./kafka/souffle-on-kafka.sh \
+              --benchmark "${BENCHMARK}" \
+              --type "${TYPE}" \
+              --split "${SPLIT}" \
+              --join "${JOIN}" \
+              --mode "one-kafka" \
+              --algorithm "GPCSNE" \
+              --data "${DATASET}" \
+              --threads "${THREAD}"
+            done
+          done
+        done
+      done
+    done
+  done
+
+  #
+  # Second round of experiments
+  #
+  # - with kafka and GPCSNE in many docker
+  # - splits doubled for each experiment
+  # - each join type
+  # - one dataset
+  # - one benchmark
+  # - with and without strings
+  # - constant 1 threads
+
+  DATASETS="soc-LiveJournal1"
+  BENCHMARKS="NR"
+  TYPES="number symbol"
+  THREADS="1"
+  SPLITS="0 2 4 8 16 32 64 128"
+  JOINS="left balanced complete lattice"
+
+  # Experiments with kafka
+  local BENCHMARK
+  for BENCHMARK in ${BENCHMARKS}
+  do
+    local DATASET
+    for DATASET in ${DATASETS}
+    do
+      local TYPE
+      for TYPE in ${TYPES}
+      do
+        for SPLIT in ${SPLITS}
+        do
+          for JOIN in ${JOINS}
+          do
+            local THREAD
+            for THREAD in ${THREADS}
+            do
+              ./kafka/souffle-on-kafka.sh \
+              --benchmark "${BENCHMARK}" \
+              --type "${TYPE}" \
+              --split "${SPLIT}" \
+              --join "${JOIN}" \
+              --mode "many-kafka" \
+              --algorithm "GPCSNE" \
+              --data "${DATASET}" \
+              --threads "${THREAD}"
+            done
+          done
+        done
+      done
+    done
+  done
+
+function _generate_example_benchmarks() {
+
   # Run with Kafka, using GPCSNE, on NR, with strings, two threads.
 
   ./kafka/souffle-on-kafka.sh \
@@ -93,7 +273,14 @@ function _main() {
   aws s3 sync "${ROOT}" "s3://souffle-on-kafka"
 
   # Run the souffle-on-kafka.sh script to generate experiments, as desired.
+  case ${1:-} in
+  "--example")
+  _generate_example_benchmarks
+  ;;
+  *)
   _generate_benchmarks
+  ;;
+  esac
 
   aws s3 sync "${ROOT}" "s3://souffle-on-kafka"
 
