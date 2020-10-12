@@ -181,6 +181,7 @@ function _generate_benchmarks() {
       done
     done
   done
+}
 
 function _generate_example_benchmarks() {
 
