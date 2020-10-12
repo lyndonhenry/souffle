@@ -1,0 +1,9 @@
+[package]
+name = "souffle_on_kafka"
+version = "0.1.0"
+authors = ["lyndonhenry <lyndonhenrydotnet@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]

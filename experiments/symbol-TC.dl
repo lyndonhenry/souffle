@@ -1,5 +1,0 @@
-.decl E(a:number,b:number)
-.input E
-.decl T(a:number,b:number,c:number)
-.output T
-T(a,b,c):-E(a,b),E(b,c),E(c,a).

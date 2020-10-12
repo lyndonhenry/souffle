@@ -68,7 +68,9 @@ protected:
     }
     void producePayload() {
         kafka_.produce(relationName_, payload_);
+        payload_.clear();
         kafka_.produce(std::to_string(clientId_), strings_);
+        strings_.clear();
     }
     void produceNullPayload() {
         std::vector<RamDomain> nullPayload(arity ? arity : 1, std::numeric_limits<RamDomain>::max());
@@ -92,6 +94,13 @@ public:
         auto& metadata = kafka_.getMetadata();
         const auto begin = metadata.getOrElse(clientId_, 0);
         const auto end = symbolTable.size();
+        // ensure a max message size of 1MB, note that this is untested for all execution configurations
+        const auto next_payload_bytes = ((payload_.size() + arity) * 64) / 8;
+        const auto next_string_bytes = (end - begin);
+        const auto max_bytes = 1000000 ; // 1MB
+        if (next_payload_bytes > max_bytes || next_string_bytes > max_bytes) {
+            producePayload();
+        }
         strings_.reserve(end - begin);
         for (auto i = begin; i < end; ++i) {
             strings_.push_back(symbolTable.unsafeResolve(i));

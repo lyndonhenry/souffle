@@ -31,10 +31,7 @@
 #include <unordered_set>
 
 #define KAFKA
-
-// TODO (lh): this should be disabled for any performance related experiments
-// this enables logging to the debug topic, undef it for performance
-#define KAFKA_DEBUG
+#define KAFKA_LOG
 
 namespace souffle {
 namespace kafka {
@@ -588,62 +585,80 @@ private:
             {"unique-id", std::to_string(std::chrono::duration_cast<std::chrono::nanoseconds>(
                                   std::chrono::high_resolution_clock::now().time_since_epoch())
                                                  .count())},
+            // @@@TODO (lh)
+            {"stratum-index", "none"},
             {"use-kafkacat", "false"}, {"print-metadata", "false"}
-#ifdef KAFKA_DEBUG
-            // we can disable debugging regardless of compilation options by overriding this option
-            , {"debug", "true"}
-            , {"debug-topic", "souffle"}
+#ifdef KAFKA_LOG
+            // we can disable logging regardless of compilation options by overriding this option
+            , {"log", "true"}
+            , {"log-topic", "souffle-log"}
 #endif
     };
     Vec<String> topicNames_;
     Metadata metadata_;
-#ifdef KAFKA_DEBUG
-    mutable bool debugState_ = false;
-    mutable RdKafka::Topic* debugTopic_;
-    mutable Vec<String> debugMessageQueue_;
+#ifdef KAFKA_LOG
+    mutable std::chrono::time_point<std::chrono::steady_clock> logTimestamp_ = std::chrono::steady_clock::now();
+    mutable bool logState_ = false;
+    mutable RdKafka::Topic* logTopic_;
+    mutable Vec<String> logMessageQueue_;
 #endif
 
 private:
     explicit Kafka() {}
 
 private:
-    inline void beginDebug() const {
-        assert(!debugState_);
-#ifdef KAFKA_DEBUG
-        debugTopic_ = detail::KafkaHelper::createTopic(topicConf_, producer_, customConf_.at("debug-topic"));
+    inline void beginLog() const {
+        assert(!logState_);
+#ifdef KAFKA_LOG
+        std::stringstream ss;
+        ss << customConf_.at("log-topic");
+        ss << "_";
+        ss << customConf_.at("unique-id");
+        logTopic_ = detail::KafkaHelper::createTopic(topicConf_, producer_, ss.str());
 #endif
-        debugState_ = true;
+        logState_ = true;
     }
 
-    inline void endDebug() const {
-        assert(debugState_);
-#ifdef KAFKA_DEBUG
-        delete debugTopic_;
+    inline void endLog() const {
+        assert(logState_);
+#ifdef KAFKA_LOG
+        delete logTopic_;
 #endif
-        debugState_ = false;
+        logState_ = false;
     }
 public:
-    inline void debug(const String& message) const {
-        (void) message;
-#ifdef KAFKA_DEBUG
-        if (!debugState_) {
-            debugMessageQueue_.push_back(message);
+    inline void log(const String& messagePart) const {
+        (void) messagePart;
+#ifdef KAFKA_LOG
+        static std::size_t count = 0;
+        static const auto uniqueId = customConf_.at("unique-id");
+        static const auto stratumIndex = customConf_.at("stratum-index");
+        const auto end = std::chrono::steady_clock::now();
+        const auto begin = logTimestamp_;
+        const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>((end - begin)).count();
+        std::stringstream ss;
+        ss << uniqueId << "," << stratumIndex << "," << count << "," << diff << ";" << messagePart;
+        const auto message = ss.str();
+        if (!logState_) {
+            logMessageQueue_.push_back(message);
         } else {
-            auto produceDebugMessage = [&](const String& msg) -> void {
+            auto produceLogMessage = [&](const String& msg) -> void {
                 auto payload = Vec<char>(msg.begin(), msg.end());
-                detail::KafkaHelper::produceProducer(producer_, debugTopic_, payload);
+                detail::KafkaHelper::produceProducer(producer_, logTopic_, payload);
             };
-            if (!debugMessageQueue_.empty()) {
-                for (auto& msg : debugMessageQueue_) {
-                    produceDebugMessage(msg);
+            if (!logMessageQueue_.empty()) {
+                for (auto& msg : logMessageQueue_) {
+                    produceLogMessage(msg);
                 }
-                debugMessageQueue_.clear();
+                logMessageQueue_.clear();
             }
-            assert(debugMessageQueue_.empty());
-            produceDebugMessage(message);
+            assert(logMessageQueue_.empty());
+            produceLogMessage(message);
         }
-#endif
+        ++count;
+        logTimestamp_ = std::chrono::steady_clock::now();
     }
+#endif
 public:
     ~Kafka() {}
 
@@ -660,7 +675,7 @@ public:
 
 public:
     void beginClient(const Map<String, String>& globalConf) {
-        debug("Begin function Kafka::beginClient()");
+        log("begin,Kafka::beginClient(globalConf = ...)");
         if (globalConf.count("custom.print-metadata")) {
             metadata_.printClients(std::cout);
             exit(0);
@@ -690,12 +705,12 @@ public:
         consumer_ = detail::KafkaHelper::createConsumer(globalConf_);
         producerTopics_ = Map<String, RdKafka::Topic*>();
         consumerTopics_ = Map<String, RdKafka::Topic*>();
-        beginDebug();
-        debug("End function Kafka::beginClient()");
+        beginLog();
+        log("end,Kafka::beginClient(globalConf = ...)");
     }
     void endClient() {
-        debug("Begin function Kafka::endClient()");
-        endDebug();
+        log("begin,Kafka::endClient()");
+        endLog();
         detail::KafkaHelper::pollProducerUntilEmpty(producer_);
         delete producer_;
         delete consumer_;
@@ -707,120 +722,120 @@ public:
                 deleteTopic(topicName);
             }
         }
-        debug("End function Kafka::endClient()");
+        log("end,Kafka::endClient()");
     }
     bool hasProductionBegun(const String& topicName) const {
-        debug("Begin function Kafka::hasProductionBegun()");
+        log("begin,Kafka::hasProductionBegun(topicName = " + topicName + ")");
         const auto result = producerTopics_.find(topicName) != producerTopics_.end();
-        debug("End function Kafka::hasProductionBegun()");
+        log("end,Kafka::hasProductionBegun(topicName = " + topicName + ")");
         return result;
     }
     bool hasProductionEnded(const String& topicName) const {
-        debug("Begin function Kafka::hasProductionEnded()");
+        log("begin,Kafka::hasProductionEnded(topicName = " + topicName + ")");
         assert(hasProductionBegun(topicName));
         const auto result = producerTopics_.at(topicName) == nullptr;
-        debug("End function Kafka::hasProductionEnded()");
+        log("end,Kafka::hasProductionEnded(topicName = " + topicName + ")");
         return result;
 
     }
     void beginProduction(const String& topicName) {
-        debug("Begin function Kafka::beginProduction(" + topicName + ")");
+        log("begin,Kafka::beginProduction(topicName = " + topicName + ")");
         if (!hasProductionBegun(topicName) || hasProductionEnded(topicName)) {
             producerTopics_[topicName] =
                     detail::KafkaHelper::createTopic(topicConf_, producer_, getTopicIdentifier(topicName));
         }
-        debug("End function Kafka::beginProduction(" + topicName + ")");
+        log("end,Kafka::beginProduction(topicName = " + topicName + ")");
     }
     void endProduction(const String& topicName) {
-        debug("Begin function Kafka::endProduction(" + topicName + ")");
+        log("begin,Kafka::endProduction(topicName = " + topicName + ")");
         delete producerTopics_[topicName];
         producerTopics_[topicName] = nullptr;
-        debug("End function Kafka::endProduction(" + topicName + ")");
+        log("end,Kafka::endProduction(topicName = " + topicName + ")");
     }
     bool hasConsumptionBegun(const String& topicName) const {
-        debug("Begin function Kafka::hasConsumptionBegun(" + topicName + ")");
+        log("begin,Kafka::hasConsumptionBegun(topicName = " + topicName + ")");
         const auto result = consumerTopics_.find(topicName) != consumerTopics_.end();
-        debug("End function Kafka::hasConsumptionBegun(" + topicName + ")");
+        log("end,Kafka::hasConsumptionBegun(topicName = " + topicName + ")");
         return result;
     }
     bool hasConsumptionEnded(const String& topicName) const {
-        debug("Begin function Kafka::hasConsumptionEnded(" + topicName + ")");
+        log("begin,Kafka::hasConsumptionEnded(topicName = " + topicName + ")");
         assert(hasConsumptionBegun(topicName));
         const auto result = consumerTopics_.at(topicName) == nullptr;
-        debug("End function Kafka::hasConsumptionEnded(" + topicName + ")");
+        log("end,Kafka::hasConsumptionEnded(topicName = " + topicName + ")");
         return result;
     }
     void beginConsumption(const String& topicName) {
-        debug("Begin function Kafka::beginConsumption(" + topicName + ")");
+        log("begin,Kafka::beginConsumption(topicName = " + topicName + ")");
         if (!hasConsumptionBegun(topicName) || hasConsumptionEnded(topicName)) {
             consumerTopics_[topicName] =
                     detail::KafkaHelper::createTopic(topicConf_, consumer_, getTopicIdentifier(topicName));
             detail::KafkaHelper::startConsumer(consumer_, consumerTopics_.at(topicName));
         }
-        debug("End function Kafka::beginConsumption(" + topicName + ")");
+        log("end,Kafka::beginConsumption(topicName = " + topicName + ")");
     }
     void endConsumption(const String& topicName) {
-        debug("Begin function Kafka::endConsumption(" + topicName + ")");
+        log("begin,Kafka::endConsumption(topicName = " + topicName + ")");
         detail::KafkaHelper::stopConsumer(consumer_, consumerTopics_.at(topicName));
         delete consumerTopics_[topicName];
         consumerTopics_[topicName] = nullptr;
-        debug("End function Kafka::endConsumption(" + topicName + ")");
+        log("end,Kafka::endConsumption(" + topicName + ")");
     }
     template <typename T>
     void produce(const String& topicName, Vec<T>& payload) {
-        debug("Begin function Kafka::produce(" + topicName + ", ...)");
+        log("begin,Kafka::produce(topicName = " + topicName + ", payload = ... : [payload.size() = " + std::to_string(payload.size()) + ", sizeof(T) = " + std::to_string(sizeof(T)) + "])");
         RdKafka::Topic* topic = producerTopics_.at(topicName);
         assert(topic);
         detail::KafkaHelper::produceProducer(producer_, topic, payload);
-        debug("End function Kafka::produce(" + topicName + ", ...)");
+        log("end,Kafka::produce(topicName = " + topicName + ", payload = ... : [payload.size() = " + std::to_string(payload.size()) + ", sizeof(T) = " + std::to_string(sizeof(T)) + "])");
     }
     template <typename T>
     void consume(const String& topicName, Vec<T>& payload, const int timeoutMs = -1) {
-        debug("Begin function Kafka::consume(" + topicName + ", ..., " + std::to_string(timeoutMs) + ")");
+        log("begin,Kafka::consume(topicName = " + topicName + ", payload = ... : [payload.size() = " + std::to_string(payload.size()) + ", sizeof(T) = " + std::to_string(sizeof(T)) +  "], timeoutMs = " + std::to_string(timeoutMs) + ")");
         RdKafka::Topic* topic = consumerTopics_.at(topicName);
         assert(topic);
         detail::KafkaHelper::consumeConsumer(consumer_, topic, payload, timeoutMs);
-        debug("End function Kafka::consume(" + topicName + ", ..., " + std::to_string(timeoutMs) + ")");
+        log("end,Kafka::consume(topicName = " + topicName + ", payload = ... : [payload.size() = " + std::to_string(payload.size()) + ", sizeof(T) = " + std::to_string(sizeof(T)) + "], timeoutMs = " + std::to_string(timeoutMs) + ")");
     }
     void pollProducer(const int timeoutMs = 1000) {
-        debug("Begin function Kafka::pollProducer(" + std::to_string(timeoutMs) + ")");
+        log("begin,Kafka::pollProducer(timeoutMs = " + std::to_string(timeoutMs) + ")");
         detail::KafkaHelper::pollHandle(producer_, timeoutMs);
-        debug("End function Kafka::pollProducer(" + std::to_string(timeoutMs) + ")");
+        log("end,Kafka::pollProducer(timeoutMs = " + std::to_string(timeoutMs) + ")");
     }
     void pollConsumer(const int timeoutMs = 1000) {
-        debug("Begin function Kafka::pollConsumer(" + std::to_string(timeoutMs) + ")");
+        log("begin,Kafka::pollConsumer(timeoutMs = " + std::to_string(timeoutMs) + ")");
         detail::KafkaHelper::pollHandle(consumer_, timeoutMs);
-        debug("End function Kafka::pollConsumer(" + std::to_string(timeoutMs) + ")");
+        log("end,Kafka::pollConsumer(timeoutMs = " + std::to_string(timeoutMs) + ")");
     }
     void pollProducerUntilEmpty() {
-        debug("Begin function Kafka::pollProducerUntilEmpty()");
+        log("begin,Kafka::pollProducerUntilEmpty()");
         detail::KafkaHelper::pollProducerUntilEmpty(producer_);
-        debug("End function Kafka::pollProducerUntilEmpty()");
+        log("end,Kafka::pollProducerUntilEmpty()");
     }
     void withSouffleProgram(const SouffleProgram& souffleProgram) {
-        debug("Begin function Kafka::withSouffleProgram(...)");
+        log("begin,Kafka::withSouffleProgram(souffleProgram = ...)");
         for (const auto& relation : souffleProgram.getAllRelations()) {
             topicNames_.push_back(relation->getName());
         }
-        debug("End function Kafka::withSouffleProgram(...)");
+        log("end,Kafka::withSouffleProgram(souffleProgram = ...)");
     }
     bool runSouffleProgram() {
-        debug("Begin function Kafka::runSouffleProgram(...)");
+        log("begin,Kafka::runSouffleProgram()");
         const auto result = customConf_.at("run-program") == "true";
-        debug("End function Kafka::runSouffleProgram(...)");
+        log("end,Kafka::runSouffleProgram()");
         return result;
     }
     void withMetadata(const Metadata::value_t& metadata) {
-        debug("Begin function Kafka::withMetadata(...)");
+        log("begin,Kafka::withMetadata(metadata = ...)");
         metadata_.set(metadata);
         for (const auto& client : metadata_.getAllClients()) {
             topicNames_.push_back(std::to_string(client));
         }
-        debug("End function Kafka::withMetadata(...)");
+        log("end,Kafka::withMetadata(metadata = ...)");
     }
     Metadata& getMetadata() {
-        debug("Begin function Kafka::getMetadata(...)");
-        debug("End function Kafka::getMetadata(...)");
+        log("begin,Kafka::getMetadata()");
+        log("end,Kafka::getMetadata()");
         return metadata_;
     }
 

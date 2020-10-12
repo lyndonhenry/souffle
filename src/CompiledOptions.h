@@ -220,6 +220,7 @@ public:
                     break;
                 case 'i':
                     stratumIndex = (size_t)std::stoull(optarg);
+                    extraOptions.insert({"custom.stratum-index", optarg});
                     break;
                 case 'X': {
                     const auto optargString = std::string(optarg);

@@ -3,7 +3,13 @@ FROM ubuntu
 ENV DEBIAN_FRONTEND="noninteractive"
 ENV TZ="America/New_York"
 
-RUN apt-get update -y && apt-get upgrade -y && apt-get install -y git sudo tzdata
+WORKDIR /tmp
+
+RUN apt-get update -y && apt-get upgrade -y && apt-get install -y git sudo curl tzdata zip
+
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+RUN unzip awscliv2.zip
+RUN ./aws/install
 
 ARG DOCKER_USER
 
@@ -27,17 +33,9 @@ RUN git clone https://github.com/${GITHUB_USER}/souffle && \
 
 WORKDIR /home/${DOCKER_USER}/souffle
 
-# adds kafka scripts and souffle-kafka.sh to path
-ENV PATH="/home/${DOCKER_USER}/.kafka/bin:/home/${DOCKER_USER}/souffle/kafka:${PATH}"
+# adds rust, kafka scripts, and souffle-kafka.sh to path
+ENV PATH="/home/${DOCKER_USER}/.cargo/bin:/home/${DOCKER_USER}/.kafka/bin:/home/${DOCKER_USER}/souffle/kafka:${PATH}"
 
-RUN ./kafka/souffle-kafka.sh --build
-
-# install the aws cli
-WORKDIR /tmp
-
-RUN sudo apt-get install -y zip
-RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-RUN unzip awscliv2.zip
-RUN sudo ./aws/install
+RUN ./kafka/docker.sh --build
 
 WORKDIR /home/${DOCKER_USER}/souffle
