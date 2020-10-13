@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -ouex pipefail
+set -oue pipefail
 
 #
 # == Global Variables ===
