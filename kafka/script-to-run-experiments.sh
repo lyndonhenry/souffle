@@ -18,6 +18,7 @@ function _run_experiment() {
     # put the docker stack up
     # TODO (lh): use something like 'sudo docker stack deploy -c ${DOCKER_COMPOSE_FILE} ${STACK_NAME}'
     # TODO (lh): ensure AWS credentials are passed to docker stack command, e.g. via env AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+    sudo docker-compose --file ${DOCKER_COMPOSE_FILE} down --remove-orphans --rmi all
     sudo docker-compose --file ${DOCKER_COMPOSE_FILE} up -d --remove-orphans
   fi
   # repeatedly check for log to be generated, signalling program termination
