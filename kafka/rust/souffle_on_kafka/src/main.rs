@@ -60,7 +60,7 @@ mod datalog {
       format!("{i}(a,b):-{e}(a,b).", e=edb_relation, i=idb_relation)
     }
     fn special_partition_by_modulo_rule_statement(edb_relation: &str, size: &usize, index: &usize) -> String {
-      format!("{e}_{k}(a,b):-{e}(a,b),a%{n}=={k}.", e=edb_relation, n=size, k=index)
+      format!("{e}_{k}(a,b):-{e}(a,b),a%{n}={k}.", e=edb_relation, n=size, k=index)
     }
     fn benchmark_nr_idb_rule_statement(idb_relation: &str) -> String {
       format!("{i}(a,b):-{i}(a,x),{i}(x,b).", i=idb_relation)
@@ -102,9 +102,14 @@ mod datalog {
           next.append(&mut curr);
         }
       }
-      let mut new_i = format!("{i}_{k}", i = idb_relation, k = count - 1);
-      stmts.push(Self::output_statement(&new_i)); // output new i, not old idb relation
-      stmts.join("\n")
+      let tmp = stmts.join("\n");
+      let string : &str = &tmp;
+        let from = format!("{i}_{k}", i = idb_relation, k = count - 1);
+      str::replace(
+        string,
+        &from,
+        idb_relation
+      )
     }
     //
     fn benchmark_nr_split_join_rules_statement(edb_relation: &str, idb_relation: &str, datatype: &str, split_size: &usize, join_type: &str) -> String {
@@ -114,7 +119,6 @@ mod datalog {
             let i = format!("{i}_{k}", i = idb_relation, k = k);
             vec![
               Self::decl_of_arity_two_statement(&e, datatype),
-              Self::decl_of_arity_two_statement(&i, datatype),
               Self::special_partition_by_modulo_rule_statement(edb_relation, split_size, &k),
               Self::benchmark_nr_rules_statement(&e, &i),
             ]
@@ -225,10 +229,21 @@ mod datalog {
       };
       result.join("\n")
     }
+
+  pub fn benchmark_statement_test() {
+    let benchmark = "NR";
+    let edb_relation = "E";
+    let idb_relation = "I";
+    let datatype = "number";
+    let split_size = 4;
+    let join_type = "lattice";
+    let actual = Self::benchmark_statement(benchmark, edb_relation, idb_relation, datatype, &split_size, join_type);
+    println!("{}", actual);
   }
 
+  }
 
-}
+  }
 
 fn curl(output: &std::path::Path, url: &str) -> std::io::Result<std::process::ExitStatus> {
   Command::new("curl")
