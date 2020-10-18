@@ -81,7 +81,7 @@ void executeBinary(const std::string& binaryFilename) {
         }
         std::stringstream executeCmd;
         if (Global::config().has("experimental.use-engine-kafka")) {
-            // TODO (lh): this assumes that souffle-kafka.sh is on PATH
+            // note that this assumes that kafka/docker.sh is on PATH
             executeCmd << "MODE='by-souffle' docker.sh --run ";
         }
         executeCmd << binaryFilename;

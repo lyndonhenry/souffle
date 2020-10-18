@@ -585,7 +585,6 @@ private:
             {"unique-id", std::to_string(std::chrono::duration_cast<std::chrono::nanoseconds>(
                                   std::chrono::high_resolution_clock::now().time_since_epoch())
                                                  .count())},
-            // @@@TODO (lh)
             {"stratum-index", "none"},
             {"use-kafkacat", "false"}, {"print-metadata", "false"}
 #ifdef KAFKA_LOG
@@ -631,13 +630,12 @@ public:
         (void) messagePart;
 #ifdef KAFKA_LOG
         static std::size_t count = 0;
-        static const auto uniqueId = customConf_.at("unique-id");
         static const auto stratumIndex = customConf_.at("stratum-index");
         const auto end = std::chrono::steady_clock::now();
         const auto begin = logTimestamp_;
         const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>((end - begin)).count();
         std::stringstream ss;
-        ss << uniqueId << "," << stratumIndex << "," << count << "," << diff << ";" << messagePart;
+        ss << stratumIndex << "," << count << "," << diff << "," << messagePart;
         const auto message = ss.str();
         if (!logState_) {
             logMessageQueue_.push_back(message);
@@ -675,7 +673,6 @@ public:
 
 public:
     void beginClient(const Map<String, String>& globalConf) {
-        log("begin,Kafka::beginClient(globalConf = ...)");
         if (globalConf.count("custom.print-metadata")) {
             metadata_.printClients(std::cout);
             exit(0);
@@ -706,10 +703,9 @@ public:
         producerTopics_ = Map<String, RdKafka::Topic*>();
         consumerTopics_ = Map<String, RdKafka::Topic*>();
         beginLog();
-        log("end,Kafka::beginClient(globalConf = ...)");
+        log("beginClient");
     }
     void endClient() {
-        log("begin,Kafka::endClient()");
         endLog();
         detail::KafkaHelper::pollProducerUntilEmpty(producer_);
         delete producer_;
@@ -722,120 +718,100 @@ public:
                 deleteTopic(topicName);
             }
         }
-        log("end,Kafka::endClient()");
+        log("endClient");
     }
     bool hasProductionBegun(const String& topicName) const {
-        log("begin,Kafka::hasProductionBegun(topicName = " + topicName + ")");
         const auto result = producerTopics_.find(topicName) != producerTopics_.end();
-        log("end,Kafka::hasProductionBegun(topicName = " + topicName + ")");
         return result;
     }
     bool hasProductionEnded(const String& topicName) const {
-        log("begin,Kafka::hasProductionEnded(topicName = " + topicName + ")");
         assert(hasProductionBegun(topicName));
         const auto result = producerTopics_.at(topicName) == nullptr;
-        log("end,Kafka::hasProductionEnded(topicName = " + topicName + ")");
         return result;
 
     }
     void beginProduction(const String& topicName) {
-        log("begin,Kafka::beginProduction(topicName = " + topicName + ")");
         if (!hasProductionBegun(topicName) || hasProductionEnded(topicName)) {
             producerTopics_[topicName] =
                     detail::KafkaHelper::createTopic(topicConf_, producer_, getTopicIdentifier(topicName));
+            log("beginProduction," + topicName);
         }
-        log("end,Kafka::beginProduction(topicName = " + topicName + ")");
     }
     void endProduction(const String& topicName) {
-        log("begin,Kafka::endProduction(topicName = " + topicName + ")");
         delete producerTopics_[topicName];
         producerTopics_[topicName] = nullptr;
-        log("end,Kafka::endProduction(topicName = " + topicName + ")");
+        log("endProduction," + topicName);
     }
     bool hasConsumptionBegun(const String& topicName) const {
-        log("begin,Kafka::hasConsumptionBegun(topicName = " + topicName + ")");
         const auto result = consumerTopics_.find(topicName) != consumerTopics_.end();
-        log("end,Kafka::hasConsumptionBegun(topicName = " + topicName + ")");
         return result;
     }
     bool hasConsumptionEnded(const String& topicName) const {
-        log("begin,Kafka::hasConsumptionEnded(topicName = " + topicName + ")");
         assert(hasConsumptionBegun(topicName));
         const auto result = consumerTopics_.at(topicName) == nullptr;
-        log("end,Kafka::hasConsumptionEnded(topicName = " + topicName + ")");
         return result;
     }
     void beginConsumption(const String& topicName) {
-        log("begin,Kafka::beginConsumption(topicName = " + topicName + ")");
         if (!hasConsumptionBegun(topicName) || hasConsumptionEnded(topicName)) {
             consumerTopics_[topicName] =
                     detail::KafkaHelper::createTopic(topicConf_, consumer_, getTopicIdentifier(topicName));
             detail::KafkaHelper::startConsumer(consumer_, consumerTopics_.at(topicName));
+            log("beginConsumption," + topicName);
         }
-        log("end,Kafka::beginConsumption(topicName = " + topicName + ")");
     }
     void endConsumption(const String& topicName) {
-        log("begin,Kafka::endConsumption(topicName = " + topicName + ")");
         detail::KafkaHelper::stopConsumer(consumer_, consumerTopics_.at(topicName));
         delete consumerTopics_[topicName];
         consumerTopics_[topicName] = nullptr;
-        log("end,Kafka::endConsumption(" + topicName + ")");
+        log("endConsumption," + topicName);
     }
     template <typename T>
     void produce(const String& topicName, Vec<T>& payload) {
-        log("begin,Kafka::produce(topicName = " + topicName + ", payload = ... : [payload.size() = " + std::to_string(payload.size()) + ", sizeof(T) = " + std::to_string(sizeof(T)) + "])");
+        log("beginProduce," + topicName + "," + std::to_string(payload.size()) + "," + std::to_string(sizeof(T)));
         RdKafka::Topic* topic = producerTopics_.at(topicName);
         assert(topic);
         detail::KafkaHelper::produceProducer(producer_, topic, payload);
-        log("end,Kafka::produce(topicName = " + topicName + ", payload = ... : [payload.size() = " + std::to_string(payload.size()) + ", sizeof(T) = " + std::to_string(sizeof(T)) + "])");
+        log("endProduce," + topicName);
     }
     template <typename T>
     void consume(const String& topicName, Vec<T>& payload, const int timeoutMs = -1) {
-        log("begin,Kafka::consume(topicName = " + topicName + ", payload = ... : [payload.size() = " + std::to_string(payload.size()) + ", sizeof(T) = " + std::to_string(sizeof(T)) +  "], timeoutMs = " + std::to_string(timeoutMs) + ")");
+        log("beginConsume, " + topicName);
         RdKafka::Topic* topic = consumerTopics_.at(topicName);
         assert(topic);
         detail::KafkaHelper::consumeConsumer(consumer_, topic, payload, timeoutMs);
-        log("end,Kafka::consume(topicName = " + topicName + ", payload = ... : [payload.size() = " + std::to_string(payload.size()) + ", sizeof(T) = " + std::to_string(sizeof(T)) + "], timeoutMs = " + std::to_string(timeoutMs) + ")");
+        log("endConsume," + topicName + "," + std::to_string(payload.size()) + "," + std::to_string(sizeof(T)));
     }
-    void pollProducer(const int timeoutMs = 1000) {
-        log("begin,Kafka::pollProducer(timeoutMs = " + std::to_string(timeoutMs) + ")");
+    void pollProducer(const int timeoutMs = 100) {
+        log("beginPollProducer");
         detail::KafkaHelper::pollHandle(producer_, timeoutMs);
-        log("end,Kafka::pollProducer(timeoutMs = " + std::to_string(timeoutMs) + ")");
+        log("endPollProducer");
     }
-    void pollConsumer(const int timeoutMs = 1000) {
-        log("begin,Kafka::pollConsumer(timeoutMs = " + std::to_string(timeoutMs) + ")");
+    void pollConsumer(const int timeoutMs = 100) {
+        log("beginPollConsumer");
         detail::KafkaHelper::pollHandle(consumer_, timeoutMs);
-        log("end,Kafka::pollConsumer(timeoutMs = " + std::to_string(timeoutMs) + ")");
+        log("endPollConsumer");
     }
     void pollProducerUntilEmpty() {
-        log("begin,Kafka::pollProducerUntilEmpty()");
+        log("beginPollProducer");
         detail::KafkaHelper::pollProducerUntilEmpty(producer_);
-        log("end,Kafka::pollProducerUntilEmpty()");
+        log("endPollProducer");
     }
     void withSouffleProgram(const SouffleProgram& souffleProgram) {
-        log("begin,Kafka::withSouffleProgram(souffleProgram = ...)");
         for (const auto& relation : souffleProgram.getAllRelations()) {
             topicNames_.push_back(relation->getName());
         }
-        log("end,Kafka::withSouffleProgram(souffleProgram = ...)");
     }
     bool runSouffleProgram() {
-        log("begin,Kafka::runSouffleProgram()");
         const auto result = customConf_.at("run-program") == "true";
-        log("end,Kafka::runSouffleProgram()");
         return result;
     }
     void withMetadata(const Metadata::value_t& metadata) {
-        log("begin,Kafka::withMetadata(metadata = ...)");
         metadata_.set(metadata);
         for (const auto& client : metadata_.getAllClients()) {
             topicNames_.push_back(std::to_string(client));
         }
-        log("end,Kafka::withMetadata(metadata = ...)");
     }
     Metadata& getMetadata() {
-        log("begin,Kafka::getMetadata()");
-        log("end,Kafka::getMetadata()");
         return metadata_;
     }
 

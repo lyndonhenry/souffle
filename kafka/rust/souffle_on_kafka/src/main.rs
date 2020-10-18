@@ -715,7 +715,7 @@ fn make_benchmark(benchmark:&str, datatype:&str, split_size_str:&str, join_type:
   let benchmark_dir = root_dir.join("datalog");
   std::fs::create_dir_all(&benchmark_dir);
   let benchmark_text = datalog::Datalog::benchmark_statement(benchmark, "E", "I", datatype, &split_size, join_type);
-  let benchmark_file = benchmark_dir.join(format!("{}-{}-{}-{}.dl", benchmark, datatype, split_size, join_type));
+  let benchmark_file = benchmark_dir.join(format!("{}_{}_{}_{}.dl", benchmark, datatype, split_size, join_type));
   let f = File::create(&benchmark_file)?;
   let mut bw = std::io::BufWriter::new(f);
   bw.write(benchmark_text.as_bytes())?;

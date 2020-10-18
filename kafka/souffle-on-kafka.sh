@@ -221,7 +221,7 @@ function _phase_one() {
   local SPLIT="${3}"
   local JOIN="${4}"
   #
-  local FILE="${ROOT}/datalog/${BENCHMARK}-${TYPE}-${SPLIT}-${JOIN}.dl"
+  local FILE="${ROOT}/datalog/${BENCHMARK}_${TYPE}_${SPLIT}_${JOIN}.dl"
   if [ ! -e "${FILE}" ]
   then
     cargo build --manifest-path kafka/rust/souffle_on_kafka/Cargo.toml
@@ -235,7 +235,7 @@ function _phase_two() {
   local FILE="${1}"
   local MODE="${2}"
   local ALGORITHM="${3}"
-  local EXE="${ROOT}/exe/$(basename "${FILE}" | sed 's/\.dl//')-${MODE}-${ALGORITHM}"
+  local EXE="${ROOT}/exe/$(basename "${FILE}" | sed 's/\.dl//')_${MODE}_${ALGORITHM}"
   local ARGS="$(_build_souffle_args ${MODE} ${ALGORITHM})"
   mkdir -p "input" "output"
   if [ ! -e "${EXE}" ]
@@ -253,7 +253,8 @@ function _phase_three() {
   local MODE="${2}"
   local DATA="${3}"
   local THREADS="${4}"
-  local LOCATION="docker-compose/$(basename ${EXE})-${DATA}-${THREADS}/docker-compose.yml"
+  local SUBDIR="${5}"
+  local LOCATION="docker-compose/${SUBDIR}/$(basename ${EXE})_${DATA}_${THREADS}/docker-compose.yml"
   local FILE="${ROOT}/${LOCATION}"
   local KAFKA_HOST="kafka:29092"
   local S3_EXE="s3://souffle-on-kafka/exe/$(basename ${EXE})"
@@ -273,16 +274,17 @@ function _phase_three() {
 
 function _main() {
   # phase 1
-  local BENCHMARK=""
-  local TYPE="number"
-  local SPLIT="none"
-  local JOIN="none"
+  local BENCHMARK
+  local TYPE
+  local SPLIT
+  local JOIN
   # phase 2
-  local MODE="no-kafka"
-  local ALGORITHM="SNE"
+  local MODE
+  local ALGORITHM
   # phase 3
-  local DATA="example"
-  local THREADS="default"
+  local DATA
+  local THREADS
+  local SUBDIR
   #
   while [ ${#} != 0 ]
   do
@@ -330,6 +332,11 @@ function _main() {
       THREADS="${1}"
       shift
     ;;
+    "--subdir")
+      shift
+      SUBDIR="${1}"
+      shift
+    ;;
     *)
     _error
     ;;
@@ -338,7 +345,7 @@ function _main() {
   #
   local FILE=$(_phase_one ${BENCHMARK} ${TYPE} ${SPLIT} ${JOIN})
   local EXE=$(_phase_two ${FILE} ${MODE} ${ALGORITHM})
-  _phase_three ${EXE} ${MODE} ${DATA} ${THREADS}
+  _phase_three ${EXE} ${MODE} ${DATA} ${THREADS} ${SUBDIR}
 }
 
 
