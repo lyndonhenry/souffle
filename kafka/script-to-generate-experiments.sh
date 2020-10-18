@@ -26,11 +26,11 @@ function _generate_yes_cloud_experiments() {
   DATASETS="soc-LiveJournal1"
   BENCHMARKS="NR"
   TYPES="number symbol"
-  SUBDIR="yes-cloud"
 
   THREADS="1 2 4 8 16 32 64 128"
   SPLITS="0"
   JOINS="none"
+  SUBDIR="no-cloud"
 
   # Experiments without kafka
   local BENCHMARK
@@ -69,6 +69,7 @@ function _generate_yes_cloud_experiments() {
   THREADS="1"
   SPLITS="0 2 4 8 16 32 64 128"
   JOINS="left balanced complete lattice"
+  SUBDIR="yes-cloud"
 
   # Experiments with kafka
   local BENCHMARK
@@ -251,7 +252,7 @@ function _generate_example_benchmarks() {
   # Run without Kafka, using SNE, on the LR benchmark, with numbers, one thread, splits and joins
 
   ./kafka/souffle-on-kafka.sh \
-    --benchmark "LR" \
+    --benchmark "NR" \
     --type "number" \
     --split "4" \
     --join "lattice" \
