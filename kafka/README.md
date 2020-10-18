@@ -4,7 +4,11 @@ Welcome to Souffle on Kafka.
 
 ## Experiments
 
-The experiments are managed by four bash scripts; these are 
+The experiments are managed by four bash scripts.
+
+The scripts do not depend on each other, and no other script depends on them -- they are merely helper scripts.
+
+The scripts are:
 
 1. `script-to-run-in-docker.sh` 
 2. `script-to-generate-datasets.sh` 
