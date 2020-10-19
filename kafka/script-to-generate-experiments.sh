@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -oue pipefail
+set -ouex pipefail
 
 function _generate_yes_cloud_experiments() {
 
@@ -12,7 +12,7 @@ function _generate_yes_cloud_experiments() {
   # The Souffle on Kafka experiments here may be run in the cloud.
   # Only one dataset is used, and one benchmark, but for both number and symbol types.
   # The total number of docker-compose.yml files is
-  # (|THREADS| * |TYPES|) + (|SPLITS| * |TYPES| * |JOINS|)  = (8 * 2) + (8 * 2 * 4) = 80.
+  # (|THREADS| * |TYPES|) + (|SPLITS| * |TYPES| * |JOINS|)  = (7 * 2) + (7 * 2 * 4) = 70.
   #
 
   local DATASETS
@@ -27,7 +27,7 @@ function _generate_yes_cloud_experiments() {
   BENCHMARKS="NR"
   TYPES="number symbol"
 
-  THREADS="1 2 4 8 16 32 64 128"
+  THREADS="1 2 4 8 16 32 64"
   SPLITS="0"
   JOINS="none"
   SUBDIR="no-cloud"
@@ -67,7 +67,7 @@ function _generate_yes_cloud_experiments() {
   done
 
   THREADS="1"
-  SPLITS="0 2 4 8 16 32 64 128"
+  SPLITS="0 2 4 8 16 32 64"
   JOINS="left balanced complete lattice"
   SUBDIR="yes-cloud"
 
@@ -249,7 +249,7 @@ function _generate_example_benchmarks() {
     --threads "2" \
     --subdir "example"
 
-  # Run without Kafka, using SNE, on the LR benchmark, with numbers, one thread, splits and joins
+  # Run without Kafka, using SNE, on the NR benchmark, with numbers, one thread, splits and joins
 
   ./kafka/souffle-on-kafka.sh \
     --benchmark "NR" \
@@ -257,6 +257,19 @@ function _generate_example_benchmarks() {
     --split "4" \
     --join "lattice" \
     --mode "no-kafka" \
+    --algorithm "SNE" \
+    --data "example" \
+    --threads "1" \
+    --subdir "example"
+
+  # Run with Kafka, using SNE, on the NR benchmark, with numbers, one thread, splits and joins
+
+  ./kafka/souffle-on-kafka.sh \
+    --benchmark "NR" \
+    --type "number" \
+    --split "4" \
+    --join "complete" \
+    --mode "many-kafka" \
     --algorithm "SNE" \
     --data "example" \
     --threads "1" \

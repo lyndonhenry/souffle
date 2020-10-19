@@ -565,6 +565,14 @@ function _client_run_with_kafka_many() {
 }
 
 function _make_aws_config_and_credentials() {
+  if [ ! "${AWS_ACCESS_KEY_ID}" ]
+  then
+    exit 1
+  fi
+  if [ ! "${AWS_SECRET_ACCESS_KEY}" ]
+  then
+    exit 1
+  fi
   if [ ! -e ${HOME}/.aws ]
   then
   mkdir -p ${HOME}/.aws

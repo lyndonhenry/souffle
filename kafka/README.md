@@ -24,7 +24,7 @@ The purpose of each script is as follows:
 - `script-to-run-in-docker.sh`
     - Pulls and runs the Docker image for Souffle on Kafka.
     - The script shows which parameters to pass `docker run`, to mount directories.
-    - All other scripts should be run from within this script.
+    - All other scripts should be run from within the Docker container that this script pulls and runs.
     
 - `script-to-generate-datasets.sh`
     - Downloads all datasets for the experiments, formats them, and places them in the S3 bucket.

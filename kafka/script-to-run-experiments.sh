@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -oue pipefail
+set -ouex pipefail
 
 # get AWS credentials, passed at runtime to Docker instances
 AWS_ACCESS_KEY_ID="$(cat "${HOME}/.aws/credentials" | grep "aws_access_key_id" | sed 's/^.*=\s*//')"
@@ -15,23 +15,29 @@ function _run_experiment() {
   # if the experiment has not yet run
   if [ ! "$(aws s3 ls "s3://souffle-on-kafka/output/log/${NAME}")" ]
   then
-    # put the docker stack up
-    # TODO (lh): use something like 'sudo docker stack deploy -c ${DOCKER_COMPOSE_FILE} ${STACK_NAME}'
-    # TODO (lh): ensure AWS credentials are passed to docker stack command, e.g. via env AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-    sudo docker-compose --file ${DOCKER_COMPOSE_FILE} down --remove-orphans --rmi all
-    sudo docker-compose --file ${DOCKER_COMPOSE_FILE} up -d --remove-orphans
+
+    # create a secret docker compose file, with the AWS credentials already populated
+    local SECRET_DOCKER_COMPOSE_FILE="${HOME}/.secret/docker-compose.yml"
+    mkdir -p $(dirname ${SECRET_DOCKER_COMPOSE_FILE})
+    local AWS_SECRET_ACCESS_KEY_REGEX="$(echo "${AWS_SECRET_ACCESS_KEY}" | sed 's/\//\\\//g')"
+    cat ${DOCKER_COMPOSE_FILE} | \
+     sed "s/\${AWS_ACCESS_KEY_ID}/${AWS_ACCESS_KEY_ID}/g" | \
+     sed "s/\${AWS_SECRET_ACCESS_KEY}/${AWS_SECRET_ACCESS_KEY_REGEX}/g" > ${SECRET_DOCKER_COMPOSE_FILE}
+
+    # deploy the stack
+    sudo docker stack deploy -c ${SECRET_DOCKER_COMPOSE_FILE} ${STACK_NAME}
+
+    # repeatedly check for log to be generated, signalling program termination
+    while [ ! "$(aws s3 ls "s3://souffle-on-kafka/output/log/${NAME}")" ]
+    do
+      echo "Waiting..."
+      sleep 5s
+    done
+    # kill the docker stack
+    sudo docker stack rm ${STACK_NAME}
+    # sync the log file
+    aws s3 sync "s3://souffle-on-kafka/output/log" "${ROOT}/output/log"
   fi
-  # repeatedly check for log to be generated, signalling program termination
-  while [ ! "$(aws s3 ls "s3://souffle-on-kafka/output/log/${NAME}")" ]
-  do
-    echo "Waiting..."
-    sleep 5s
-  done
-  # kill the docker stack
-  # TODO (lh): use something like sudo docker stack rm ${STACK_NAME}
-  sudo docker-compose --file ${DOCKER_COMPOSE_FILE} down --remove-orphans --rmi all
-  # sync the log file
-  aws s3 sync "s3://souffle-on-kafka/output/log" "${ROOT}/output/log"
 }
 
 function _main() {
@@ -45,19 +51,6 @@ function _main() {
   # sync the contents of the s3 bucket locally
   aws s3 sync "${ROOT}" "s3://souffle-on-kafka"
 
-
-  # TODO (lh): ensure these are passed when using 'docker stack', they populate environment variables in the docker-compose.yml file
-  # for docker compose environment variables
-cat > ${HOME}/.aws/.env << EOF
-AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-EOF
-
-  # TODO (lh): possibly remove this when using 'docker stack', it is only used to pass aws credentials via a .env file, used automatically by docker-compose
-  # docker will use the .env file of the current working directory to pass the aws credentials
-  cd ${HOME}/.aws
-
-  # TODO (lh): make sure the docker swarm is initialised correctly here, it is required for use of docker stack
   # initialise the docker swarm, to use the stack deploy commands
   sudo docker swarm init || :
 

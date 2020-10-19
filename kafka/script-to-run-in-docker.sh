@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -ouex pipefail
+
 function _main() {
 
   # pull the latest from Dockerhub

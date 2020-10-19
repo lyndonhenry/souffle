@@ -119,6 +119,7 @@ mod datalog {
             let i = format!("{i}_{k}", i = idb_relation, k = k);
             vec![
               Self::decl_of_arity_two_statement(&e, datatype),
+              Self::decl_of_arity_two_statement(&i, datatype),
               Self::special_partition_by_modulo_rule_statement(edb_relation, split_size, &k),
               Self::benchmark_nr_rules_statement(&e, &i),
             ]
@@ -170,7 +171,6 @@ mod datalog {
       let simple_benchmark_of_arity_two = vec![
         Self::decl_of_arity_two_statement(edb_relation, datatype),
         Self::input_statement(edb_relation),
-        Self::decl_of_arity_two_statement(idb_relation, datatype),
         Self::output_statement(idb_relation),
       ];
       let simple_benchmark_of_arity_three = vec![
@@ -183,17 +183,20 @@ mod datalog {
       let result = match benchmark {
         "LR" => {
           let mut txt = simple_benchmark_of_arity_two.clone();
+          txt.push(Self::decl_of_arity_two_statement(idb_relation, datatype));
           txt.push(Self::benchmark_lr_rules_statement(edb_relation, idb_relation));
           txt
         },
         "RR" => {
           let mut txt = simple_benchmark_of_arity_two.clone();
+          txt.push(Self::decl_of_arity_two_statement(idb_relation, datatype));
           txt.push(Self::benchmark_rr_rules_statement(edb_relation, idb_relation));
           txt
         },
         "NR" => {
           let mut txt = simple_benchmark_of_arity_two.clone();
           if *split_size == 0 {
+            txt.push(Self::decl_of_arity_two_statement(idb_relation, datatype));
             txt.push(Self::benchmark_nr_rules_statement(edb_relation, idb_relation));
           } else {
             txt.push(Self::benchmark_nr_split_join_rules_statement(edb_relation, idb_relation, datatype, split_size, join_type));
@@ -202,26 +205,31 @@ mod datalog {
         },
         "SG" => {
           let mut txt = simple_benchmark_of_arity_two.clone();
+          txt.push(Self::decl_of_arity_two_statement(idb_relation, datatype));
           txt.push(Self::benchmark_sg_rules_statement(edb_relation, idb_relation));
           txt
         },
         "RSG" => {
           let mut txt = simple_benchmark_of_arity_two.clone();
+          txt.push(Self::decl_of_arity_two_statement(idb_relation, datatype));
           txt.push(Self::benchmark_rsg_rules_statement(edb_relation, idb_relation));
           txt
         },
         "TC" => {
           let mut txt = simple_benchmark_of_arity_three.clone();
+          txt.push(Self::decl_of_arity_three_statement(idb_relation, datatype));
           txt.push(Self::benchmark_tc_rules_statement(edb_relation, idb_relation));
           txt
         },
         "SCC" => {
           let mut txt = simple_benchmark_of_arity_two.clone();
+          txt.push(Self::decl_of_arity_two_statement(idb_relation, datatype));
           txt.push(Self::benchmark_scc_rules_statement(edb_relation, idb_relation));
           txt
         },
         "MN" => {
           let mut txt = simple_benchmark_of_arity_three.clone();
+          txt.push(Self::decl_of_arity_three_statement(idb_relation, datatype));
           txt.push(Self::benchmark_mn_rules_statement(edb_relation, idb_relation));
           txt
         },
