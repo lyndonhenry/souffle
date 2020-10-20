@@ -68,8 +68,7 @@ function _generate_yes_cloud_experiments() {
 
   THREADS="1"
   SPLITS="0 2 4 8 16 32 64"
-  # @TODO (lh): what about lattice, left, and balanced?
-  JOINS="complete"
+  JOINS="complete left balanced"
   SUBDIR="yes-cloud"
 
 
