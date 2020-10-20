@@ -59,8 +59,12 @@ mod datalog {
     fn special_copy_relation_statement(edb_relation: &str, idb_relation: &str) -> String {
       format!("{i}(a,b):-{e}(a,b).", e=edb_relation, i=idb_relation)
     }
-    fn special_partition_by_modulo_rule_statement(edb_relation: &str, size: &usize, index: &usize) -> String {
-      format!("{e}_{k}(a,b):-{e}(a,b),a%{n}={k}.", e=edb_relation, n=size, k=index)
+    fn special_partition_by_modulo_rule_statement(edb_relation: &str, datatype: &str, size: &usize, index: &usize) -> String {
+      match datatype {
+        "symbol" => format!("{e}_{k}(a,b):-{e}(a,b),ord(a)%{n}={k}.", e=edb_relation, n=size, k=index),
+        "number" => format!("{e}_{k}(a,b):-{e}(a,b),a%{n}={k}.", e=edb_relation, n=size, k=index),
+            _ => panic!(),
+      }
     }
     fn benchmark_nr_idb_rule_statement(idb_relation: &str) -> String {
       format!("{i}(a,b):-{i}(a,x),{i}(x,b).", i=idb_relation)
@@ -120,7 +124,7 @@ mod datalog {
             vec![
               Self::decl_of_arity_two_statement(&e, datatype),
               Self::decl_of_arity_two_statement(&i, datatype),
-              Self::special_partition_by_modulo_rule_statement(edb_relation, split_size, &k),
+              Self::special_partition_by_modulo_rule_statement(edb_relation, datatype, split_size, &k),
               Self::benchmark_nr_rules_statement(&e, &i),
             ]
           })

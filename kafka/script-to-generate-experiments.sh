@@ -237,43 +237,44 @@ function _generate_no_cloud_experiments() {
 
 function _generate_example_benchmarks() {
 
-  # Run with Kafka, using GPCSNE, on NR, with strings, two threads.
-
-  ./kafka/souffle-on-kafka.sh \
-    --benchmark "NR" \
-    --type "symbol" \
-    --split "0" \
-    --join "none" \
-    --mode "many-kafka" \
-    --algorithm "GPCSNE" \
-    --data "example" \
-    --threads "2" \
-    --subdir "example"
-
-  # Run without Kafka, using SNE, on the NR benchmark, with numbers, one thread, splits and joins
+  # Run without Kafka, using SNE, on NR, with numbers, 1 threads, no splits or joins.
 
   ./kafka/souffle-on-kafka.sh \
     --benchmark "NR" \
     --type "number" \
-    --split "4" \
-    --join "complete" \
+    --split "0" \
+    --join "none" \
     --mode "no-kafka" \
     --algorithm "SNE" \
     --data "example" \
     --threads "1" \
     --subdir "example"
 
-  # Run with Kafka, using SNE, on the NR benchmark, with numbers, one thread, splits and joins
+  # Run with Kafka, in one Docker, using GPCSNE, on NR, with symbols, 2 threads, no splits or joins.
 
   ./kafka/souffle-on-kafka.sh \
     --benchmark "NR" \
-    --type "number" \
+    --type "symbol" \
+    --split "0" \
+    --join "none" \
+    --mode "one-kafka" \
+    --algorithm "GPCSNE" \
+    --data "example" \
+    --threads "2" \
+    --subdir "example"
+
+
+  # Run with Kafka, in many Dockers, using GPCSNE, on NR, with symbols, 2 threads, and splits and joins.
+
+  ./kafka/souffle-on-kafka.sh \
+    --benchmark "NR" \
+    --type "symbol" \
     --split "4" \
     --join "complete" \
     --mode "many-kafka" \
-    --algorithm "SNE" \
+    --algorithm "GPCSNE" \
     --data "example" \
-    --threads "1" \
+    --threads "2" \
     --subdir "example"
 
 }

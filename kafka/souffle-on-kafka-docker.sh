@@ -9,23 +9,12 @@ set -ouex pipefail
 GITHUB_USER="lyndonmhenry"
 DOCKER_USER="default"
 DOCKER_FILE="./kafka/Dockerfile"
-IMAGE_NAME="lyndonmhenry/souffle-on-kafka"
 
-case "$(git branch --show)" in
-"lh/kafka")
+
+# @@@TODO (lh): this must be changed during dev/prod
+IMAGE_NAME="lyndonmhenry/souffle-on-kafka"
+# @@@TODO (lh): this must be changed during dev/prod
 GITHUB_BRANCH="lh/kafka"
-IMAGE_NAME="lyndonmhenry/souffle-on-kafka"
-;;
-"lh/wip")
-GITHUB_BRANCH="lh/wip"
-IMAGE_NAME="lyndonmhenry/souffle-on-kafka-wip"
-;;
-*)
-  echo "ERROR!"
-  exit 1
-  ;;
-esac
-
 
 #
 # == Utility Functions =

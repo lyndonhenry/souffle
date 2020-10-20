@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# @@@TODO (lh): note that the x flag here must be removed if this script is called by souffle itself
+set -ouex pipefail
+
 #
 # == Global Variables ==
 #
@@ -503,10 +506,10 @@ function _broker_end() {
   OUTPUT="./output"
   aws s3 cp --recursive "${OUTPUT}" "${S3_OUTPUT}/${ID}"
   _kafka_produce_log_message "${KAFKA_HOST}" "uploadOutput"
+  _kafka_produce_log_message "${KAFKA_HOST}" "endBashScript"
   local LOG_FILE="$(basename ${S3_EXE})_$(basename ${S3_INPUT})_${THREADS}_${ID}.log"
   _kafka_consume_log_topic_as_file "${KAFKA_HOST}" "${LOG_FILE}"
   aws s3 cp "${LOG_FILE}" "${S3_OUTPUT}/log/${LOG_FILE}"
-  _kafka_produce_log_message "${KAFKA_HOST}" "endBashScript"
   # loop forever so as not to trigger a restart
   while true; do :; done
 }
@@ -562,6 +565,7 @@ function _client_run_with_kafka_many() {
   _exe_run_one_stratum "${KAFKA_HOST}" "${ID}" "${EXE}" "${THREADS}" "${STRATUM_NAME}"
   _kafka_produce_log_message "${KAFKA_HOST}" "endSouffleProgram"
   _kafka_produce_log_message "${KAFKA_HOST}" "endBashScript"
+  while true; do :; done
 }
 
 function _make_aws_config_and_credentials() {
