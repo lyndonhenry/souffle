@@ -68,8 +68,10 @@ function _generate_yes_cloud_experiments() {
 
   THREADS="1"
   SPLITS="0 2 4 8 16 32 64"
-  JOINS="left balanced complete lattice"
+  # @TODO (lh): what about lattice, left, and balanced?
+  JOINS="complete"
   SUBDIR="yes-cloud"
+
 
   # Experiments with kafka
   local BENCHMARK
@@ -255,7 +257,7 @@ function _generate_example_benchmarks() {
     --benchmark "NR" \
     --type "number" \
     --split "4" \
-    --join "lattice" \
+    --join "complete" \
     --mode "no-kafka" \
     --algorithm "SNE" \
     --data "example" \
