@@ -6,15 +6,7 @@ set -ouex pipefail
 # == Global Variables ===
 #
 
-GITHUB_USER="lyndonmhenry"
-DOCKER_USER="default"
-DOCKER_FILE="./kafka/Dockerfile"
-
-
-# @@@TODO (lh): this must be changed during dev/prod
-IMAGE_NAME="lyndonmhenry/souffle-on-kafka-wip"
-# @@@TODO (lh): this must be changed during dev/prod
-GITHUB_BRANCH="lh/wip"
+source ./kafka/env
 
 #
 # == Utility Functions =

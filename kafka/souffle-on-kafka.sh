@@ -23,11 +23,7 @@ set -ouex pipefail
 # = Global Variables =
 #
 
-ROOT="${HOME}/.souffle"
-DOCKER_USER="default"
-
-# @@@TODO (lh): this must be changed during dev/prod
-IMAGE_NAME="lyndonmhenry/souffle-on-kafka-wip"
+source ./kafka/.env
 
 #
 # = Utility Functions =

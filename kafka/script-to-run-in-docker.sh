@@ -2,6 +2,8 @@
 
 set -ouex pipefail
 
+source ./kafka/.env
+
 function _main() {
 
   # pull the latest from Dockerhub
@@ -16,7 +18,7 @@ function _main() {
     --volume "/var/run/docker.sock:/var/run/docker.sock" \
     --volume "${HOME}/.souffle:/home/default/.souffle" \
     --volume "${HOME}/.aws:/home/default/.aws" \
-    "lyndonmhenry/souffle-on-kafka:latest" \
+    "${IMAGE_NAME}" \
     /bin/bash
 }
 
