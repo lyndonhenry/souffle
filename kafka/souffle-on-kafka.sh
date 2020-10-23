@@ -27,7 +27,7 @@ ROOT="${HOME}/.souffle"
 DOCKER_USER="default"
 
 # @@@TODO (lh): this must be changed during dev/prod
-IMAGE_NAME="lyndonmhenry/souffle-on-kafka"
+IMAGE_NAME="lyndonmhenry/souffle-on-kafka-wip"
 
 #
 # = Utility Functions =
@@ -135,6 +135,10 @@ cat >> "${FILE}" << EOF
     networks:
       - app-tier
     command: ./kafka/docker.sh --run
+    deploy:
+      resources:
+        limits:
+          cpus: '${THREADS}'
 EOF
 }
 

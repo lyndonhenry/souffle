@@ -2,7 +2,7 @@
 
 set -ouex pipefail
 
-function _generate_yes_cloud_experiments() {
+function _generate_first_round_of_experiments() {
 
   #
   # Generate the first round of experiments.
@@ -108,8 +108,7 @@ function _generate_yes_cloud_experiments() {
 
 }
 
-function _generate_no_cloud_experiments() {
-
+function _generate_second_round_of_experiments() {
   #
   # Generate the second round of experiments.
   #
@@ -130,33 +129,33 @@ function _generate_no_cloud_experiments() {
   local JOINS
   local SUBDIR
 
-  DATASETS+="cit-Patents"
-  DATASETS+="com-Orkut"
-  DATASETS+="com-Youtube"
-  DATASETS+="roadNet-CA"
-  DATASETS+="roadNet-PA"
-  DATASETS+="roadNet-TX"
-  DATASETS+="soc-LiveJournal1"
-  DATASETS+="soc-Epinions1"
-  DATASETS+="soc-Pokec"
-  DATASETS+="web-BerkStan"
-  DATASETS+="web-Google"
-  DATASETS+="web-NotreDame"
-  DATASETS+="web-Stanford"
-  DATASETS+="wiki-Talk"
-  DATASETS+="wiki-topcats"
-  DATASETS+="prog-jenkins"
-  DATASETS+="prog-jython"
-  DATASETS+="prog-openjdk8"
+  DATASETS+="cit-Patents "
+  DATASETS+="com-Orkut "
+  DATASETS+="com-Youtube "
+  DATASETS+="roadNet-CA "
+  DATASETS+="roadNet-PA "
+  DATASETS+="roadNet-TX "
+  DATASETS+="soc-LiveJournal1 "
+  DATASETS+="soc-Epinions1 "
+  DATASETS+="soc-Pokec "
+  DATASETS+="web-BerkStan "
+  DATASETS+="web-Google "
+  DATASETS+="web-NotreDame "
+  DATASETS+="web-Stanford "
+  DATASETS+="wiki-Talk "
+  DATASETS+="wiki-topcats "
+  DATASETS+="prog-jenkins "
+  DATASETS+="prog-jython "
+  DATASETS+="prog-openjdk8 "
 
-  BENCHMARKS+="LR"
-  BENCHMARKS+="RR"
-  BENCHMARKS+="NR"
-  BENCHMARKS+="SG"
-  BENCHMARKS+="RSG"
-  BENCHMARKS+="TC"
-  BENCHMARKS+="SCC"
-  BENCHMARKS+="MN"
+  BENCHMARKS+="LR "
+  BENCHMARKS+="RR "
+  BENCHMARKS+="NR "
+  BENCHMARKS+="SG "
+  BENCHMARKS+="RSG "
+  BENCHMARKS+="TC "
+  BENCHMARKS+="SCC "
+  BENCHMARKS+="MN "
 
   TYPES="number symbol"
   THREADS="1"
@@ -284,6 +283,7 @@ function _main() {
   local ROOT="${HOME}/.souffle"
 
   # Sync S3 bucket.
+  rm -rf "${ROOT}/{exe,datalog,docker-compose}"
   mkdir -p "${ROOT}"
   aws s3 sync "s3://souffle-on-kafka" "${ROOT}"
 
@@ -294,8 +294,10 @@ function _main() {
   read -p "Example experiments generated, press enter to generate the real experiments..."
   echo
 
-  _generate_yes_cloud_experiments
-  _generate_no_cloud_experiments
+  _generate_first_round_of_experiments
+
+  # @@@TODO (lh): this is not useful until we have the results of the first round of experiments
+  # _generate_second_round_of_experiments
 
   aws s3 sync "${ROOT}" "s3://souffle-on-kafka"
 

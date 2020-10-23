@@ -169,3 +169,82 @@ The following message bodies are mmitted by operations from within the execution
 - `endPollConsumer`
     - Emitted after polling of consumer to process inbound messages has ended.
 
+## Design
+
+This section explains the paramterization of the experiments.
+
+The experiments are split into two rounds.
+
+Each round compares an execution of standard Souffle (with `no-kafka` and `SNE`) against an execution of Souffle on Kafka (with either `one-kafka` or `many-kafka` and `GPCSNE`).
+
+Each round is described below, by the value of each of the parameters that describe it.
+
+One experiment will be generated per combination of parameters and execution mode (i.e. standard Souffle or Souffle on Kafka).
+
+In the first round, with `no-kakfa` and `SNE` vs `many-kafka` and `GPCSNE`, we have the following.
+
+For all in this round:
+
+~~~
+  DATASETS="soc-LiveJournal1"
+  BENCHMARKS="NR"
+  TYPES="number symbol"
+~~~
+
+For `no-kakfa` and `SNE`:
+
+~~~
+  THREADS="1 2 4 8 16 32 64"
+  SPLITS="0"
+  JOINS="none"
+  SUBDIR="no-cloud"
+~~~
+
+For `many-kafka` and `GPCSNE`:
+
+~~~
+  THREADS="1"
+  SPLITS="0 2 4 8 16 32 64"
+  JOINS="complete left balanced"
+  SUBDIR="yes-cloud"
+~~~
+
+In the second round, `no-kafka` and `SNE` vs `one-kafka` and `GPCSNE`, we have the following.
+
+For all in this round:
+
+~~~
+  DATASETS+="cit-Patents"
+  DATASETS+="com-Orkut"
+  DATASETS+="com-Youtube"
+  DATASETS+="roadNet-CA"
+  DATASETS+="roadNet-PA"
+  DATASETS+="roadNet-TX"
+  DATASETS+="soc-LiveJournal1"
+  DATASETS+="soc-Epinions1"
+  DATASETS+="soc-Pokec"
+  DATASETS+="web-BerkStan"
+  DATASETS+="web-Google"
+  DATASETS+="web-NotreDame"
+  DATASETS+="web-Stanford"
+  DATASETS+="wiki-Talk"
+  DATASETS+="wiki-topcats"
+  DATASETS+="prog-jenkins"
+  DATASETS+="prog-jython"
+  DATASETS+="prog-openjdk8"
+
+  BENCHMARKS+="LR"
+  BENCHMARKS+="RR"
+  BENCHMARKS+="NR"
+  BENCHMARKS+="SG"
+  BENCHMARKS+="RSG"
+  BENCHMARKS+="TC"
+  BENCHMARKS+="SCC"
+  BENCHMARKS+="MN"
+
+  TYPES="number symbol"
+  THREADS="1"
+  SPLITS="0"
+  JOINS="none"
+  SUBDIR="no-cloud"
+~~~
