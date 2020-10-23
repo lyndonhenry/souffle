@@ -6,7 +6,7 @@ set -ouex pipefail
 # == Global Variables ===
 #
 
-source ./kafka/env
+source ./kafka/.env
 
 #
 # == Utility Functions =
