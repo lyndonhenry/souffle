@@ -5,7 +5,7 @@ set -ouex pipefail
 
 function _generate_example_benchmarks() {
 
-  # Run without Kafka, using SNE, on NR, with numbers, 1 threads, no splits or joins.
+  # Run without Kafka, using SNE, on NR, with numbers, 1 thread, no splits or joins.
 
   ./kafka/souffle-on-kafka.sh \
     --benchmark "NR" \
@@ -32,7 +32,7 @@ function _generate_example_benchmarks() {
     --subdir "example"
 
 
-  # Run with Kafka, in many Dockers, using GPCSNE, on NR, with symbols, 2 threads, no splits and joins.
+  # Run with Kafka, in many Dockers, using GPCSNE, on NR, with symbols, 2 threads, no splits no joins.
 
   ./kafka/souffle-on-kafka.sh \
     --benchmark "NR" \
@@ -45,7 +45,7 @@ function _generate_example_benchmarks() {
     --threads "2" \
     --subdir "example"
 
-  # Run with Kafka, in many Dockers, using GPCSNE, on NR, with symbols, 1 threads, and 2 splits and joins.
+  # Run with Kafka, in many Dockers, using GPCSNE, on NR, with symbols, 1 thread, 2 splits, and complete join.
 
   ./kafka/souffle-on-kafka.sh \
     --benchmark "NR" \
