@@ -61,7 +61,7 @@ function _main() {
     _run_experiment "${DOCKER_COMPOSE_FILE}"
   done
 
-  read -p "Example experiments have run, press enter to generate the real experiments..."
+  read -p "Example experiments have run, press enter to run the real experiments..."
 
   # run the cloud experiments
   local DOCKER_COMPOSE_FILE

@@ -2,6 +2,51 @@
 
 set -ouex pipefail
 
+
+function _generate_example_benchmarks() {
+
+  # Run without Kafka, using SNE, on NR, with numbers, 1 threads, no splits or joins.
+
+  ./kafka/souffle-on-kafka.sh \
+    --benchmark "NR" \
+    --type "number" \
+    --split "0" \
+    --join "none" \
+    --mode "no-kafka" \
+    --algorithm "SNE" \
+    --data "complete-graph-4" \
+    --threads "1" \
+    --subdir "example"
+
+  # Run with Kafka, in one Docker, using GPCSNE, on NR, with symbols, 2 threads, no splits or joins.
+
+  ./kafka/souffle-on-kafka.sh \
+    --benchmark "NR" \
+    --type "symbol" \
+    --split "0" \
+    --join "none" \
+    --mode "one-kafka" \
+    --algorithm "GPCSNE" \
+    --data "example" \
+    --threads "2" \
+    --subdir "example"
+
+
+  # Run with Kafka, in many Dockers, using GPCSNE, on NR, with symbols, 2 threads, and splits and joins.
+
+  ./kafka/souffle-on-kafka.sh \
+    --benchmark "NR" \
+    --type "symbol" \
+    --split "4" \
+    --join "complete" \
+    --mode "many-kafka" \
+    --algorithm "GPCSNE" \
+    --data "example" \
+    --threads "2" \
+    --subdir "example"
+
+}
+
 function _generate_first_round_of_experiments() {
 
   #
@@ -10,7 +55,7 @@ function _generate_first_round_of_experiments() {
   # This tests Souffle scaled with threads vs Souffle on Kafka scaled with splits.
   # Here, each Souffle on Kafka stratum is executed in one Docker each.
   # The Souffle on Kafka experiments here may be run in the cloud.
-  # Only one dataset is used, and one benchmark, but for both number and symbol types.
+  # The dataset used is the complete graph with weak scaling, starting at 2 ** 7 vertices.
   # The total number of docker-compose.yml files is
   # (|THREADS| * |TYPES|) + (|SPLITS| * |TYPES| * |JOINS|)  = (7 * 2) + (7 * 2 * 4) = 70.
   #
@@ -23,7 +68,7 @@ function _generate_first_round_of_experiments() {
   local JOINS
   local SUBDIR
 
-  DATASETS="soc-LiveJournal1"
+  DATASETS="complete-graph"
   BENCHMARKS="NR"
   TYPES="number symbol"
 
@@ -49,6 +94,7 @@ function _generate_first_round_of_experiments() {
             local THREAD
             for THREAD in ${THREADS}
             do
+              local SIZE=$(( 2 ** (THREADS + 6) ))
               ./kafka/souffle-on-kafka.sh \
               --benchmark "${BENCHMARK}" \
               --type "${TYPE}" \
@@ -56,7 +102,7 @@ function _generate_first_round_of_experiments() {
               --join "${JOIN}" \
               --mode "no-kafka" \
               --algorithm "SNE" \
-              --data "${DATASET}" \
+              --data "${DATASET}-${SIZE}" \
               --threads "${THREAD}" \
               --subdir "${SUBDIR}"
             done
@@ -67,7 +113,7 @@ function _generate_first_round_of_experiments() {
   done
 
   THREADS="1"
-  SPLITS="0 2 4 8 16 32 64"
+  SPLITS="1 2 4 8 16 32 64"
   JOINS="complete left balanced"
   SUBDIR="yes-cloud"
 
@@ -89,6 +135,7 @@ function _generate_first_round_of_experiments() {
             local THREAD
             for THREAD in ${THREADS}
             do
+              local SIZE=$(( 2 ** (THREADS + 6) ))
               ./kafka/souffle-on-kafka.sh \
               --benchmark "${BENCHMARK}" \
               --type "${TYPE}" \
@@ -96,7 +143,7 @@ function _generate_first_round_of_experiments() {
               --join "${JOIN}" \
               --mode "many-kafka" \
               --algorithm "GPCSNE" \
-              --data "${DATASET}" \
+              --data "${DATASET}-${SIZE}" \
               --threads "${THREAD}" \
               --subdir "${SUBDIR}"
             done
@@ -231,50 +278,6 @@ function _generate_second_round_of_experiments() {
       done
     done
   done
-
-}
-
-function _generate_example_benchmarks() {
-
-  # Run without Kafka, using SNE, on NR, with numbers, 1 threads, no splits or joins.
-
-  ./kafka/souffle-on-kafka.sh \
-    --benchmark "NR" \
-    --type "number" \
-    --split "0" \
-    --join "none" \
-    --mode "no-kafka" \
-    --algorithm "SNE" \
-    --data "example" \
-    --threads "1" \
-    --subdir "example"
-
-  # Run with Kafka, in one Docker, using GPCSNE, on NR, with symbols, 2 threads, no splits or joins.
-
-  ./kafka/souffle-on-kafka.sh \
-    --benchmark "NR" \
-    --type "symbol" \
-    --split "0" \
-    --join "none" \
-    --mode "one-kafka" \
-    --algorithm "GPCSNE" \
-    --data "example" \
-    --threads "2" \
-    --subdir "example"
-
-
-  # Run with Kafka, in many Dockers, using GPCSNE, on NR, with symbols, 2 threads, and splits and joins.
-
-  ./kafka/souffle-on-kafka.sh \
-    --benchmark "NR" \
-    --type "symbol" \
-    --split "4" \
-    --join "complete" \
-    --mode "many-kafka" \
-    --algorithm "GPCSNE" \
-    --data "example" \
-    --threads "2" \
-    --subdir "example"
 
 }
 

@@ -237,13 +237,14 @@ function _phase_two() {
   local FILE="${1}"
   local MODE="${2}"
   local ALGORITHM="${3}"
-  local EXE="${ROOT}/exe/$(basename "${FILE}" | sed 's/\.dl//')_${MODE}_${ALGORITHM}"
+  local THREADS="${4}"
+  local EXE="${ROOT}/exe/$(basename "${FILE}" | sed 's/\.dl//')_${MODE}_${ALGORITHM}_${THREADS}"
   local ARGS="$(_build_souffle_args ${MODE} ${ALGORITHM})"
   mkdir -p "input" "output"
   if [ ! -e "${EXE}" ]
   then
   mkdir -p "${ROOT}/exe"
-  ./src/souffle -F"input" -D"output" ${ARGS} -o${EXE} ${FILE}
+  ./src/souffle -F"input" -D"output" ${ARGS} -j${THREADS} -o${EXE} ${FILE}
   aws s3 cp "${EXE}" "s3://souffle-on-kafka/exe/$(basename ${EXE})" &> /dev/null
   fi
   #
@@ -256,7 +257,7 @@ function _phase_three() {
   local DATA="${3}"
   local THREADS="${4}"
   local SUBDIR="${5}"
-  local LOCATION="docker-compose/${SUBDIR}/$(basename ${EXE})_${DATA}_${THREADS}/docker-compose.yml"
+  local LOCATION="docker-compose/${SUBDIR}/$(basename ${EXE})_${DATA}/docker-compose.yml"
   local FILE="${ROOT}/${LOCATION}"
   local KAFKA_HOST="kafka:29092"
   local S3_EXE="s3://souffle-on-kafka/exe/$(basename ${EXE})"
@@ -346,7 +347,7 @@ function _main() {
   done
   #
   local FILE=$(_phase_one ${BENCHMARK} ${TYPE} ${SPLIT} ${JOIN})
-  local EXE=$(_phase_two ${FILE} ${MODE} ${ALGORITHM})
+  local EXE=$(_phase_two ${FILE} ${MODE} ${ALGORITHM} ${THREADS})
   _phase_three ${EXE} ${MODE} ${DATA} ${THREADS} ${SUBDIR}
 }
 

@@ -4,6 +4,69 @@ use std::io::{BufRead, Read, Write};
 use std::process::Command;
 use std::path::{Path, PathBuf};
 
+mod csv_helper {
+
+  use std::io::{BufRead,BufReader,Read,Write,BufWriter};
+  use std::fs::File;
+  use std::path::{Path, PathBuf};
+  use std::vec::Vec;
+  use std::env::temp_dir;
+
+  type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
+
+  pub fn read_csv_file(path: &Path, delimiter: &str) -> Result<Vec<Vec<String>>> {
+    let file = File::open(path)?;
+    let contents = BufReader::new(file).lines().map(|line| {
+      // @TODO (lh): not a good use of unwrap here
+        line.unwrap().split(delimiter).map(|field| field.to_string()).collect()
+    }).collect::<Vec<Vec<_>>>();
+    Ok(contents)
+  }
+
+  pub fn write_csv_file(path: &Path, delimiter: &str, contents: &Vec<Vec<String>>) -> Result<()> {
+    let file = File::create(path)?;
+    let mut buf_writer = BufWriter::new(file);
+
+    for line in contents.iter() {
+      buf_writer.write(line.join(delimiter).as_ref());
+      buf_writer.write("\n".as_ref());
+    }
+    buf_writer.flush()?;
+    Ok(())
+  }
+
+  fn test_read_and_write_csv_file() -> () {
+    let path = temp_dir().join("test.csv");
+    let delimiter = ",";
+    let expected = vec![
+      vec![ "a".to_string() ],
+      vec![ "b".to_string(), "c".to_string() ],
+    ];
+    write_csv_file(&path, &delimiter, &expected).unwrap();
+    let actual = read_csv_file(&path, &delimiter).unwrap();
+    assert_eq!(actual, expected);
+  }
+
+  pub fn test() {
+    test_read_and_write_csv_file();
+  }
+
+}
+
+mod metrics {
+  use crate::csv_helper;
+
+  pub struct Metrics {
+
+  }
+
+  impl Metrics {
+    pub fn test() -> () {
+      csv_helper::test();
+    }
+  }
+}
+
 mod datalog {
   use std::collections::VecDeque;
 
@@ -199,7 +262,7 @@ mod datalog {
         },
         "NR" => {
           let mut txt = simple_benchmark_of_arity_two.clone();
-          if *split_size == 0 {
+          if *split_size < 2 {
             txt.push(Self::decl_of_arity_two_statement(idb_relation, datatype));
             txt.push(Self::benchmark_nr_rules_statement(edb_relation, idb_relation));
           } else {
@@ -570,7 +633,7 @@ impl GraphData {
     self.remove_self_loops_and_duplicate_edges();
     Ok(())
   }
-  pub fn write_graph(self: & mut Self, path: &std::path::Path, vertices_file: &str, edges_file: &str, delimiter: &str) -> std::io::Result<()> {
+  pub fn write_graph(self: & Self, path: &std::path::Path, vertices_file: &str, edges_file: &str, delimiter: &str) -> std::io::Result<()> {
     // write vertices as count of vertices
     let v_file = File::create(path.join(vertices_file))?;
     let mut v_buf_writer = std::io::BufWriter::new(v_file);
@@ -587,7 +650,7 @@ impl GraphData {
     e_buf_writer.flush()?;
     Ok(())
   }
-  pub fn write_graph_as_facts(self: & mut Self, path: &std::path::Path) -> std::io::Result<()> {
+  pub fn write_graph_as_facts(self: & Self, path: &std::path::Path) -> std::io::Result<()> {
     self.write_graph(path, "V.facts", "E.facts", "\t")
   }
 
@@ -598,13 +661,13 @@ struct Helper {}
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
-enum InfoFormat { Snap, XProg, XSocFriendster, XWebYahoo }
+enum InfoFormat { Snap, XProg, XSocFriendster, XWebYahoo, Synthetic }
 
 struct InfoStruct { name: String, location: String, vertices: usize, edges: usize, directed: bool, format: InfoFormat, }
 
 impl Helper {
 
-  fn run_read_process_write(info: &InfoStruct, root_dir: &Path, txt_file: &Path) -> Result<()> {
+  fn run_process_and_write(info: &InfoStruct, root_dir: &Path, graph: &GraphData) -> Result<()> {
     let input_dir = root_dir.join("input").join(&info.name);
     let g_file = input_dir.join(format!("{}.txt", &info.name));
     let v_file = input_dir.join("V.facts");
@@ -612,8 +675,6 @@ impl Helper {
     if (!v_file.exists()) || (!e_file.exists()) || (!g_file.exists()) {
       println!("{}: Reading...", &info.name);
       std::fs::create_dir_all(&input_dir)?;
-      let mut graph = GraphData::new();
-      graph.read_snap_graph(&txt_file)?;
       {
         println!("{}: Processing...", &info.name);
         let (g, v, e) = { let g = GraphStatistics::new(&graph); (format!("{:?}", g), g.vertices, g.edges) };
@@ -675,7 +736,11 @@ impl Helper {
   fn run_for_snap_dataset(info: &InfoStruct, root_dir: &Path) -> Result<()> {
     println!("{}: Beginning...", &info.name);
     let txt_file = Self::run_download_extract_one_gz_txt_file(info, root_dir)?;
-    Self::run_read_process_write(info, root_dir, txt_file.as_path())?;
+    if ! root_dir.join("input").join(&info.name).join(format!("{}.txt", &info.name)).exists() {
+      let mut graph = GraphData::new();
+      graph.read_snap_graph(txt_file.as_path())?;
+      Self::run_process_and_write(info, root_dir, &graph);
+    }
     println!("{}: Ending...", &info.name);
     Ok(())
   }
@@ -683,7 +748,30 @@ impl Helper {
   fn run_for_prog_dataset(info: &InfoStruct, root_dir: &Path) -> Result<()> {
     println!("{}: Beginning...", &info.name);
     let txt_file = Self::run_copy_one_file(info, root_dir)?;
-    Self::run_read_process_write(info, root_dir, txt_file.as_path())?;
+    if ! root_dir.join("input").join(&info.name).join(format!("{}.txt", &info.name)).exists() {
+      let mut graph = GraphData::new();
+      graph.read_snap_graph(txt_file.as_path())?;
+      Self::run_process_and_write(info, root_dir, &graph);
+    }
+    println!("{}: Ending...", &info.name);
+    Ok(())
+  }
+
+  fn run_for_synthetic_dataset(info: &InfoStruct, root_dir: &Path) -> Result<()> {
+    println!("{}: Beginning...", &info.name);
+    if ! root_dir.join("input").join(&info.name).join(format!("{}.txt", &info.name)).exists() {
+      let mut graph = GraphData::new();
+      for i in 0..info.vertices {
+        for j in 0..info.vertices {
+          if i != j {
+            let x = graph.get_or_insert_vertex(&i.to_string());
+            let y = graph.get_or_insert_vertex(&j.to_string());
+            graph.insert_edge(x, y);
+          }
+        }
+      }
+      Self::run_process_and_write(info, root_dir, &graph);
+    }
     println!("{}: Ending...", &info.name);
     Ok(())
   }
@@ -697,14 +785,14 @@ impl Helper {
       InfoFormat::XProg => Self::run_for_prog_dataset(info, &root_dir),
       InfoFormat::XSocFriendster => {println!("Warning: Not implemented for {}...", info.name); Ok(())},
       InfoFormat::XWebYahoo => {println!("Warning: Not implemented for {}...", info.name); Ok(())},
+      InfoFormat::Synthetic => Self::run_for_synthetic_dataset(info, &root_dir),
     }
   }
-
 }
 
 fn make_datasets() -> Result<()> {
   test().expect("ERROR!");
-  let datasets = vec![
+  let mut datasets = vec![
     InfoStruct { name: "cit-Patents".to_string(), location: "https://snap.stanford.edu/data/cit-Patents.txt.gz".to_string(), vertices: 3774768, edges: 16518948, directed: true, format: InfoFormat::Snap, },
     InfoStruct { name: "com-Orkut".to_string(), location: "https://snap.stanford.edu/data/bigraphata/communities/com-orkut.ungraph.txt.gz".to_string(), vertices: 3072441, edges: 117185083, directed: false, format: InfoFormat::Snap, },
     InfoStruct { name: "com-Youtube".to_string(), location: "https://snap.stanford.edu/data/bigraphata/communities/com-youtube.ungraph.txt.gz".to_string(), vertices: 1134890, edges: 2987624, directed: false, format: InfoFormat::Snap, },
@@ -727,6 +815,18 @@ fn make_datasets() -> Result<()> {
     InfoStruct { name: "x-soc-friendster".to_string(), location: "?".to_string(), vertices: 117751379, edges: 2586147869, directed: true, format: InfoFormat::XSocFriendster, },
     InfoStruct { name: "x-web-yahoo".to_string(), location: "?".to_string(), vertices: 1413511393, edges: 0, directed: true, format: InfoFormat::XWebYahoo, }
   ];
+  for i in 1u32..13 {
+      datasets.push(
+          InfoStruct {
+            name: format!("complete-graph-{}", 2u32.pow(i)).to_string(),
+            location: "none".to_string(),
+            vertices: 2u32.pow(i) as usize,
+            edges: (2u32.pow(i) * (2u32.pow(i) - 1)) as usize,
+            directed: true,
+            format: InfoFormat::Synthetic,
+          },
+      )
+  }
   for dataset in datasets.iter() {
     Helper::run(dataset)?;
   }
@@ -763,6 +863,10 @@ fn main() {
         &args[4],
         &args[5]
       ).expect("ERROR!");
+    }
+    "--metrics" => {
+      // @TODO (lh): this command may be used in future to generate the metrics
+      metrics::Metrics::test();
     }
     _ => panic!("ERROR!")
   }

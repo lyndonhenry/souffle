@@ -440,16 +440,17 @@ function _kafka_produce_log_message() {
   ;;
   "downloadInput")
   # note: this always assumes './input/E.facts'
-  local DATA_SIZE_AND_LINE_COUNT="$(wc "./input/E.facts" | awk '{print $3","$1}')"
-  MESSAGE="downloadInput,${DATA_SIZE_AND_LINE_COUNT}"
+  local LINE_COUNT="$(wc "./input/E.facts" | awk '{print $1}')"
+  MESSAGE="downloadInput,${LINE_COUNT}"
   ;;
   "uploadOutput")
   # note: this always assumes './output/I.csv'
-  local DATA_SIZE_AND_LINE_COUNT="$(wc "./output/I.csv" | awk '{print $3","$1}')"
-  MESSAGE="uploadOutput,${DATA_SIZE_AND_LINE_COUNT}"
+  local LINE_COUNT="$(wc "./output/I.csv" | awk '{print $1}')"
+  MESSAGE="uploadOutput,${LINE_COUNT}"
   ;;
   "printMetadata")
-  MESSAGE="$(echo $(basename ${S3_EXE})_$(basename ${S3_INPUT})_${THREADS}_${ID} | tr '_' ',')"
+  BEGIN_TIME=$(($(date +%s%N)/1000000))
+  MESSAGE="printMetadata,$(echo $(basename ${S3_EXE})_$(basename ${S3_INPUT})_${THREADS}_${ID} | tr '_' ',')"
   ;;
   *)
     echo "ERROR!"
@@ -464,7 +465,6 @@ function _kafka_produce_log_message() {
   BEGIN_TIME=${END_TIME}
   (( ++MESSAGE_INDEX ))
 }
-
 
 #
 # == Run Functions ===
@@ -494,6 +494,7 @@ function _broker_begin_with_kafka() {
   EXE="./exe"
   INPUT="./input"
   OUTPUT="./output"
+  _kafka_wait_for_log_topic "${KAFKA_HOST}"
   _exe_create_kafka_topics "${KAFKA_HOST}" "${ID}" "${EXE}"
   sleep 1s
   _kafka_create_topic "${KAFKA_HOST}" "OK_${ID}"
@@ -539,7 +540,6 @@ function _broker_run_with_kafka_one() {
   _kafka_produce_log_message "${KAFKA_HOST}" "beginSouffleProgram"
   _exe_run_all_strata "${KAFKA_HOST}" "${ID}" "${EXE}" "${THREADS}" "-2 -3 ${STRATUM_NAMES}"
   _kafka_produce_log_message "${KAFKA_HOST}" "endSouffleProgram"
-  wait
 }
 
 function _broker_run_with_kafka_many() {
@@ -549,7 +549,6 @@ function _broker_run_with_kafka_many() {
   _kafka_produce_log_message "${KAFKA_HOST}" "beginSouffleProgram"
   _exe_run_all_strata "${KAFKA_HOST}" "${ID}" "${EXE}" "${THREADS}" "-2 -3"
   _kafka_produce_log_message "${KAFKA_HOST}" "endSouffleProgram"
-  wait
 }
 
 function _client_run_with_kafka_many() {

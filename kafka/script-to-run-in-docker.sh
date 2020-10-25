@@ -7,7 +7,7 @@ source ./kafka/.env
 function _main() {
 
   # pull the latest from Dockerhub
-  sudo docker pull lyndonmhenry/souffle-on-kafka
+  sudo docker pull ${IMAGE_NAME}
 
   # run the docker container, mounting the appropriate directories
   sudo docker run \
