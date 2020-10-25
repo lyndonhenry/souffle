@@ -32,7 +32,7 @@ function _generate_example_benchmarks() {
     --subdir "example"
 
 
-  # Run with Kafka, in many Dockers, using GPCSNE, on NR, with symbols, 2 threads, and splits and joins.
+  # Run with Kafka, in many Dockers, using GPCSNE, on NR, with symbols, 2 threads, no splits and joins.
 
   ./kafka/souffle-on-kafka.sh \
     --benchmark "NR" \
@@ -43,6 +43,19 @@ function _generate_example_benchmarks() {
     --algorithm "GPCSNE" \
     --data "example" \
     --threads "2" \
+    --subdir "example"
+
+  # Run with Kafka, in many Dockers, using GPCSNE, on NR, with symbols, 1 threads, and 2 splits and joins.
+
+  ./kafka/souffle-on-kafka.sh \
+    --benchmark "NR" \
+    --type "symbol" \
+    --split "2" \
+    --join "complete" \
+    --mode "many-kafka" \
+    --algorithm "GPCSNE" \
+    --data "example" \
+    --threads "1" \
     --subdir "example"
 
 }
