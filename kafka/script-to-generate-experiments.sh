@@ -37,7 +37,7 @@ function _generate_example_benchmarks() {
   ./kafka/souffle-on-kafka.sh \
     --benchmark "NR" \
     --type "symbol" \
-    --split "4" \
+    --split "0" \
     --join "complete" \
     --mode "many-kafka" \
     --algorithm "GPCSNE" \
