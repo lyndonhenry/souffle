@@ -18,10 +18,10 @@ function _generate_example_benchmarks() {
     --threads "1" \
     --subdir "example"
 
-  # Run with Kafka, in one Docker, using GPCSNE, on NR, with symbols, 2 threads, no splits or joins.
+  # Run with Kafka, in one Docker, using GPCSNE, on ALL, with symbols, 2 threads, no splits or joins.
 
   ./kafka/souffle-on-kafka.sh \
-    --benchmark "NR" \
+    --benchmark "ALL" \
     --type "symbol" \
     --split "0" \
     --join "none" \
@@ -32,13 +32,13 @@ function _generate_example_benchmarks() {
     --subdir "example"
 
 
-  # Run with Kafka, in many Dockers, using GPCSNE, on NR, with symbols, 2 threads, no splits no joins.
+  # Run with Kafka, in many Dockers, using GPCSNE, on ALL, with symbols, 2 threads, no splits no joins.
 
   ./kafka/souffle-on-kafka.sh \
     --benchmark "NR" \
     --type "symbol" \
     --split "0" \
-    --join "complete" \
+    --join "none" \
     --mode "many-kafka" \
     --algorithm "GPCSNE" \
     --data "example" \
@@ -148,7 +148,7 @@ function _generate_first_round_of_experiments() {
             local THREAD
             for THREAD in ${THREADS}
             do
-              local SIZE=$(( 2 ** (THREAD + 6) ))
+              local SIZE=$(( 2 ** (SPLIT + 6) ))
               ./kafka/souffle-on-kafka.sh \
               --benchmark "${BENCHMARK}" \
               --type "${TYPE}" \
@@ -175,10 +175,11 @@ function _generate_second_round_of_experiments() {
   # This tests Souffle with Kafka vs Souffle with no Kafka.
   # Here, all Souffle strata are executed together in the same Docker.
   # These experiments are not required to be run in the cloud.
-  # All datasets and benchmarks are used, for both number and symbol types.
-  # Only one thread is used, with no splits or joins.
+  # All datasets are used, for both number and symbol types.
+  # Only the ALL benchmark is used, containing all other benchmarks.
+  # Eight threads is used, with no splits or joins.
   # The total number of docker-compose.yml files is
-  # (|DATASETS| * |BENCHMARKS| * |TYPES|) * 2  = (18 * 8 * 2) * 2 = 576
+  # (|DATASETS| * |TYPES|) * 2  = (18 * 2) * 2 = 72
   #
 
   local DATASETS
@@ -208,17 +209,9 @@ function _generate_second_round_of_experiments() {
   DATASETS+="prog-jython "
   DATASETS+="prog-openjdk8 "
 
-  BENCHMARKS+="LR "
-  BENCHMARKS+="RR "
-  BENCHMARKS+="NR "
-  BENCHMARKS+="SG "
-  BENCHMARKS+="RSG "
-  BENCHMARKS+="TC "
-  BENCHMARKS+="SCC "
-  BENCHMARKS+="MN "
-
+  BENCHMARKS="ALL"
   TYPES="number symbol"
-  THREADS="1"
+  THREADS="8"
   SPLITS="0"
   JOINS="none"
 
@@ -301,10 +294,9 @@ function _main() {
   # Sync S3 bucket.
   rm -rf "${ROOT}/{exe,datalog,docker-compose}"
   mkdir -p "${ROOT}"
-  aws s3 sync "s3://souffle-on-kafka" "${ROOT}"
+  aws s3 sync "s3://souffle-on-kafka" "${ROOT}" || :
 
   _generate_example_benchmarks
-  aws s3 sync "${ROOT}" "s3://souffle-on-kafka"
 
   echo
   read -p "Example experiments generated, press enter to generate the real experiments..."
@@ -314,8 +306,6 @@ function _main() {
 
   # @@@TODO (lh): this is not useful until we have the results of the first round of experiments
   # _generate_second_round_of_experiments
-
-  aws s3 sync "${ROOT}" "s3://souffle-on-kafka"
 
 }
 

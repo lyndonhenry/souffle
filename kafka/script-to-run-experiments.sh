@@ -36,7 +36,7 @@ function _run_experiment() {
     # kill the docker stack
     sudo docker stack rm ${STACK_NAME}
     # sync the log file
-    aws s3 sync "s3://souffle-on-kafka/output/log" "${ROOT}/output/log"
+    aws s3 sync "s3://souffle-on-kafka/output/log" "${ROOT}/output/log" || :
   fi
 }
 
@@ -46,7 +46,7 @@ function _main() {
 
   # Sync S3 bucket.
   mkdir -p "${ROOT}"
-  aws s3 sync "s3://souffle-on-kafka" "${ROOT}"
+  aws s3 sync "s3://souffle-on-kafka" "${ROOT}" || :
 
   # sync the contents of the s3 bucket locally
   aws s3 sync "${ROOT}" "s3://souffle-on-kafka"

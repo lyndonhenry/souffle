@@ -119,7 +119,7 @@ mod datalog {
       format!("{i}(a,b,c):-{e}(a,c),{e}(b,c).", e=edb_relation, i=idb_relation)
     }
     //
-    fn special_copy_relation_statement(edb_relation: &str, idb_relation: &str) -> String {
+    fn special_copy_relation_of_arity_two_statement(edb_relation: &str, idb_relation: &str) -> String {
       format!("{i}(a,b):-{e}(a,b).", e=edb_relation, i=idb_relation)
     }
     fn special_partition_by_modulo_rule_statement(edb_relation: &str, datatype: &str, size: &usize, index: &usize) -> String {
@@ -154,7 +154,7 @@ mod datalog {
           next.push_back(count);
           for index in 0..std::cmp::min(len, curr.len()) {
             let mut old_i = format!("{i}_{k}", i = idb_relation, k = curr[index]);
-            stmts.push(Self::special_copy_relation_statement( &old_i, &new_i));
+            stmts.push(Self::special_copy_relation_of_arity_two_statement( &old_i, &new_i));
           }
           stmts.push(Self::benchmark_nr_idb_rule_statement(&new_i));
           count = count + 1;
@@ -300,6 +300,44 @@ mod datalog {
           txt.push(Self::benchmark_mn_rules_statement(edb_relation, idb_relation));
           txt
         },
+        "ALL" => {
+          vec![
+            Self::decl_of_arity_two_statement(edb_relation, datatype),
+            Self::input_statement(edb_relation),
+            Self::decl_of_arity_two_statement(idb_relation, datatype),
+            Self::output_statement(idb_relation),
+
+            Self::decl_of_arity_two_statement("LR", datatype),
+            Self::benchmark_lr_rules_statement(edb_relation, "LR"),
+
+            Self::decl_of_arity_two_statement("RR", datatype),
+            Self::benchmark_rr_rules_statement(edb_relation, "RR"),
+
+            Self::decl_of_arity_two_statement("NR", datatype),
+            Self::benchmark_nr_rules_statement(edb_relation, "NR"),
+
+            Self::decl_of_arity_two_statement("SG", datatype),
+            Self::benchmark_sg_rules_statement(edb_relation, "SG"),
+
+            Self::decl_of_arity_two_statement("RSG", datatype),
+            Self::benchmark_rsg_rules_statement(edb_relation, "RSG"),
+
+            Self::decl_of_arity_three_statement("TC", datatype),
+            Self::benchmark_tc_rules_statement(edb_relation, "TC"),
+
+            Self::decl_of_arity_two_statement("SCC", datatype),
+            Self::benchmark_scc_rules_statement(edb_relation, "SCC"),
+
+            Self::decl_of_arity_three_statement("MN", datatype),
+            Self::benchmark_mn_rules_statement(edb_relation, "MN"),
+
+            format!(
+              "{i}(a,a):-LR(a,a),RR(a,a),NR(a,a),SG(a,a),RSG(a,a),TC(a,a,a),SCC(a,a),MN(a,a,a).",
+              i=idb_relation
+            )
+
+          ]
+        }
         _ => vec![],
       };
       result.join("\n")
