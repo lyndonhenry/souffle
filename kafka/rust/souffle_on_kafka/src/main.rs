@@ -853,7 +853,7 @@ fn make_datasets() -> Result<()> {
     InfoStruct { name: "x-soc-friendster".to_string(), location: "?".to_string(), vertices: 117751379, edges: 2586147869, directed: true, format: InfoFormat::XSocFriendster, },
     InfoStruct { name: "x-web-yahoo".to_string(), location: "?".to_string(), vertices: 1413511393, edges: 0, directed: true, format: InfoFormat::XWebYahoo, }
   ];
-  for i in 1u32..13 {
+  for i in 1u32..14 {
       datasets.push(
           InfoStruct {
             name: format!("complete-graph-{}", 2u32.pow(i)).to_string(),
