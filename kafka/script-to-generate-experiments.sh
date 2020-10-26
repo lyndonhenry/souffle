@@ -107,7 +107,7 @@ function _generate_first_round_of_experiments() {
             local THREAD
             for THREAD in ${THREADS}
             do
-              local SIZE=$(( 2 ** (THREADS + 6) ))
+              local SIZE=$(( 2 ** (THREAD + 6) ))
               ./kafka/souffle-on-kafka.sh \
               --benchmark "${BENCHMARK}" \
               --type "${TYPE}" \
@@ -148,7 +148,7 @@ function _generate_first_round_of_experiments() {
             local THREAD
             for THREAD in ${THREADS}
             do
-              local SIZE=$(( 2 ** (THREADS + 6) ))
+              local SIZE=$(( 2 ** (THREAD + 6) ))
               ./kafka/souffle-on-kafka.sh \
               --benchmark "${BENCHMARK}" \
               --type "${TYPE}" \
