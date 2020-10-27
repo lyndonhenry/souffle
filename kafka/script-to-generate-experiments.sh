@@ -95,21 +95,22 @@ function _generate_first_round_of_experiments() {
   COUNT=7
 
   # Experiments without kafka
-  local BENCHMARK
-  for BENCHMARK in ${BENCHMARKS}
+
+  local THREAD
+  for THREAD in ${THREADS}
   do
-    local DATASET
-    for DATASET in ${DATASETS}
+    local BENCHMARK
+    for BENCHMARK in ${BENCHMARKS}
     do
-      local TYPE
-      for TYPE in ${TYPES}
+      local DATASET
+      for DATASET in ${DATASETS}
       do
-        for SPLIT in ${SPLITS}
+        local TYPE
+        for TYPE in ${TYPES}
         do
-          for JOIN in ${JOINS}
+          for SPLIT in ${SPLITS}
           do
-            local THREAD
-            for THREAD in ${THREADS}
+            for JOIN in ${JOINS}
             do
               local SIZE=$((2 ** COUNT))
               ./kafka/souffle-on-kafka.sh \
@@ -119,15 +120,15 @@ function _generate_first_round_of_experiments() {
               --join "${JOIN}" \
               --mode "no-kafka" \
               --algorithm "SNE" \
-              --data "${DATASET}-${COUNT}" \
+              --data "${DATASET}-${SIZE}" \
               --threads "${THREAD}" \
               --subdir "${SUBDIR}"
-              ((COUNT++))
             done
           done
         done
       done
     done
+    ((COUNT++))
   done
 
   THREADS="1"
@@ -138,16 +139,16 @@ function _generate_first_round_of_experiments() {
   COUNT=7
 
   # Experiments with kafka
-  local BENCHMARK
-  for BENCHMARK in ${BENCHMARKS}
+  for SPLIT in ${SPLITS}
   do
-    local DATASET
-    for DATASET in ${DATASETS}
+    local BENCHMARK
+    for BENCHMARK in ${BENCHMARKS}
     do
-      local TYPE
-      for TYPE in ${TYPES}
+      local DATASET
+      for DATASET in ${DATASETS}
       do
-        for SPLIT in ${SPLITS}
+        local TYPE
+        for TYPE in ${TYPES}
         do
           for JOIN in ${JOINS}
           do
@@ -165,12 +166,12 @@ function _generate_first_round_of_experiments() {
               --data "${DATASET}-${SIZE}" \
               --threads "${THREAD}" \
               --subdir "${SUBDIR}"
-              ((COUNT++))
             done
           done
         done
       done
     done
+    ((COUNT++))
   done
 
 }
