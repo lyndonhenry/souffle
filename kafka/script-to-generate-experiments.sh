@@ -90,6 +90,10 @@ function _generate_first_round_of_experiments() {
   JOINS="none"
   SUBDIR="no-cloud"
 
+  local COUNT
+
+  COUNT=7
+
   # Experiments without kafka
   local BENCHMARK
   for BENCHMARK in ${BENCHMARKS}
@@ -107,7 +111,7 @@ function _generate_first_round_of_experiments() {
             local THREAD
             for THREAD in ${THREADS}
             do
-              local SIZE=$(( 2 ** (THREAD + 6) ))
+              local SIZE=$((2 ** COUNT))
               ./kafka/souffle-on-kafka.sh \
               --benchmark "${BENCHMARK}" \
               --type "${TYPE}" \
@@ -115,9 +119,10 @@ function _generate_first_round_of_experiments() {
               --join "${JOIN}" \
               --mode "no-kafka" \
               --algorithm "SNE" \
-              --data "${DATASET}-${SIZE}" \
+              --data "${DATASET}-${COUNT}" \
               --threads "${THREAD}" \
               --subdir "${SUBDIR}"
+              ((COUNT++))
             done
           done
         done
@@ -130,6 +135,7 @@ function _generate_first_round_of_experiments() {
   JOINS="complete left balanced"
   SUBDIR="yes-cloud"
 
+  COUNT=7
 
   # Experiments with kafka
   local BENCHMARK
@@ -148,7 +154,7 @@ function _generate_first_round_of_experiments() {
             local THREAD
             for THREAD in ${THREADS}
             do
-              local SIZE=$(( 2 ** (SPLIT + 6) ))
+              local SIZE=$((2 ** COUNT))
               ./kafka/souffle-on-kafka.sh \
               --benchmark "${BENCHMARK}" \
               --type "${TYPE}" \
@@ -159,6 +165,7 @@ function _generate_first_round_of_experiments() {
               --data "${DATASET}-${SIZE}" \
               --threads "${THREAD}" \
               --subdir "${SUBDIR}"
+              ((COUNT++))
             done
           done
         done
