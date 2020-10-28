@@ -85,7 +85,7 @@ function _generate_first_round_of_experiments() {
   BENCHMARKS="NR"
   TYPES="number symbol"
 
-  THREADS="1 2 4 8 16 32 64"
+  THREADS="1 2 4 8 16 32"
   SPLITS="0"
   JOINS="none"
   SUBDIR="no-cloud"
@@ -132,7 +132,7 @@ function _generate_first_round_of_experiments() {
   done
 
   THREADS="1"
-  SPLITS="1 2 4 8 16 32 64"
+  SPLITS="1 2 4 8 16 32"
   JOINS="complete left balanced"
   SUBDIR="yes-cloud"
 
@@ -312,8 +312,7 @@ function _main() {
 
   _generate_first_round_of_experiments
 
-  # @@@TODO (lh): this is not useful until we have the results of the first round of experiments
-  # _generate_second_round_of_experiments
+  _generate_second_round_of_experiments
 
 }
 
