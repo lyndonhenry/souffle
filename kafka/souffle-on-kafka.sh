@@ -178,7 +178,7 @@ function _generate_with_many_kafka() {
   local EXE="exe"
   rm -f ${EXE}
   aws s3 cp ${S3_EXE} ${EXE}
-  chmod +x ${EXE}
+  chmod +x ${EXE} || :
   mkdir -p "$(dirname "${FILE}")"
   cat ./kafka/docker-compose.yml > "${FILE}"
   local STRATUM_NAMES="$(./${EXE} -Xcustom.print-metadata=true)"
