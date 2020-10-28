@@ -3,3 +3,4 @@
 [[package]]
 name = "souffle_on_kafka"
 version = "0.1.0"
+
