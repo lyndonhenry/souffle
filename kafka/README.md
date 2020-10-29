@@ -287,7 +287,7 @@ For the `BODY`...
 - `communicationTime,<stratum-index>,<runtime>`
     - Per stratum sum of the `<timestamp>` fields for each `beginClient`, `endProduction`, `endConsumption`, `endProduce`, `endConsume`, `endPollProducer`, `endPollConsumer` log messages.
 - `computationTime,<stratum-index>,<runtime>`
-    - Per stratum value of `runTime`, minus the sum of the `<timestamp>` fields of all messages from `beginClient` to `endClient` inclusive.
+    - Per stratum value of `runTime` minus `communicationTime`.
 - `runTime,<stratum-index>,<runtime>`
     - Per stratum value of the `<timestamp>` field of `endSouffleProgram`.
 - `totalCommunicationTime,<runtime>`
@@ -302,7 +302,7 @@ For the `BODY`...
     - The `<line-count>` field of `uploadOutput` log message.
 - `stringBytesProduced,<stratum-index>,<byte-count>`
     - Per stratum sum of `<payload-size>` fields of all `beginProduce` messages
-    having a `<topic-name>` field equal to the `<stratum-index>` of the log message.
+    having a `<topic-name>` field which is an integer or 'none'.
 - `relationTermsProduced,<relation-name>,<tuple-count>`
     - Sum of `<payload-size>` fields of all `beginProduce` messages
     having a `<topic-name>` of `<relation-name>`.
@@ -311,6 +311,7 @@ For the `BODY`...
 - `totalRelationTuplesProduced,<tuple-count>`
     - Sum of `relationsTuplesProduced` over all relations.
     
+**Note: All negative values for `<stratum-index>` must be changed to 'none' before processing.**
     
 ### Example
 

@@ -149,7 +149,7 @@ function _generate_with_no_kafka() {
   local THREADS="${7}"
   mkdir -p "$(dirname "${FILE}")"
   cat ./kafka/docker-compose.yml > "${FILE}"
-  _extend_docker_compose ${ID} ${FILE} ${KAFKA_HOST} ${MODE} ${S3_EXE} ${S3_INPUT} ${S3_OUTPUT} ${THREADS} "main"
+  _extend_docker_compose ${ID} ${FILE} ${KAFKA_HOST} ${MODE} ${S3_EXE} ${S3_INPUT} ${S3_OUTPUT} ${THREADS} "none"
 }
 
 function _generate_with_one_kafka() {
@@ -163,7 +163,7 @@ function _generate_with_one_kafka() {
   local THREADS="${7}"
   mkdir -p "$(dirname "${FILE}")"
   cat ./kafka/docker-compose.yml > "${FILE}"
-  _extend_docker_compose ${ID} ${FILE} ${KAFKA_HOST} ${MODE} ${S3_EXE} ${S3_INPUT} ${S3_OUTPUT} ${THREADS} "main"
+  _extend_docker_compose ${ID} ${FILE} ${KAFKA_HOST} ${MODE} ${S3_EXE} ${S3_INPUT} ${S3_OUTPUT} ${THREADS} "none"
 }
 
 function _generate_with_many_kafka() {
@@ -182,7 +182,7 @@ function _generate_with_many_kafka() {
   mkdir -p "$(dirname "${FILE}")"
   cat ./kafka/docker-compose.yml > "${FILE}"
   local STRATUM_NAMES="$(./${EXE} -Xcustom.print-metadata=true)"
-  _extend_docker_compose ${ID} ${FILE} ${KAFKA_HOST} "${MODE}-as-broker" ${S3_EXE} ${S3_INPUT} ${S3_OUTPUT} ${THREADS} "main"
+  _extend_docker_compose ${ID} ${FILE} ${KAFKA_HOST} "${MODE}-as-broker" ${S3_EXE} ${S3_INPUT} ${S3_OUTPUT} ${THREADS} "none"
   _for_each "_extend_docker_compose ${ID} ${FILE} ${KAFKA_HOST} "${MODE}-as-client" ${S3_EXE} ${S3_INPUT} ${S3_OUTPUT} ${THREADS} " ${STRATUM_NAMES}
 }
 
