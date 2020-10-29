@@ -260,6 +260,12 @@ function _ensure_souffle_on_kafka_is_built_for_rust() {
   cargo build --manifest-path kafka/rust/souffle_on_kafka/Cargo.toml
 }
 
+function  _ensure_java_is_installed() {
+  sudo apt install -y \ 
+    default-jdk \
+    maven 
+}
+
 #
 # The build command itself.
 # This installs the Souffle on Kafka system.
@@ -274,6 +280,7 @@ function _build() {
   _ensure_souffle_is_built_for_kafka
   _ensure_rust_is_installed
   _ensure_souffle_on_kafka_is_built_for_rust
+  _ensure_java_is_installed
 }
 
 #
