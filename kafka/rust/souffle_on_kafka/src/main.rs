@@ -797,14 +797,25 @@ impl Helper {
 
   fn run_for_synthetic_dataset(info: &InfoStruct, root_dir: &Path) -> Result<()> {
     println!("{}: Beginning...", &info.name);
+    println!("{}: Vertices...", &info.vertices);
+    println!("{}: Edges...", &info.edges);
+    // s.t. 1 / fraction * complete_graph_edges = info.edges, i.e. we skip every nth
+    let fraction = {
+      let complete_graph_edges = (info.vertices * (info.vertices - 1)) as usize;
+      complete_graph_edges / info.edges
+    };
+    let mut count = 0;
     if ! root_dir.join("input").join(&info.name).join(format!("{}.txt", &info.name)).exists() {
       let mut graph = GraphData::new();
       for i in 0..info.vertices {
         for j in 0..info.vertices {
           if i != j {
-            let x = graph.get_or_insert_vertex(&i.to_string());
-            let y = graph.get_or_insert_vertex(&j.to_string());
-            graph.insert_edge(x, y);
+            if count % fraction == 0 {
+              let x = graph.get_or_insert_vertex(&i.to_string());
+              let y = graph.get_or_insert_vertex(&j.to_string());
+              graph.insert_edge(x, y);
+            }
+            count = count + 1
           }
         }
       }
@@ -853,6 +864,18 @@ fn make_datasets() -> Result<()> {
     InfoStruct { name: "x-soc-friendster".to_string(), location: "?".to_string(), vertices: 117751379, edges: 2586147869, directed: true, format: InfoFormat::XSocFriendster, },
     InfoStruct { name: "x-web-yahoo".to_string(), location: "?".to_string(), vertices: 1413511393, edges: 0, directed: true, format: InfoFormat::XWebYahoo, }
   ];
+  for i in 1u32..14 {
+    datasets.push(
+      InfoStruct {
+        name: format!("half-complete-graph-{}", 2u32.pow(i)).to_string(),
+        location: "none".to_string(),
+        vertices: 2u32.pow(i) as usize,
+        edges: ((2u32.pow(i) * (2u32.pow(i) - 1)) / 2) as usize,
+        directed: true,
+        format: InfoFormat::Synthetic,
+      },
+    )
+  }
   for i in 1u32..14 {
       datasets.push(
           InfoStruct {
