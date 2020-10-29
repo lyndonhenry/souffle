@@ -88,7 +88,7 @@ A log message is composed of a `HEAD` and a `BODY`.
 
 The `HEAD` of a log message consists of each of the following fields.
 
-- `<stratum-name>` is the name of the stratum emitting this message, or "main". Note that the -2 stratum is responsible for reading and producing input files, while the -3 stratum does the same for output files.
+- `<stratum-name>` is the name of the stratum emitting this message, or "none". Note that the -2 stratum is responsible for reading and producing input files, while the -3 stratum does the same for output files.
 - `<message-index>` is the index or count of the current message.
 - `<timestamp>` is the timestamp in milliseconds since the last message.
 
@@ -318,13 +318,13 @@ For the `BODY`...
 As an example, consider the following log file:
 
 ~~~
-main,0,15,printMetadata,NR,number,0,none,no-kafka,SNE,1,complete-graph-4,1,1603605921
-main,1,301,beginBashScript
-main,2,2875,downloadInput,12
-main,3,36,beginSouffleProgram
-main,4,67,endSouffleProgram
-main,5,1223,uploadOutput,16
-main,6,37,endBashScript
+none,0,15,printMetadata,NR,number,0,none,no-kafka,SNE,1,complete-graph-4,1,1603605921
+none,1,301,beginBashScript
+none,2,2875,downloadInput,12
+none,3,36,beginSouffleProgram
+none,4,67,endSouffleProgram
+none,5,1223,uploadOutput,16
+none,6,37,endBashScript
 ~~~
 
 This is the log file generated in the `output/log` directory by an experiment.
@@ -335,7 +335,7 @@ The generation of the metrics for this log are as follows.
 First, we get the `HEAD` from the log message
 
 ~~~
-main,0,15,printMetadata,NR,number,0,none,no-kafka,SNE,1,complete-graph-4,1,1603605921
+none,0,15,printMetadata,NR,number,0,none,no-kafka,SNE,1,complete-graph-4,1,1603605921
 ~~~
 
 This gives us a `HEAD` value of `NR,number,0,none,no-kafka,SNE,1,complete-graph-4,1,1603605921`.
@@ -347,7 +347,7 @@ To save space, we use `HEAD` to mean `NR,number,0,none,no-kafka,SNE,1,complete-g
 The log message
 
 ~~~
-main,4,67,endSouffleProgram
+none,4,67,endSouffleProgram
 ~~~
 
 gives us the metric
@@ -359,7 +359,7 @@ HEAD,totalRuntime,67
 The log message 
 
 ~~~
-main,2,2875,downloadInput,12
+none,2,2875,downloadInput,12
 ~~~
 
 gives the metric
@@ -371,7 +371,7 @@ HEAD,inputSize,12
 and from 
 
 ~~~
-main,5,1223,uploadOutput,16
+none,5,1223,uploadOutput,16
 ~~~
 
 we obtain 
