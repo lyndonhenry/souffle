@@ -90,8 +90,16 @@ public class Main {
                         String topicName = parts[4];
                         BigDecimal payload = new BigDecimal(parts[5]);
                         topicNames.add(topicName);
-                        addValue(metrics, "stringBytesProduced", topicName, payload);
-                        addValue(metrics, "relationTermsProduced", topicName, BigDecimal.ONE);  // TODO ???
+
+                        // a bit stupid way to check the topicName is a number
+                        try {
+                            // only when topicName == stratumName
+                            addValue(metrics, "stringBytesProduced", Integer.parseInt(topicName) + "", payload);
+                        } catch (NumberFormatException e) {
+                            // only when topicName == stratumName
+                            addValue(metrics, "relationTermsProduced", topicName, payload);
+                        }
+
                         break;
                 }
 
@@ -107,10 +115,7 @@ public class Main {
                 BigDecimal communicationTime = metrics.getOrDefault(Pair.of("communicationTime", name), BigDecimal.ZERO);
                 BigDecimal runTime = metrics.getOrDefault(Pair.of("runTime", name), BigDecimal.ZERO);
 
-                // computationTime - ADD (runTime-communicationTime)
                 Pair<String, String> computationTimeKey = Pair.of("computationTime", name);
-                BigDecimal computationTime = runTime.subtract(communicationTime);
-                metrics.compute(computationTimeKey, (k, v) -> (v == null) ? computationTime : v.add(computationTime));
 
                 // totalCommunicationTime - ADD current communicationTime
                 addValue(metrics, "totalCommunicationTime", emptyKey, communicationTime);
