@@ -261,9 +261,9 @@ function _ensure_souffle_on_kafka_is_built_for_rust() {
 }
 
 function  _ensure_java_is_installed() {
-  sudo apt install -y \ 
+  sudo apt-get install -y \
     default-jdk \
-    maven 
+    maven
 }
 
 function _build_logparser() {
