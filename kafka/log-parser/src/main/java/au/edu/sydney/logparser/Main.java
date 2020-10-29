@@ -13,10 +13,11 @@ import java.util.*;
 public class Main {
 
     private static Logger logger = LoggerFactory.getLogger(Main.class);
-    private static final String METRICS_FILE = "metrics.csv";
+    private static String METRICS_FILE = "metrics.csv";
 
     public static void main(String[] args) throws IOException {
 	    final String path = args[0];
+	    if (args.length > 1) METRICS_FILE = args[1];
 
         FileUtils.deleteQuietly(new File(METRICS_FILE));
 
@@ -24,10 +25,10 @@ public class Main {
         final File[] logFiles = new File(path).listFiles((file, s) -> s.endsWith(".log"));
         Arrays.stream(logFiles).forEach(Main::parseFile);
 
-        logger.info("DONE");
+        logger.info("DONE results stored in {}", METRICS_FILE);
 
         // print metrics at the end
-        FileUtils.readLines(new File(METRICS_FILE), Charset.defaultCharset()).forEach(System.out::println);
+//        FileUtils.readLines(new File(METRICS_FILE), Charset.defaultCharset()).forEach(System.out::println);
     }
 
     private static void parseFile(File file) {

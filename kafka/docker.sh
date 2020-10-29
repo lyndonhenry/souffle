@@ -266,6 +266,10 @@ function  _ensure_java_is_installed() {
     maven 
 }
 
+function _build_logparser() {
+  mvn clean install -f kafka/log-parser/pom.xml 
+}
+
 #
 # The build command itself.
 # This installs the Souffle on Kafka system.
@@ -281,6 +285,7 @@ function _build() {
   _ensure_rust_is_installed
   _ensure_souffle_on_kafka_is_built_for_rust
   _ensure_java_is_installed
+  _build_logparser
 }
 
 #
