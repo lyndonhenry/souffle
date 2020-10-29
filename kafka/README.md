@@ -287,10 +287,9 @@ For the `BODY`...
 - `communicationTime,<stratum-index>,<runtime>`
     - Per stratum sum of the `<timestamp>` fields for each `beginClient`, `endProduction`, `endConsumption`, `endProduce`, `endConsume`, `endPollProducer`, `endPollConsumer` log messages.
 - `computationTime,<stratum-index>,<runtime>`
-    - Per stratum value of the `<timestamp>` field of `endSouffleProgram`.
-    - Per stratum `runTime` metric minus `communicationTime` metric.
+    - Per stratum value of `runTime`, minus the sum of the `<timestamp>` fields of all messages from `beginClient` to `endClient` inclusive.
 - `runTime,<stratum-index>,<runtime>`
-    - Per stratum sum of the `<timestamp>` fields of all messages from `beginClient` to `endClient` inclusive.
+    - Per stratum value of the `<timestamp>` field of `endSouffleProgram`.
 - `totalCommunicationTime,<runtime>`
     - Sum of `communicationTime` over all strata.
 - `totalComputationTime,<runtime>`
