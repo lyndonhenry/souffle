@@ -322,14 +322,18 @@ mod datalog {
             Self::decl_of_arity_two_statement("RSG", datatype),
             Self::benchmark_rsg_rules_statement(edb_relation, "RSG"),
 
+            /*
             Self::decl_of_arity_three_statement("TC", datatype),
             Self::benchmark_tc_rules_statement(edb_relation, "TC"),
+             */
 
             Self::decl_of_arity_two_statement("SCC", datatype),
             Self::benchmark_scc_rules_statement(edb_relation, "SCC"),
 
+            /*
             Self::decl_of_arity_three_statement("MN", datatype),
             Self::benchmark_mn_rules_statement(edb_relation, "MN"),
+            */
 
             format!(
               "{i}(a,a):-LR(a,a),RR(a,a),NR(a,a),SG(a,a),RSG(a,a),TC(a,a,a),SCC(a,a),MN(a,a,a).",
