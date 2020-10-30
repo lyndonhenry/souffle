@@ -34,11 +34,8 @@ public class Main {
     private static void parseFile(File file) {
         logger.info("Analysing {}", file);
 
-//        final Table<String, String, BigDecimal> metrics = HashBasedTable.create();
         // The Key is [metrics-event,strata-name], value is either a timestamp or a counter
         final Map<Pair<String, String>, BigDecimal> metrics = new HashMap<>();
-        // indicator which stratas are under processing.
-        final Map<String, Boolean> runningStrata = new HashMap<>();
         final String emptyKey = "<EMPTY>";
         final Set<String> strataNames = new HashSet<>();
         final Set<String> topicNames = new HashSet<>();
@@ -49,7 +46,7 @@ public class Main {
             for (String line: lines) {
                 String[] parts = line.split(",");
 
-                String stratumName = parts[0];     // TODO - is stratumNme and stratumIndex the same?
+                String stratumName = convertNegativeToNone(parts[0]);
                 String messageIndex = parts[1];
                 BigDecimal value = new BigDecimal(parts[2]);
                 String messageType = parts[3];
@@ -64,7 +61,6 @@ public class Main {
                         // Communication Time calculation
                         // Compute as SUM of all timestamps for following messages
                     case "beginClient" :
-                        runningStrata.put(stratumName, true);
                     case "endProduction" :
                     case "endConsumption" :
                     case "endProduce" :
@@ -73,13 +69,10 @@ public class Main {
                     case "endPollConsumer" :
                         addValue(metrics, "communicationTime", stratumName, value);
                         break;
-                        // Runtime - all messages between beginClient and endClient
                     case "endSouffleProgram" :
-                        addValue(metrics, "computationTime", stratumName, value);
+                        addValue(metrics, "runTime", stratumName, value);
                         break;
                     case "endClient" :
-                        addValue(metrics, "runTime", stratumName, value); // last inclusive runTime
-                        runningStrata.put(stratumName, false);
                         break;
                     case "downloadInput" :
                         addValue(metrics, "inputSize", emptyKey, value);
@@ -88,14 +81,18 @@ public class Main {
                         addValue(metrics, "outputSize", emptyKey, value);
                         break;
                     case "beginProduce" :
-                        String topicName = parts[4];
+                        String topicName = convertNegativeToNone(parts[4]);
                         BigDecimal payload = new BigDecimal(parts[5]);
                         topicNames.add(topicName);
 
                         // a bit stupid way to check the topicName is a number
                         try {
                             // only when topicName == stratumName
-                            addValue(metrics, "stringBytesProduced", Integer.parseInt(topicName) + "", payload);
+                            if ("none".equals(topicName)) {
+                                addValue(metrics, "stringBytesProduced", topicName, payload);
+                            } else {
+                                addValue(metrics, "stringBytesProduced", Integer.parseInt(topicName) + "", payload);
+                            }
                         } catch (NumberFormatException e) {
                             // only when topicName == stratumName
                             addValue(metrics, "relationTermsProduced", topicName, payload);
@@ -103,12 +100,6 @@ public class Main {
 
                         break;
                 }
-
-                // if this strata is running, add timestamp
-                if (runningStrata.getOrDefault(stratumName, false)) {
-                    addValue(metrics, "runTime", stratumName, value);
-                }
-
             }
 
             // Post computations for all strata names
@@ -116,11 +107,11 @@ public class Main {
                 BigDecimal communicationTime = metrics.getOrDefault(Pair.of("communicationTime", name), BigDecimal.ZERO);
                 BigDecimal runTime = metrics.getOrDefault(Pair.of("runTime", name), BigDecimal.ZERO);
 
-                Pair<String, String> computationTimeKey = Pair.of("computationTime", name);
-
+                addValue(metrics, "computationTime", name, runTime.subtract(communicationTime));
                 // totalCommunicationTime - ADD current communicationTime
                 addValue(metrics, "totalCommunicationTime", emptyKey, communicationTime);
                 // totalComputationTime - ADD current computationTime
+                Pair<String, String> computationTimeKey = Pair.of("computationTime", name);
                 addValue(metrics, "totalComputationTime", emptyKey, metrics.getOrDefault(computationTimeKey, BigDecimal.ZERO));
                 // totalRunTime
                 addValue(metrics, "totalRunTime", emptyKey, runTime);
@@ -163,6 +154,20 @@ public class Main {
 
         Pair<String, String> key = Pair.of(event, stratumName);
         metrics.compute(key, (k, v) -> (v == null) ? value : v.add(value));
+    }
+
+    private static String convertNegativeToNone(String stratumName) {
+        String res = stratumName;
+        try {
+            int n = Integer.parseInt(stratumName);
+            if (n < 0) {
+                res = "none";
+            }
+        } catch (NumberFormatException e) {
+            res = stratumName;  // stratum name
+        }
+
+        return res;
     }
 
 }
