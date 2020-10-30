@@ -336,7 +336,8 @@ mod datalog {
             */
 
             format!(
-              "{i}(a,a):-LR(a,a),RR(a,a),NR(a,a),SG(a,a),RSG(a,a),TC(a,a,a),SCC(a,a),MN(a,a,a).",
+              // "{i}(a,a):-LR(a,a),RR(a,a),NR(a,a),SG(a,a),RSG(a,a),TC(a,a,a),SCC(a,a),MN(a,a,a).",
+              "{i}(a,a):-LR(a,a),RR(a,a),NR(a,a),SG(a,a),RSG(a,a),SCC(a,a).",
               i=idb_relation
             )
 
