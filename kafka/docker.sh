@@ -516,7 +516,8 @@ function _broker_end() {
   EXE="./exe"
   INPUT="./input"
   OUTPUT="./output"
-  aws s3 cp --recursive "${OUTPUT}" "${S3_OUTPUT}/${ID}"
+  # @TODO (lh): the output is not uploaded to the s3 bucket, to save space, time, and money
+  #aws s3 cp --recursive "${OUTPUT}" "${S3_OUTPUT}/${ID}"
   _kafka_produce_log_message "${KAFKA_HOST}" "uploadOutput"
   _kafka_produce_log_message "${KAFKA_HOST}" "endBashScript"
   local LOG_FILE="$(basename ${S3_EXE})_$(basename ${S3_INPUT})_${THREADS}_${ID}.log"

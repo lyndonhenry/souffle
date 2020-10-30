@@ -81,7 +81,8 @@ function _generate_first_round_of_experiments() {
   local JOINS
   local SUBDIR
 
-  DATASETS="complete-graph"
+  # @TODO (lh): this has been changed, it used to be complete-graph, need to ensure half-complete graph is ok
+  DATASETS="half-complete-graph"
   BENCHMARKS="NR"
   TYPES="number symbol"
 
