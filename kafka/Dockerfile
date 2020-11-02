@@ -5,7 +5,7 @@ ENV TZ="America/New_York"
 
 WORKDIR /tmp
 
-RUN apt-get update -y && apt-get upgrade -y && apt-get install -y git sudo curl tmux tzdata zip
+RUN apt-get update -y && apt-get upgrade -y && apt-get install -y git sudo curl tmux tzdata zip vim
 
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 RUN unzip awscliv2.zip
