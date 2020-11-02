@@ -93,7 +93,7 @@ function _generate_first_round_of_experiments() {
 
   local COUNT
 
-  COUNT=7
+  COUNT=16
 
   # Experiments without kafka
 

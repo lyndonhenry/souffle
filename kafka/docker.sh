@@ -247,7 +247,7 @@ function _ensure_ubuntu_package_cache_is_clear() {
 function _ensure_souffle_is_built_for_kafka() {
   make clean || :
   ./bootstrap
-  ./configure --enable-kafka --disable-libz --disable-sqlite
+  ./configure --enable-kafka --disable-libz --disable-sqlite --enable-64bit-domain
   make -j"$(_get_make_jobs)"
 }
 
