@@ -45,6 +45,13 @@ function _run_experiment() {
     sudo docker stack rm ${STACK_NAME}
     # sync the log file
     aws s3 sync "s3://souffle-on-kafka/output/log" "${ROOT}/output/log" || :
+    # give bucket owner output and log file access
+    local LOG_FILES="$(aws s3 ls s3://souffle-on-kafka/output/log --recursive | awk '{print $4}')"
+    local LOG_FILE
+    for LOG_FILE in ${LOG_FILES}
+    do
+      aws s3api put-object-acl --bucket souffle-on-kafka --key ${LOG_FILE} --acl bucket-owner-full-control || :
+    done
   fi
 }
 
