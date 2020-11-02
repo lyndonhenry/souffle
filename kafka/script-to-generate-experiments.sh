@@ -220,7 +220,7 @@ function _generate_second_round_of_experiments() {
 
   BENCHMARKS="ALL"
   TYPES="number symbol"
-  THREADS="8"
+  THREADS="6"
   SPLITS="0"
   JOINS="none"
 
