@@ -37,6 +37,7 @@ function _run_experiment() {
       sleep 5s
       if [ "${COUNT}" -ge "${MAX_COUNT}" ]
       then
+        echo "ERROR: THE EXPERIMENT HAS REACHED THE TIMEOUT!"
         break
       fi
       ((COUNT++))
