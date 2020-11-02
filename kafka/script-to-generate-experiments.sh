@@ -89,7 +89,7 @@ function _generate_first_round_of_experiments() {
   THREADS="1 2 4 8 16 32"
   SPLITS="0"
   JOINS="none"
-  SUBDIR="no-cloud"
+  SUBDIR="first/no-cloud"
 
   local COUNT
 
@@ -135,7 +135,7 @@ function _generate_first_round_of_experiments() {
   THREADS="1"
   SPLITS="1 2 4 8 16 32"
   JOINS="complete left balanced"
-  SUBDIR="yes-cloud"
+  SUBDIR="first/yes-cloud"
 
   COUNT=7
 
@@ -224,7 +224,7 @@ function _generate_second_round_of_experiments() {
   SPLITS="0"
   JOINS="none"
 
-  SUBDIR="no-cloud"
+  SUBDIR="second/no-cloud"
 
   # Experiments without kafka
   local BENCHMARK
