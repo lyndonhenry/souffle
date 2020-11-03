@@ -62,6 +62,7 @@ protected:
     }
 
     void writeNextTuple(const RamDomain* tuple) override {
+        (void) tuple;
         assert(false);
     }
     void writeSize(std::size_t size) override {
