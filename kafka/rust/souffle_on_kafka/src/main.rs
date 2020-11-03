@@ -718,6 +718,7 @@ impl Helper {
     if (!v_file.exists()) || (!e_file.exists()) || (!g_file.exists()) {
       println!("{}: Reading...", &info.name);
       std::fs::create_dir_all(&input_dir)?;
+        /*
       {
         println!("{}: Processing...", &info.name);
         let (g, v, e) = { let g = GraphStatistics::new(&graph); (format!("{:?}", g), g.vertices, g.edges) };
@@ -733,6 +734,7 @@ impl Helper {
         if v != info.vertices { println!("{}: Warning for vertices; actual was {} but expected {}...", &info.name, v, info.vertices); }
         if e != info.edges { println!("{}: Warning for edges; actual was {} but expected {}...", &info.name, e, info.edges); }
       }
+      */
       println!("{}: Writing...", &info.name);
       graph.write_graph_as_facts(&input_dir)?;
     }
