@@ -869,25 +869,25 @@ fn make_datasets() -> Result<()> {
     InfoStruct { name: "x-soc-friendster".to_string(), location: "?".to_string(), vertices: 117751379, edges: 2586147869, directed: true, format: InfoFormat::XSocFriendster, },
     InfoStruct { name: "x-web-yahoo".to_string(), location: "?".to_string(), vertices: 1413511393, edges: 0, directed: true, format: InfoFormat::XWebYahoo, }
   ];
-  for i in 1u32..22 {
+  for i in 1u64..22 {
     datasets.push(
       InfoStruct {
-        name: format!("half-complete-graph-{}", 2u32.pow(i)).to_string(),
+        name: format!("half-complete-graph-{}", 2u64.pow(i)).to_string(),
         location: "none".to_string(),
-        vertices: 2u32.pow(i) as usize,
-        edges: ((2u32.pow(i) * (2u32.pow(i) - 1)) / 2) as usize,
+        vertices: 2u64.pow(i) as usize,
+        edges: ((2u64.pow(i) * (2u64.pow(i) - 1)) / 2) as usize,
         directed: true,
         format: InfoFormat::Synthetic,
       },
     )
   }
-  for i in 1u32..13 {
+  for i in 1u64..13 {
       datasets.push(
           InfoStruct {
-            name: format!("complete-graph-{}", 2u32.pow(i)).to_string(),
+            name: format!("complete-graph-{}", 2u64.pow(i)).to_string(),
             location: "none".to_string(),
-            vertices: 2u32.pow(i) as usize,
-            edges: (2u32.pow(i) * (2u32.pow(i) - 1)) as usize,
+            vertices: 2u64.pow(i) as usize,
+            edges: (2u64.pow(i) * (2u64.pow(i) - 1)) as usize,
             directed: true,
             format: InfoFormat::Synthetic,
           },
