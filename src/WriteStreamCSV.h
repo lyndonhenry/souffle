@@ -40,15 +40,15 @@ protected:
     }
 };
 
+/*
+ * @@@TODO (lh): this has been modified to output the size of a relation and not its contents, this breaks things
+ */
 class WriteFileCSV : public WriteStreamCSV, public WriteStream {
 public:
     WriteFileCSV(const std::vector<bool>& symbolMask, const SymbolTable& symbolTable,
             const IODirectives& ioDirectives, const size_t auxiliaryArity = 0)
-            : WriteStream(symbolMask, symbolTable, auxiliaryArity), delimiter(getDelimiter(ioDirectives)),
+            : WriteStream(symbolMask, symbolTable, auxiliaryArity, true), delimiter(getDelimiter(ioDirectives)),
               file(ioDirectives.getFileName(), (ioDirectives.get("append") == "true" ? std::ios::app : std::ios::out) | std::ios::binary) {
-        if (ioDirectives.has("headers") && ioDirectives.get("headers") == "true") {
-            file << ioDirectives.get("attributeNames") << std::endl;
-        }
     }
 
     ~WriteFileCSV() override = default;
@@ -58,24 +58,14 @@ protected:
     std::ofstream file;
 
     void writeNullary() override {
-        file << "()\n";
+        assert(false);
     }
 
     void writeNextTuple(const RamDomain* tuple) override {
-        if (symbolMask.at(0)) {
-            file << symbolTable.unsafeResolve(tuple[0]);
-        } else {
-            file << tuple[0];
-        }
-        for (size_t col = 1; col < arity; ++col) {
-            file << delimiter;
-            if (symbolMask.at(col)) {
-                file << symbolTable.unsafeResolve(tuple[col]);
-            } else {
-                file << tuple[col];
-            }
-        }
-        file << "\n";
+        assert(false);
+    }
+    void writeSize(std::size_t size) override {
+        file << size << "\n";
     }
 };
 

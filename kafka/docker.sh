@@ -456,7 +456,7 @@ function _kafka_produce_log_message() {
   ;;
   "uploadOutput")
   # note: this always assumes './output/I.csv'
-  local LINE_COUNT="$(wc "./output/I.csv" | awk '{print $1}')"
+  local LINE_COUNT="$(cat "./output/I.csv")"
   MESSAGE="uploadOutput,${LINE_COUNT}"
   ;;
   "printMetadata")
@@ -516,8 +516,7 @@ function _broker_end() {
   EXE="./exe"
   INPUT="./input"
   OUTPUT="./output"
-  # @TODO (lh): the output is not uploaded to the s3 bucket, to save space, time, and money
-  #aws s3 cp --recursive "${OUTPUT}" "${S3_OUTPUT}/${ID}"
+  aws s3 cp --recursive "${OUTPUT}" "${S3_OUTPUT}/${ID}"
   _kafka_produce_log_message "${KAFKA_HOST}" "uploadOutput"
   _kafka_produce_log_message "${KAFKA_HOST}" "endBashScript"
   local LOG_FILE="$(basename ${S3_EXE})_$(basename ${S3_INPUT})_${THREADS}_${ID}.log"
