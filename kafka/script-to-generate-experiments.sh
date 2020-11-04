@@ -93,7 +93,7 @@ function _generate_first_round_of_experiments() {
 
   local COUNT
 
-  COUNT=16
+  COUNT=9
 
   # Experiments without kafka
 
@@ -137,7 +137,7 @@ function _generate_first_round_of_experiments() {
   JOINS="complete left balanced"
   SUBDIR="first/yes-cloud"
 
-  COUNT=7
+  COUNT=9
 
   # Experiments with kafka
   for SPLIT in ${SPLITS}
