@@ -114,7 +114,7 @@ function _extend_docker_compose() {
   local S3_OUTPUT="${7}"
   local THREADS="${8}"
   local STRATUM_NAME="${9}"
-cat >> "${ID}_${FILE}" << EOF
+cat >> "${FILE}" << EOF
   souffle_${ID}_${STRATUM_NAME}:
     image: '${IMAGE_NAME}:latest'
     environment:
