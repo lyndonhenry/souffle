@@ -91,23 +91,33 @@ public:
         payload_.push_back(1);
     }
     void writeNextTuple(const RamDomain* tuple) override {
-        auto& metadata = kafka_.getMetadata();
-        const auto begin = metadata.getOrElse(clientId_, 0);
-        const auto end = symbolTable.size();
         // ensure a max message size of 1MB, note that this is untested for all execution configurations
-        const auto next_payload_bytes = ((payload_.size() + arity) * 64) / 8;
-        const auto next_string_bytes = (end - begin);
         const auto max_bytes = 1000000 ; // 1MB
-        if (next_payload_bytes > max_bytes || next_string_bytes > max_bytes) {
-            producePayload();
+        {
+            auto& metadata = kafka_.getMetadata();
+            const auto begin = metadata.getOrElse(clientId_, 0);
+            const auto end = symbolTable.size();
+            auto size_in_bytes = 0;
+            for (auto i = begin; i < end; ++i) {
+                const auto str = symbolTable.unsafeResolve(i);
+                const auto str_bytes = str.size() + sizeof(std::size_t);
+                if ((size_in_bytes + str_bytes) >= max_bytes) {
+                    producePayload();
+                    size_in_bytes = 0;
+                }
+                strings_.push_back(str);
+                size_in_bytes += str_bytes;
+            }
+            metadata.set(clientId_, end);
         }
-        strings_.reserve(end - begin);
-        for (auto i = begin; i < end; ++i) {
-            strings_.push_back(symbolTable.unsafeResolve(i));
-        }
-        metadata.set(clientId_, end);
-        for (std::size_t column = 0; column < arity; ++column) {
-            payload_.push_back(tuple[column]);
+        {
+            const auto next_payload_bytes = ((payload_.size() + arity) * sizeof(RamDomain));
+            if (next_payload_bytes >= max_bytes) {
+                producePayload();
+            }
+            for (std::size_t column = 0; column < arity; ++column) {
+                payload_.push_back(tuple[column]);
+            }
         }
     }
 };
