@@ -40,7 +40,7 @@ function _run_experiment() {
         echo "ERROR: THE EXPERIMENT HAS REACHED THE TIMEOUT!"
         break
       fi
-      ((COUNT++))
+      COUNT=$((COUNT+1))
     done
     # kill the docker stack
     sudo docker stack rm ${STACK_NAME}
