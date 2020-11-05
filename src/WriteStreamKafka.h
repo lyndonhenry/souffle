@@ -92,7 +92,8 @@ public:
     }
     void writeNextTuple(const RamDomain* tuple) override {
         // ensure a max message size of 1MB, note that this is untested for all execution configurations
-        const auto max_bytes = 1000000 ; // 1MB
+        // @@@TODO (lh): this has been reduced by a factor of 10
+        const auto max_bytes = 100000 ; // 1MB
         {
             auto& metadata = kafka_.getMetadata();
             const auto begin = metadata.getOrElse(clientId_, 0);
