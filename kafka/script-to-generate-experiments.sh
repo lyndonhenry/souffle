@@ -70,7 +70,7 @@ function _generate_first_round_of_experiments() {
   # The Souffle on Kafka experiments here may be run in the cloud.
   # The dataset used is the complete graph with weak scaling, starting at 2 ** 7 vertices.
   # The total number of docker-compose.yml files is
-  # (|THREADS| * |TYPES|) + (|SPLITS| * |TYPES| * |JOINS|)  = (7 * 2) + (7 * 2 * 4) = 70.
+  # (|THREADS| * |TYPES|) + (|SPLITS| * |TYPES| * |JOINS|)  = (7 * 2) + (7 * 2 * 4 * 2) = .
   #
 
   local DATASETS
@@ -136,7 +136,7 @@ function _generate_first_round_of_experiments() {
   SPLITS="1 2 4 8 16 32"
   JOINS="complete left balanced"
 
-  COUNT=9
+  COUNT=6
   SUBDIR="first/no-cloud"
 
   # Experiments with kafka
@@ -175,7 +175,7 @@ function _generate_first_round_of_experiments() {
     ((COUNT++))
   done
 
-  COUNT=9
+  COUNT=6
   SUBDIR="first/yes-cloud"
 
   # Experiments with kafka
@@ -238,28 +238,17 @@ function _generate_second_round_of_experiments() {
   local JOINS
   local SUBDIR
 
-  DATASETS+="cit-Patents "
-  DATASETS+="com-Orkut "
   DATASETS+="com-Youtube "
   DATASETS+="roadNet-CA "
   DATASETS+="roadNet-PA "
   DATASETS+="roadNet-TX "
-  DATASETS+="soc-LiveJournal1 "
   DATASETS+="soc-Epinions1 "
-  DATASETS+="soc-Pokec "
-  DATASETS+="web-BerkStan "
-  DATASETS+="web-Google "
   DATASETS+="web-NotreDame "
   DATASETS+="web-Stanford "
-  DATASETS+="wiki-Talk "
-  DATASETS+="wiki-topcats "
-  DATASETS+="prog-jenkins "
-  DATASETS+="prog-jython "
-  DATASETS+="prog-openjdk8 "
 
   BENCHMARKS="ALL"
   TYPES="number symbol"
-  THREADS="6"
+  THREADS="8"
   SPLITS="0"
   JOINS="none"
 

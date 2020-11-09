@@ -706,6 +706,7 @@ public:
         log("beginClient");
     }
     void endClient() {
+        log("endClient");
         endLog();
         detail::KafkaHelper::pollProducerUntilEmpty(producer_);
         delete producer_;
@@ -718,7 +719,6 @@ public:
                 deleteTopic(topicName);
             }
         }
-        log("endClient");
     }
     bool hasProductionBegun(const String& topicName) const {
         const auto result = producerTopics_.find(topicName) != producerTopics_.end();
