@@ -227,7 +227,7 @@ function _generate_second_round_of_experiments() {
   # Only the ALL benchmark is used, containing all other benchmarks.
   # Eight threads is used, with no splits or joins.
   # The total number of docker-compose.yml files is
-  # (|DATASETS| * |TYPES|) * 2  = (18 * 2) * 2 = 72
+  # (|DATASETS| * |TYPES|) * 2  = (23 * 2) * 2 = 92
   #
 
   local DATASETS
@@ -247,7 +247,6 @@ function _generate_second_round_of_experiments() {
   DATASETS+="ego-Twitter"
   DATASETS+="email-Enron"
   DATASETS+="email-EuAll"
-  DATASETS+="half-complete-graph-512"
   DATASETS+="loc-Brightkite"
   DATASETS+="loc-Gowalla"
   DATASETS+="roadNet-CA"
