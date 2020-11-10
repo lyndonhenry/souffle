@@ -44,6 +44,13 @@ function _run_experiment() {
     done
     # kill the docker stack
     sudo docker stack rm ${STACK_NAME}
+
+   sudo docker stop $(sudo docker ps -a -q) || :
+   sudo docker rm $(sudo docker ps -a -q) || :
+   sudo docker rmi $(sudo docker images -q -a) || :
+   sudo docker volume rm $(docker volume ls -qf dangling=true)
+   sudo docker system prune -a -f
+
     # sync the log file
     aws s3 sync "s3://souffle-on-kafka/output/log" "${ROOT}/output/log" || :
     # give bucket owner output and log file access
