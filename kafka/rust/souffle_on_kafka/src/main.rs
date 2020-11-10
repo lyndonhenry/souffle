@@ -716,7 +716,7 @@ impl Helper {
     if (!v_file.exists()) || (!e_file.exists()) || (!g_file.exists()) {
       println!("{}: Reading...", &info.name);
       std::fs::create_dir_all(&input_dir)?;
-        /*
+
       {
         println!("{}: Processing...", &info.name);
         let (g, v, e) = { let g = GraphStatistics::new(&graph); (format!("{:?}", g), g.vertices, g.edges) };
@@ -732,7 +732,7 @@ impl Helper {
         if v != info.vertices { println!("{}: Warning for vertices; actual was {} but expected {}...", &info.name, v, info.vertices); }
         if e != info.edges { println!("{}: Warning for edges; actual was {} but expected {}...", &info.name, e, info.edges); }
       }
-      */
+
       println!("{}: Writing...", &info.name);
       graph.write_graph_as_facts(&input_dir)?;
     }
@@ -847,29 +847,46 @@ impl Helper {
 fn make_datasets() -> Result<()> {
   test().expect("ERROR!");
   let mut datasets = vec![
-    InfoStruct { name: "cit-Patents".to_string(), location: "https://snap.stanford.edu/data/cit-Patents.txt.gz".to_string(), vertices: 3774768, edges: 16518948, directed: true, format: InfoFormat::Snap, },
-    InfoStruct { name: "com-Orkut".to_string(), location: "https://snap.stanford.edu/data/bigraphata/communities/com-orkut.ungraph.txt.gz".to_string(), vertices: 3072441, edges: 117185083, directed: false, format: InfoFormat::Snap, },
-    InfoStruct { name: "com-Youtube".to_string(), location: "https://snap.stanford.edu/data/bigraphata/communities/com-youtube.ungraph.txt.gz".to_string(), vertices: 1134890, edges: 2987624, directed: false, format: InfoFormat::Snap, },
+    // InfoStruct { name: "cit-Patents".to_string(), location: "https://snap.stanford.edu/data/cit-Patents.txt.gz".to_string(), vertices: 3774768, edges: 16518948, directed: true, format: InfoFormat::Snap, },
+    // InfoStruct { name: "com-Orkut".to_string(), location: "https://snap.stanford.edu/data/bigraphata/communities/com-orkut.ungraph.txt.gz".to_string(), vertices: 3072441, edges: 117185083, directed: false, format: InfoFormat::Snap, },
+    // InfoStruct { name: "prog-jenkins".to_string(), location: "archive/prog-jenkins.csv".to_string(), vertices: 3600863, edges: 59821383, directed: true, format: InfoFormat::XProg, },
+    // InfoStruct { name: "prog-jython".to_string(), location: "archive/prog-jython.csv".to_string(), vertices: 956295, edges: 26716793, directed: true, format: InfoFormat::XProg, },
+    // InfoStruct { name: "prog-openjdk8".to_string(), location: "archive/prog-openjdk8.csv".to_string(), vertices: 1789555, edges: 12387187, directed: true, format: InfoFormat::XProg, },
+    // InfoStruct { name: "soc-LiveJournal1".to_string(), location: "https://snap.stanford.edu/data/soc-LiveJournal1.txt.gz".to_string(), vertices: 4847571, edges: 68993773, directed: true, format: InfoFormat::Snap, },
+    // InfoStruct { name: "soc-Pokec".to_string(), location: "https://snap.stanford.edu/data/soc-pokec-relationships.txt.gz".to_string(), vertices: 1632803, edges: 30622564, directed: true, format: InfoFormat::Snap, },
+    // InfoStruct { name: "web-BerkStan".to_string(), location: "https://snap.stanford.edu/data/web-BerkStan.txt.gz".to_string(), vertices: 685230, edges: 7600595, directed: true, format: InfoFormat::Snap, },
+    // InfoStruct { name: "web-Google".to_string(), location: "https://snap.stanford.edu/data/web-Google.txt.gz".to_string(), vertices: 875713, edges:  5105039, directed: true, format: InfoFormat::Snap, },
+    // InfoStruct { name: "wiki-topcats".to_string(), location: "https://snap.stanford.edu/data/wiki-topcats.txt.gz".to_string(), vertices: 1791489, edges: 28511807, directed: false, format: InfoFormat::Snap, },
+    // InfoStruct { name: "x-soc-friendster".to_string(), location: "?".to_string(), vertices: 117751379, edges: 2586147869, directed: true, format: InfoFormat::XSocFriendster, },
+    // InfoStruct { name: "x-web-yahoo".to_string(), location: "?".to_string(), vertices: 1413511393, edges: 0, directed: true, format: InfoFormat::XWebYahoo, }
+    InfoStruct { name: "cit-HepPh".to_string(), location: "https://snap.stanford.edu/data/cit-HepPh.txt.gz".to_string(), vertices: 34546, edges: 321578, directed: true, format: InfoFormat::Snap, },
+    InfoStruct { name: "cit-HepTh".to_string(), location: "https://snap.stanford.edu/data/cit-HepTh.txt.gz".to_string(), vertices: 27770, edges: 352807, directed: true, format: InfoFormat::Snap, },
+    InfoStruct { name: "com-Amazon".to_string(), location: "https://snap.stanford.edu/data/bigdata/communities/com-amazon.ungraph.txt.gz".to_string(), vertices: 334863, edges: 925872, directed: false, format: InfoFormat::Snap, },
+    InfoStruct { name: "com-DBLP".to_string(), location: "https://snap.stanford.edu/data/bigdata/communities/com-dblp.ungraph.txt.gz".to_string(), vertices: 317080, edges: 1049866, directed: false, format: InfoFormat::Snap, },
+    InfoStruct { name: "com-Youtube".to_string(), location: "https://snap.stanford.edu/data/bigdata/communities/com-youtube.ungraph.txt.gz".to_string(), vertices: 1134890, edges: 2987624, directed: false, format: InfoFormat::Snap, },
+    InfoStruct { name: "ego-Facebook".to_string(), location: "https://snap.stanford.edu/data/facebook_combined.txt.gz".to_string(), vertices: 4039, edges: 88234, directed: false, format: InfoFormat::Snap, },
+    InfoStruct { name: "ego-Twitter".to_string(), location: "https://snap.stanford.edu/data/twitter_combined.txt.gz".to_string(), vertices: 81306, edges: 1768149, directed: true, format: InfoFormat::Snap, },
+    InfoStruct { name: "email-Enron".to_string(), location: "https://snap.stanford.edu/data/email-Enron.txt.gz".to_string(), vertices: 36692, edges: 183831, directed: false, format: InfoFormat::Snap, },
+    InfoStruct { name: "email-EuAll".to_string(), location: "https://snap.stanford.edu/data/email-EuAll.txt.gz".to_string(), vertices: 265214, edges: 420045, directed: true, format: InfoFormat::Snap, },
+    InfoStruct { name: "example".to_string(), location: "archive/example/E.facts".to_string(), vertices: 8, edges: 8, directed: true, format: InfoFormat::XProg, },
+    InfoStruct { name: "loc-Brightkite".to_string(), location: "https://snap.stanford.edu/data/loc-brightkite_edges.txt.gz".to_string(), vertices: 58228, edges: 214078, directed: true, format: InfoFormat::Snap, },
+    InfoStruct { name: "loc-Gowalla".to_string(), location: "https://snap.stanford.edu/data/loc-gowalla_edges.txt.gz".to_string(), vertices: 196591, edges: 950327, directed: true, format: InfoFormat::Snap, },
     InfoStruct { name: "roadNet-CA".to_string(), location: "https://snap.stanford.edu/data/roadNet-CA.txt.gz".to_string(), vertices: 1965206, edges: 2766607 * 2, directed: false, format: InfoFormat::Snap, },
     InfoStruct { name: "roadNet-PA".to_string(), location: "https://snap.stanford.edu/data/roadNet-PA.txt.gz".to_string(), vertices: 1088092, edges: 1541898 * 2, directed: false, format: InfoFormat::Snap, },
     InfoStruct { name: "roadNet-TX".to_string(), location: "https://snap.stanford.edu/data/roadNet-TX.txt.gz".to_string(), vertices: 1379917, edges: 1921660 * 2, directed: false, format: InfoFormat::Snap, },
-    InfoStruct { name: "soc-LiveJournal1".to_string(), location: "https://snap.stanford.edu/data/soc-LiveJournal1.txt.gz".to_string(), vertices: 4847571, edges: 68993773, directed: true, format: InfoFormat::Snap, },
     InfoStruct { name: "soc-Epinions1".to_string(), location: "https://snap.stanford.edu/data/soc-Epinions1.txt.gz".to_string(), vertices: 75879, edges: 508837, directed: true, format: InfoFormat::Snap, },
-    InfoStruct { name: "soc-Pokec".to_string(), location: "https://snap.stanford.edu/data/soc-pokec-relationships.txt.gz".to_string(), vertices: 1632803, edges: 30622564, directed: true, format: InfoFormat::Snap, },
-    InfoStruct { name: "web-BerkStan".to_string(), location: "https://snap.stanford.edu/data/web-BerkStan.txt.gz".to_string(), vertices: 685230, edges: 7600595, directed: true, format: InfoFormat::Snap, },
-    InfoStruct { name: "web-Google".to_string(), location: "https://snap.stanford.edu/data/web-Google.txt.gz".to_string(), vertices: 875713, edges:  5105039, directed: true, format: InfoFormat::Snap, },
+    InfoStruct { name: "soc-Slashdot0811".to_string(), location: "https://snap.stanford.edu/data/soc-Slashdot0811.txt.gz".to_string(), vertices: 77360, edges: 905468, directed: true, format: InfoFormat::Snap, },
+    InfoStruct { name: "soc-Slashdot0902".to_string(), location: "https://snap.stanford.edu/data/soc-Slashdot0902.txt.gz".to_string(), vertices: 82168, edges: 948464, directed: true, format: InfoFormat::Snap, },
+    InfoStruct { name: "sx-askubuntu".to_string(), location: "https://snap.stanford.edu/data/sx-askubuntu.txt.gz".to_string(), vertices: 159316, edges: 964437, directed: true, format: InfoFormat::Snap, },
+    InfoStruct { name: "sx-mathoverflow".to_string(), location: "https://snap.stanford.edu/data/sx-mathoverflow.txt.gz".to_string(), vertices: 24818, edges: 506550, directed: true, format: InfoFormat::Snap, },
+    InfoStruct { name: "sx-superuser".to_string(), location: "https://snap.stanford.edu/data/sx-superuser.txt.gz".to_string(), vertices: 194085, edges: 1443339, directed: true, format: InfoFormat::Snap, },
     InfoStruct { name: "web-NotreDame".to_string(), location: "https://snap.stanford.edu/data/web-NotreDame.txt.gz".to_string(), vertices: 325729, edges: 1497134, directed: true, format: InfoFormat::Snap, },
     InfoStruct { name: "web-Stanford".to_string(), location: "https://snap.stanford.edu/data/web-Stanford.txt.gz".to_string(), vertices: 281903, edges: 2312497, directed: true, format: InfoFormat::Snap, },
+    InfoStruct { name: "web-flickr".to_string(), location: "https://snap.stanford.edu/data/flickrEdges.txt.gz".to_string(), vertices: 105838, edges: 2316948, directed: true, format: InfoFormat::Snap, },
     InfoStruct { name: "wiki-Talk".to_string(), location: "https://snap.stanford.edu/data/wiki-Talk.txt.gz".to_string(), vertices: 2394385, edges: 5021410, directed: true, format: InfoFormat::Snap, },
-    InfoStruct { name: "wiki-topcats".to_string(), location: "https://snap.stanford.edu/data/wiki-topcats.txt.gz".to_string(), vertices: 1791489, edges: 28511807, directed: false, format: InfoFormat::Snap, },
-    InfoStruct { name: "prog-jenkins".to_string(), location: "archive/prog-jenkins.csv".to_string(), vertices: 3600863, edges: 59821383, directed: true, format: InfoFormat::XProg, },
-    InfoStruct { name: "prog-jython".to_string(), location: "archive/prog-jython.csv".to_string(), vertices: 956295, edges: 26716793, directed: true, format: InfoFormat::XProg, },
-    InfoStruct { name: "prog-openjdk8".to_string(), location: "archive/prog-openjdk8.csv".to_string(), vertices: 1789555, edges: 12387187, directed: true, format: InfoFormat::XProg, },
-    InfoStruct { name: "example".to_string(), location: "archive/example/E.facts".to_string(), vertices: 8, edges: 8, directed: true, format: InfoFormat::XProg, },
-    InfoStruct { name: "x-soc-friendster".to_string(), location: "?".to_string(), vertices: 117751379, edges: 2586147869, directed: true, format: InfoFormat::XSocFriendster, },
-    InfoStruct { name: "x-web-yahoo".to_string(), location: "?".to_string(), vertices: 1413511393, edges: 0, directed: true, format: InfoFormat::XWebYahoo, }
+    InfoStruct { name: "wiki-Vote".to_string(), location: "https://snap.stanford.edu/data/wiki-Vote.txt.gz".to_string(), vertices: 7115, edges: 103689, directed: true, format: InfoFormat::Snap, },
   ];
-  for i in 1u32..15 {
+  for i in 1u32..12 {
     datasets.push(
       InfoStruct {
         name: format!("half-complete-graph-{}", 2u64.pow(i)).to_string(),
