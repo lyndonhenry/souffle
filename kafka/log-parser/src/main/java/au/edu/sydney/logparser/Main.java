@@ -48,14 +48,14 @@ public class Main {
 
                 String stratumName = convertNegativeToNone(parts[0]);
                 String messageIndex = parts[1];
-                BigDecimal value = new BigDecimal(parts[2]);
+                BigDecimal timestamp = new BigDecimal(parts[2]);
                 String messageType = parts[3];
 
                 strataNames.add(stratumName);
 
                 switch (messageType) {
                     case "printMetadata" :
-                        head = line.substring(line.lastIndexOf("printMetadata,") + "printMetadata,".length(), line.length() - 1);
+                        head = line.substring(line.lastIndexOf("printMetadata,") + "printMetadata,".length());
                         break;
 
                         // Communication Time calculation
@@ -67,18 +67,24 @@ public class Main {
                     case "endConsume" :
                     case "endPollProducer" :
                     case "endPollConsumer" :
-                        addValue(metrics, "communicationTime", stratumName, value);
+                        addValue(metrics, "communicationTime", stratumName, timestamp);
                         break;
                     case "endSouffleProgram" :
-                        addValue(metrics, "runTime", stratumName, value);
+                        addValue(metrics, "runTime", stratumName, timestamp);
                         break;
                     case "endClient" :
                         break;
                     case "downloadInput" :
-                        addValue(metrics, "inputSize", emptyKey, value);
+                        if (parts.length == 5) {
+                            BigDecimal downloadCount = new BigDecimal(parts[4]);
+                            addValue(metrics, "inputSize", emptyKey, downloadCount);
+                        }
                         break;
                     case "uploadOutput" :
-                        addValue(metrics, "outputSize", emptyKey, value);
+                        if (parts.length == 5) {
+                            BigDecimal uploadCount = new BigDecimal(parts[4]);
+                            addValue(metrics, "outputSize", emptyKey, uploadCount);
+                        }
                         break;
                     case "beginProduce" :
                         String topicName = convertNegativeToNone(parts[4]);
@@ -107,7 +113,11 @@ public class Main {
                 BigDecimal communicationTime = metrics.getOrDefault(Pair.of("communicationTime", name), BigDecimal.ZERO);
                 BigDecimal runTime = metrics.getOrDefault(Pair.of("runTime", name), BigDecimal.ZERO);
 
-                addValue(metrics, "computationTime", name, runTime.subtract(communicationTime));
+                if (BigDecimal.ZERO.equals(runTime)) {
+                    addValue(metrics, "computationTime", name, BigDecimal.ZERO);
+                } else {
+                    addValue(metrics, "computationTime", name, runTime.subtract(communicationTime));
+                }
                 // totalCommunicationTime - ADD current communicationTime
                 addValue(metrics, "totalCommunicationTime", emptyKey, communicationTime);
                 // totalComputationTime - ADD current computationTime
