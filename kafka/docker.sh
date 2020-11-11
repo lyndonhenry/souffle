@@ -456,7 +456,7 @@ function _kafka_produce_log_message() {
   ;;
   "uploadOutput")
   # note: this always assumes './output/I.csv'
-  local LINE_COUNT="$(cat "./output/I.csv")"
+  local LINE_COUNT="$(cat "./output/I.csv" || :)"
   MESSAGE="uploadOutput,${LINE_COUNT}"
   ;;
   "printMetadata")

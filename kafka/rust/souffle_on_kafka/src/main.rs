@@ -304,23 +304,35 @@ mod datalog {
           vec![
             Self::decl_of_arity_two_statement(edb_relation, datatype),
             Self::input_statement(edb_relation),
+              /*
             Self::decl_of_arity_two_statement(idb_relation, datatype),
             Self::output_statement(idb_relation),
+               */
+
+              // @@@TODO (lh): HERE!!!
 
             Self::decl_of_arity_two_statement("LR", datatype),
             Self::benchmark_lr_rules_statement(edb_relation, "LR"),
+            Self::output_statement("LR"),
 
             Self::decl_of_arity_two_statement("RR", datatype),
             Self::benchmark_rr_rules_statement(edb_relation, "RR"),
+            Self::output_statement("RR"),
 
-            Self::decl_of_arity_two_statement("NR", datatype),
-            Self::benchmark_nr_rules_statement(edb_relation, "NR"),
+            /*
 
-            Self::decl_of_arity_two_statement("SG", datatype),
-            Self::benchmark_sg_rules_statement(edb_relation, "SG"),
+          Self::decl_of_arity_two_statement("NR", datatype),
+          Self::benchmark_nr_rules_statement(edb_relation, "NR"),
+          Self::output_statement("NR"),
 
-            Self::decl_of_arity_two_statement("RSG", datatype),
-            Self::benchmark_rsg_rules_statement(edb_relation, "RSG"),
+          Self::decl_of_arity_two_statement("SG", datatype),
+          Self::benchmark_sg_rules_statement(edb_relation, "SG"),
+          Self::output_statement("SG"),
+
+          Self::decl_of_arity_two_statement("RSG", datatype),
+          Self::benchmark_rsg_rules_statement(edb_relation, "RSG"),
+          Self::output_statement("RSG"),
+          */
 
             /*
             Self::decl_of_arity_three_statement("TC", datatype),
@@ -331,13 +343,13 @@ mod datalog {
 
             Self::decl_of_arity_three_statement("MN", datatype),
             Self::benchmark_mn_rules_statement(edb_relation, "MN"),
-            */
 
             format!(
               // "{i}(a,a):-LR(a,a),RR(a,a),NR(a,a),SG(a,a),RSG(a,a),TC(a,a,a),SCC(a,a),MN(a,a,a).",
               "{i}(a,a):-LR(a,a),RR(a,a),NR(a,a),SG(a,a),RSG(a,a).",
               i=idb_relation
             )
+             */
 
           ]
         }
