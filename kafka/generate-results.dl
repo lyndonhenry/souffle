@@ -1,199 +1,359 @@
 
 .decl MetricTypeA(
-    benchmark_program:symbol,
-    data_type:symbol,
-    split_size:number,
-    join_type:symbol,
-    kafka_mode:symbol,
-    evaluation_algorithm:symbol,
-    dataset_name:symbol,
-    thread_size:number,
-    unique_id:number,
-    metric_name:symbol,
-    metric_value:number
+benchmark_program:symbol,
+data_type:symbol,
+split_size:number,
+join_type:symbol,
+kafka_mode:symbol,
+evaluation_algorithm:symbol,
+undefined_todo:symbol,
+dataset_name:symbol,
+thread_size:number,
+unique_id:number,
+metric_name:symbol,
+metric_value:number
 )
 
-.input MetricTypeA
+.input MetricTypeA(delimiter=",")
 
 .decl MetricTypeB(
-    benchmark_program:symbol,
-    data_type:symbol,
-    split_size:number,
-    join_type:symbol,
-    kafka_mode:symbol,
-    evaluation_algorithm:symbol,
-    dataset_name:symbol,
-    thread_size:number,
-    unique_id:number,
-    metric_name:symbol,
-    metric_key:symbol,
-    metric_value:number
+benchmark_program:symbol,
+data_type:symbol,
+split_size:number,
+join_type:symbol,
+kafka_mode:symbol,
+evaluation_algorithm:symbol,
+undefined_todo:symbol,
+dataset_name:symbol,
+thread_size:number,
+unique_id:number,
+metric_name:symbol,
+metric_key:symbol,
+metric_value:number
 )
 
-.input MetricTypeB
+.input MetricTypeB(delimiter=",")
 
 .decl Prefix(
-    unique_id:number
-    benchmark_program:symbol,
-    data_type:symbol,
-    split_size:number,
-    join_type:symbol,
-    kafka_mode:symbol,
-    evaluation_algorithm:symbol,
-    dataset_name:symbol,
-    thread_size:number,
+unique_id:number,
+benchmark_program:symbol,
+data_type:symbol,
+split_size:number,
+join_type:symbol,
+kafka_mode:symbol,
+evaluation_algorithm:symbol,
+dataset_name:symbol,
+thread_size:number
 )
 
 Prefix(ui,bp,dt,ss,jt,km,ea,dn,ts) :-
-    MetricTypeA(bp,dt,ss,jt,km,ea,dn,ts,ui,_,_);
-    MetricTypeB(bp,dt,ss,jt,km,ea,dn,ts,ui,_,_,_).
+MetricTypeA(bp,dt,ss,jt,km,ea,_,dn,ts,ui,_,_);
+MetricTypeB(bp,dt,ss,jt,km,ea,_,dn,ts,ui,_,_,_).
 
-.decl SuffixTypeA(
-    unique_id:number,
-    metric_name:symbol,
-    metric_value:number
+.decl BenchmarkProgram(
+unique_id:number,
+benchmark_program:symbol
 )
 
-SuffixTypeA(ui,mn,mk,mv) :-
-    MetricTypeA(_,_,_,_,_,_,_,_,ui,mn,mv).
+BenchmarkProgram(ui,bp) :-
+Prefix(ui,bp,_,_,_,_,_,_,_).
+
+.decl DataType(
+unique_id:number,
+data_type:symbol
+)
+
+DataType(ui,dt) :-
+Prefix(ui,_,dt,_,_,_,_,_,_).
+
+.decl SplitSize(
+unique_id:number,
+split_size:number
+)
+
+SplitSize(ui,ss) :-
+Prefix(ui,_,_,ss,_,_,_,_,_).
+
+.decl JoinType(
+unique_id:number,
+join_type:symbol
+)
+
+JoinType(ui,jt) :-
+Prefix(ui,_,_,_,jt,_,_,_,_).
+
+.decl KafkaMode(
+unique_id:number,
+kafka_mode:symbol
+)
+
+KafkaMode(ui,km) :-
+Prefix(ui,_,_,_,_,km,_,_,_).
+
+.decl EvaluationAlgorithm(
+unique_id:number,
+evaluation_algorithm:symbol
+)
+
+EvaluationAlgorithm(ui,ea) :-
+Prefix(ui,_,_,_,_,_,ea,_,_).
+
+.decl DatasetName(
+unique_id:number,
+dataset_name:symbol
+)
+
+DatasetName(ui,dn) :-
+Prefix(ui,_,_,_,_,_,_,dn,_).
+
+.decl ThreadSize(
+unique_id:number,
+thread_size:number
+)
+
+ThreadSize(ui,ts) :-
+Prefix(ui,_,_,_,_,_,_,_,ts).
+
+.decl SuffixTypeA(
+unique_id:number,
+metric_name:symbol,
+metric_value:number
+)
+
+SuffixTypeA(ui,mn,mv) :-
+MetricTypeA(_,_,_,_,_,_,_,_,_,ui,mn,mv).
 
 .decl SuffixTypeB(
-    unique_id:number,
-    metric_name:symbol,
-    metric_key:symbol,
-    metric_value:number
+unique_id:number,
+metric_name:symbol,
+metric_key:symbol,
+metric_value:number
 )
 
 SuffixTypeB(ui,mn,mk,mv) :-
-    MetricTypeB(_,_,_,_,_,_,_,_,ui,mn,mk,mv).
+MetricTypeB(_,_,_,_,_,_,_,_,_,ui,mn,mk,mv).
 
 .decl CommunicationTime(
-    unique_id:number,
-    stratum_index:symbol,
-    runtime_value:number
+unique_id:number,
+stratum_index:symbol,
+runtime_value:number
 )
 
 CommunicationTime(ui,si,rv) :-
-    SuffixTypeB(ui,"communicationTime",si,rv).
+SuffixTypeB(ui,"communicationTime",si,rv).
 
 .decl ComputationTime(
-    unique_id:number,
-    stratum_index:symbol,
-    runtime_value:number
+unique_id:number,
+stratum_index:symbol,
+runtime_value:number
 )
 
 ComputationTime(ui,si,rv) :-
-    SuffixTypeB(ui,"computationTime",si,rv).
+SuffixTypeB(ui,"computationTime",si,rv).
 
 .decl RunTime(
-    unique_id:number,
-    stratum_index:symbol,
-    runtime_value:number
+unique_id:number,
+stratum_index:symbol,
+runtime_value:number
 )
 
 RunTime(ui,si,rv) :-
-    SuffixTypeB(ui,"runTime",si,rv).
-
-.decl TotalCommunicationTime(
-    unique_id:number,
-    runtime_value:number
-)
-
-TotalCommunicationTime(ui,rv) :-
-    SuffixTypeA(ui,"totalCommunicationTime",rv).
-
-.decl TotalComputationTime(
-    unique_id:number,
-    runtime_value:number
-)
-
-TotalComputationTime(ui,rv) :-
-    SuffixTypeA(ui,"totalComputationTime",rv).
-
-.decl TotalRunTime(
-    unique_id:number,
-    runtime_value:number
-)
-
-TotalRunTime(ui,rv) :-
-    SuffixTypeA(ui,"totalRunTime",rv).
+SuffixTypeB(ui,"runTime",si,rv).
 
 .decl InputSize(
-    unique_id:number,
-    tuple_count:number
+unique_id:number,
+tuple_count:number
 )
 
 InputSize(ui,tc) :-
-    SuffixTypeA(ui,"inputSize",tc).
+SuffixTypeA(ui,"inputSize",tc).
 
 .decl OutputSize(
-    unique_id:number,
-    tuple_count:number
+unique_id:number,
+tuple_count:number
 )
 
 OutputSize(ui,tc) :-
-    SuffixTypeA(ui,"outputSize",tc).
+SuffixTypeA(ui,"outputSize",tc).
 
 .decl StringBytesProduced(
-    unique_id:number,
-    stratum_index:symbol,
-    byte_count:number
+unique_id:number,
+stratum_index:symbol,
+byte_count:number
 )
 
 StringBytesProduced(ui,si,bc) :-
-    SuffixTypeB(ui,"stringBytesProduced",si,bc).
+SuffixTypeB(ui,"stringBytesProduced",si,bc).
 
-.decl RelationTuplesProduced(
-    unique_id:number,
-    stratum_index:symbol,
-    tuple_count:number
+.decl RelationTermsProduced(
+unique_id:number,
+relation_name:symbol,
+tuple_count:number
 )
 
-RelationTuplesProduced(ui,si,tc) :-
-    SuffixTypeB(ui,"relationTuplesProduced",si,tc).
+RelationTermsProduced(ui,rn,tc) :-
+SuffixTypeB(ui,"relationTermsProduced",rn,tc).
 
-.decl TotalStringBytesProduced(
-    unique_id:number,
-    byte_count:number
+.decl TotalCommunicationTime(unique_id:number,communication_time:number)
+
+TotalCommunicationTime(ui,ct) :-
+KafkaMode(ui,"many-kafka"),
+ct = sum x : { CommunicationTime(ui,si,x), si != "none" }.
+
+TotalCommunicationTime(ui,0) :-
+!KafkaMode(ui,"many-kafka"),
+KafkaMode(ui,_).
+
+.decl TotalRunTime(unique_id:number,run_time:number)
+
+TotalRunTime(ui,rt) :-
+KafkaMode(ui,"many-kafka"),
+rt = sum x : { RunTime(ui,si,x), si != "none" }.
+
+TotalRunTime(ui,0) :-
+!KafkaMode(ui,"many-kafka"),
+KafkaMode(ui,_).
+
+.decl TotalComputationTime(unique_id:number,computation_time:number)
+
+TotalComputationTime(ui,ct) :-
+TotalRunTime(ui,rt),
+TotalCommunicationTime(ui,ct1),
+ct = rt - ct1.
+
+.decl TotalRelationTermsProduced(unique_id:number,tuple_count:number)
+
+TotalRelationTermsProduced(ui,tc) :-
+KafkaMode(ui,"many-kafka"),
+tc = sum x : { RelationTermsProduced(ui,_,x) }.
+
+TotalRelationTermsProduced(ui,0) :-
+!KafkaMode(ui,"many-kafka"),
+KafkaMode(ui,_).
+
+.decl TotalStringBytesProduced(unique_id:number,string_bytes:number)
+
+TotalStringBytesProduced(ui,tc) :-
+KafkaMode(ui,"many-kafka"),
+tc = sum x : { StringBytesProduced(ui,_,x) }.
+
+TotalStringBytesProduced(ui,0) :-
+!KafkaMode(ui,"many-kafka"),
+KafkaMode(ui,_).
+
+.decl Results1(
+unique_id:number,
+benchmark_program:symbol,
+data_type:symbol,
+split_size:number,
+join_type:symbol,
+kafka_mode:symbol,
+evaluation_algorithm:symbol,
+dataset_name:symbol,
+thread_size:number,
+input_size:number,
+output_size:number,
+run_time:number,
+communication_time:number,
+computation_time:number,
+tuple_count:number,
+string_bytes:number
 )
 
-TotalStringBytesProduced(ui,bc) :-
-    SuffixTypeA(ui,"totalStringBytesProduced",bc).
+.output Results1(delimiter=",",headers=true)
 
-.decl TotalRelationTuplesProduced(
-    unique_id:number,
-    tuple_count:number
+Results1(ui,bp,dt,ss,jt,km,ea,dn,ts,is,os,rt,ct1,ct2,tc,sb) :-
+bp = "NR",
+substr(dn, 0, strlen("half-complete-graph-")) = "half-complete-graph-",
+Prefix(ui,bp,dt,ss,jt,km,ea,dn,ts),
+InputSize(ui,is),
+OutputSize(ui,os),
+RunTime(ui,"none",rt),
+TotalCommunicationTime(ui,ct1),
+TotalComputationTime(ui,ct2),
+TotalRelationTermsProduced(ui,tc),
+TotalStringBytesProduced(ui,sb).
+
+.decl ValidStratumIndexForMax(unique_id:number,stratum_index:symbol)
+
+ValidStratumIndexForMax(ui,si) :-
+    KafkaMode(ui,"many-kafka"),
+    RunTime(ui,si,_),
+    CommunicationTime(ui,si,_),
+    ComputationTime(ui,si,_),
+    si != "none".
+
+.decl ValidRelationNameForMax(unique_id:number,relation_name:symbol)
+
+ValidRelationNameForMax(ui,rn) :-
+    KafkaMode(ui,"many-kafka"),
+    RelationTermsProduced(ui,rn,_),
+    rn != "I",
+    rn != "E".
+
+.decl MaxProductiveRelation(unique_id:number,relation_name:symbol,term_count:number)
+
+MaxProductiveRelation(ui,rn,tc) :-
+tc = max x : { RelationTermsProduced(ui,y,x), ValidRelationNameForMax(ui,y) },
+RelationTermsProduced(ui,rn,tc).
+
+.decl MaxProductiveRelationCount(unique_id:number,relation_count:number,term_count:number)
+
+MaxProductiveRelationCount(ui,rc,tc) :-
+MaxProductiveRelation(ui,_,tc),
+rc = count : MaxProductiveRelation(ui,_,_).
+
+.decl MaxRunTimeStratum(unique_id:number,stratum_index:symbol,run_time:number)
+
+MaxRunTimeStratum(ui,si,rt) :-
+rt = max x : { RunTime(ui,y,x), ValidStratumIndexForMax(ui,y) },
+RunTime(ui,si,rt).
+
+.decl MaxCommunicationTimeStratum(unique_id:number,stratum_index:symbol,communication_time:number)
+
+MaxCommunicationTimeStratum(ui,si,ct) :-
+ct = max x : { CommunicationTime(ui,y,x), ValidStratumIndexForMax(ui,y) },
+CommunicationTime(ui,si,ct).
+
+.decl MaxComputationTimeStratum(unique_id:number,stratum_index:symbol,computation_time:number)
+
+MaxComputationTimeStratum(ui,si,ct) :-
+ct = max x : { ComputationTime(ui,y,x), ValidStratumIndexForMax(ui,y) },
+ComputationTime(ui,si,ct).
+
+.decl Results2(
+unique_id:number,
+benchmark_program:symbol,
+data_type:symbol,
+split_size:number,
+join_type:symbol,
+kafka_mode:symbol,
+evaluation_algorithm:symbol,
+dataset_name:symbol,
+thread_size:number,
+input_size:number,
+output_size:number,
+max_productive_relation_count_key:number,
+max_productive_relation_count_value:number,
+max_run_time_stratum_key:symbol,
+max_run_time_stratum_value:number,
+max_communication_time_stratum_key:symbol,
+max_communication_time_stratum_value:number,
+max_computation_time_stratum_key:symbol,
+max_computation_time_stratum_value:number
 )
 
-TotalRelationTuplesProduced(ui,tc) :-
-    SuffixTypeA(ui,"totalRelationTuplesProduced",tc).
+.output Results2(delimiter=",",headers=true)
 
-.decl ValidUniqueId(
-    unique_id:number
-)
+Results2(ui,bp,dt,ss,jt,km,ea,dn,ts,is,os,mprck,mprcv,mrtsk,mrtsv,mcts1k,mcts1v,mcts2k,mcts2v) :-
+bp = "NR",
+substr(dn, 0, strlen("half-complete-graph-")) = "half-complete-graph-",
+Prefix(ui,bp,dt,ss,jt,km,ea,dn,ts),
+InputSize(ui,is),
+OutputSize(ui,os),
+MaxProductiveRelationCount(ui,mprck,mprcv),
+MaxRunTimeStratum(ui,mrtsk,mrtsv),
+MaxCommunicationTimeStratum(ui,mcts1k,mcts1v),
+MaxComputationTimeStratum(ui,mcts2k,mcts2v).
 
-.decl ThirdTable(
-    unique_id:number
-    data_type:symbol,
-    join_type:symbol,
-    kafka_mode:symbol,
-    dataset_name:symbol,
-    input_size:number,
-    output_size:number,
-    run_time:number,
-    tuple_count:number,
-    byte_count:number
-)
-
-.output ThirdTable
-
-// @TODO (lh): add filtering conditions here also
-// @TODO (lh): maybe should still add the last two columns, after getting this working
-ThirdTable(ui,dt,jt,km,dn,is,os,rt,tc,bc) :-
-    Prefix(ui,_,dt,_,jt,km,_,dn,_),
-    InputSize(ui,is),
-    OutputSize(ui,os),
-    RunTime(ui,rt),
-    TotalRelationTuplesProduced(tc),
-    TotalStringBytesProduced(bc).
-
+// @TODO: do ./kafka/script-to-generate-results.sh ~/Downloads/metrics_11-11-2020.csv ~/Downloads/
