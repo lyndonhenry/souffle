@@ -898,7 +898,7 @@ fn make_datasets() -> Result<()> {
     InfoStruct { name: "wiki-Talk".to_string(), location: "https://snap.stanford.edu/data/wiki-Talk.txt.gz".to_string(), vertices: 2394385, edges: 5021410, directed: true, format: InfoFormat::Snap, },
     InfoStruct { name: "wiki-Vote".to_string(), location: "https://snap.stanford.edu/data/wiki-Vote.txt.gz".to_string(), vertices: 7115, edges: 103689, directed: true, format: InfoFormat::Snap, },
   ];
-  for i in 1u32..12 {
+  for i in 1u32..13 {
     datasets.push(
       InfoStruct {
         name: format!("half-complete-graph-{}", 2u64.pow(i)).to_string(),
