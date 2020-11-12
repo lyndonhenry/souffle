@@ -192,7 +192,7 @@ function _ensure_apache_kafka_is_installed() {
   if [ ! -e "${KAFKA_PATH}" ]
   then
     sudo apt-get install -y curl
-    curl -O "http://mirror.vorboss.net/apache/kafka/2.3.1/kafka_2.12-2.3.1.tgz"
+    curl -O "https://mirrors.gigenet.com/apache/kafka/2.3.1/kafka_2.12-2.3.1.tgz"
     tar -xzf "kafka_2.12-2.3.1.tgz"
     mv "kafka_2.12-2.3.1" "${KAFKA_PATH}"
   fi
@@ -456,7 +456,7 @@ function _kafka_produce_log_message() {
   ;;
   "uploadOutput")
   # note: this always assumes './output/I.csv'
-  local LINE_COUNT="$(cat "./output/I.csv")"
+  local LINE_COUNT="$(cat "./output/I.csv" || :)"
   MESSAGE="uploadOutput,${LINE_COUNT}"
   ;;
   "printMetadata")

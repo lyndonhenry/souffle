@@ -86,6 +86,13 @@ function _main() {
 
   read -p "Example experiments have run, press enter to run the real experiments..."
 
+  # run all experiments in the second round
+  local DOCKER_COMPOSE_FILE
+  for DOCKER_COMPOSE_FILE in $(find "${ROOT}/docker-compose/second/no-cloud" -name "*.yml")
+  do
+    _run_experiment "${DOCKER_COMPOSE_FILE}"
+  done
+
   # run the non-cloud experiments in the first round
   local DOCKER_COMPOSE_FILE
   for DOCKER_COMPOSE_FILE in $(find "${ROOT}/docker-compose/first/no-cloud" -name "*.yml")
@@ -93,20 +100,9 @@ function _main() {
     _run_experiment "${DOCKER_COMPOSE_FILE}"
   done
 
-  read -p "First round, non-cloud experiments have run; press enter to run the first round cloud experiments..."
-
   # run the cloud experiments in the first round
   local DOCKER_COMPOSE_FILE
   for DOCKER_COMPOSE_FILE in $(find "${ROOT}/docker-compose/first/yes-cloud" -name "*.yml")
-  do
-    _run_experiment "${DOCKER_COMPOSE_FILE}"
-  done
-
-  read -p "First round, cloud experiments have run; press enter to run the second round of experiments..."
-
-  # run all experiments in the second round
-  local DOCKER_COMPOSE_FILE
-  for DOCKER_COMPOSE_FILE in $(find "${ROOT}/docker-compose/second/no-cloud" -name "*.yml")
   do
     _run_experiment "${DOCKER_COMPOSE_FILE}"
   done
