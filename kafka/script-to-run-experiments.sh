@@ -81,7 +81,7 @@ function _main() {
   # initialise the docker swarm, to use the stack deploy commands
   sudo docker swarm init || :
 
-  rm $TIMEOUTS_FILE
+  rm $TIMEOUTS_FILE || :
 
   # run the example experiments first, to ensure everything is working as exepected
   local DOCKER_COMPOSE_FILE
