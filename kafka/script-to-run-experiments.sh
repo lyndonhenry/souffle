@@ -106,13 +106,6 @@ function _main() {
     _run_experiment "${DOCKER_COMPOSE_FILE}"
   done
 
-  # run the cloud experiments in the first round
-  local DOCKER_COMPOSE_FILE
-  for DOCKER_COMPOSE_FILE in $(find "${ROOT}/docker-compose/first/yes-cloud" -name "*.yml")
-  do
-    _run_experiment "${DOCKER_COMPOSE_FILE}"
-  done
-
   # sync the s3 bucket
   aws s3 sync "${ROOT}" "s3://souffle-on-kafka"
 

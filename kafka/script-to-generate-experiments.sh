@@ -176,6 +176,49 @@ function _generate_first_round_of_experiments() {
   done
 
   COUNT=6
+  SUBDIR="first/no-cloud"
+
+  # Experiments with kafka
+  for SPLIT in ${SPLITS}
+  do
+    local BENCHMARK
+    for BENCHMARK in ${BENCHMARKS}
+    do
+      local DATASET
+      for DATASET in ${DATASETS}
+      do
+        local TYPE
+        for TYPE in ${TYPES}
+        do
+          for JOIN in ${JOINS}
+          do
+            local THREAD
+            for THREAD in ${THREADS}
+            do
+              local SIZE=$((2 ** COUNT))
+              ./kafka/souffle-on-kafka.sh \
+              --benchmark "${BENCHMARK}" \
+              --type "${TYPE}" \
+              --split "${SPLIT}" \
+              --join "${JOIN}" \
+              --mode "many-kafka" \
+              --algorithm "GPCSNE" \
+              --data "${DATASET}-${SIZE}" \
+              --threads "${THREAD}" \
+              --subdir "${SUBDIR}"
+            done
+          done
+        done
+      done
+    done
+    ((COUNT++))
+  done
+
+  THREADS="1"
+  SPLITS="1 2 4 8 16 32 64"
+  JOINS="complete"
+
+  COUNT=6
   SUBDIR="first/yes-cloud"
 
   # Experiments with kafka
@@ -238,31 +281,31 @@ function _generate_second_round_of_experiments() {
   local JOINS
   local SUBDIR
 
-  DATASETS+="cit-HepPh"
-  DATASETS+="cit-HepTh"
-  DATASETS+="com-Amazon"
-  DATASETS+="com-DBLP"
-  DATASETS+="com-Youtube"
-  DATASETS+="ego-Facebook"
-  DATASETS+="ego-Twitter"
-  DATASETS+="email-Enron"
-  DATASETS+="email-EuAll"
-  DATASETS+="loc-Brightkite"
-  DATASETS+="loc-Gowalla"
-  DATASETS+="roadNet-CA"
-  DATASETS+="roadNet-PA"
-  DATASETS+="roadNet-TX"
-  DATASETS+="soc-Epinions1"
-  DATASETS+="soc-Slashdot0811"
-  DATASETS+="soc-Slashdot0902"
-  DATASETS+="sx-askubuntu"
-  DATASETS+="sx-mathoverflow"
-  DATASETS+="sx-superuser"
-  DATASETS+="web-NotreDame"
-  DATASETS+="web-Stanford"
-  DATASETS+="web-flickr"
-  DATASETS+="wiki-Talk"
-  DATASETS+="wiki-Vote"
+  DATASETS+=" cit-HepPh "
+  DATASETS+=" cit-HepTh "
+  DATASETS+=" com-Amazon "
+  DATASETS+=" com-DBLP "
+  DATASETS+=" com-Youtube "
+  DATASETS+=" ego-Facebook "
+  DATASETS+=" ego-Twitter "
+  DATASETS+=" email-Enron "
+  DATASETS+=" email-EuAll "
+  DATASETS+=" loc-Brightkite "
+  DATASETS+=" loc-Gowalla "
+  DATASETS+=" roadNet-CA "
+  DATASETS+=" roadNet-PA "
+  DATASETS+=" roadNet-TX "
+  DATASETS+=" soc-Epinions1 "
+  DATASETS+=" soc-Slashdot0811 "
+  DATASETS+=" soc-Slashdot0902 "
+  DATASETS+=" sx-askubuntu "
+  DATASETS+=" sx-mathoverflow "
+  DATASETS+=" sx-superuser "
+  DATASETS+=" web-NotreDame "
+  DATASETS+=" web-Stanford "
+  DATASETS+=" web-flickr "
+  DATASETS+=" wiki-Talk "
+  DATASETS+=" wiki-Vote "
 
   BENCHMARKS="ALL"
   TYPES="number symbol"
