@@ -1,0 +1,199 @@
+
+.decl MetricTypeA(
+    benchmark_program:symbol,
+    data_type:symbol,
+    split_size:number,
+    join_type:symbol,
+    kafka_mode:symbol,
+    evaluation_algorithm:symbol,
+    dataset_name:symbol,
+    thread_size:number,
+    unique_id:number,
+    metric_name:symbol,
+    metric_value:number
+)
+
+.input MetricTypeA
+
+.decl MetricTypeB(
+    benchmark_program:symbol,
+    data_type:symbol,
+    split_size:number,
+    join_type:symbol,
+    kafka_mode:symbol,
+    evaluation_algorithm:symbol,
+    dataset_name:symbol,
+    thread_size:number,
+    unique_id:number,
+    metric_name:symbol,
+    metric_key:symbol,
+    metric_value:number
+)
+
+.input MetricTypeB
+
+.decl Prefix(
+    unique_id:number
+    benchmark_program:symbol,
+    data_type:symbol,
+    split_size:number,
+    join_type:symbol,
+    kafka_mode:symbol,
+    evaluation_algorithm:symbol,
+    dataset_name:symbol,
+    thread_size:number,
+)
+
+Prefix(ui,bp,dt,ss,jt,km,ea,dn,ts) :-
+    MetricTypeA(bp,dt,ss,jt,km,ea,dn,ts,ui,_,_);
+    MetricTypeB(bp,dt,ss,jt,km,ea,dn,ts,ui,_,_,_).
+
+.decl SuffixTypeA(
+    unique_id:number,
+    metric_name:symbol,
+    metric_value:number
+)
+
+SuffixTypeA(ui,mn,mk,mv) :-
+    MetricTypeA(_,_,_,_,_,_,_,_,ui,mn,mv).
+
+.decl SuffixTypeB(
+    unique_id:number,
+    metric_name:symbol,
+    metric_key:symbol,
+    metric_value:number
+)
+
+SuffixTypeB(ui,mn,mk,mv) :-
+    MetricTypeB(_,_,_,_,_,_,_,_,ui,mn,mk,mv).
+
+.decl CommunicationTime(
+    unique_id:number,
+    stratum_index:symbol,
+    runtime_value:number
+)
+
+CommunicationTime(ui,si,rv) :-
+    SuffixTypeB(ui,"communicationTime",si,rv).
+
+.decl ComputationTime(
+    unique_id:number,
+    stratum_index:symbol,
+    runtime_value:number
+)
+
+ComputationTime(ui,si,rv) :-
+    SuffixTypeB(ui,"computationTime",si,rv).
+
+.decl RunTime(
+    unique_id:number,
+    stratum_index:symbol,
+    runtime_value:number
+)
+
+RunTime(ui,si,rv) :-
+    SuffixTypeB(ui,"runTime",si,rv).
+
+.decl TotalCommunicationTime(
+    unique_id:number,
+    runtime_value:number
+)
+
+TotalCommunicationTime(ui,rv) :-
+    SuffixTypeA(ui,"totalCommunicationTime",rv).
+
+.decl TotalComputationTime(
+    unique_id:number,
+    runtime_value:number
+)
+
+TotalComputationTime(ui,rv) :-
+    SuffixTypeA(ui,"totalComputationTime",rv).
+
+.decl TotalRunTime(
+    unique_id:number,
+    runtime_value:number
+)
+
+TotalRunTime(ui,rv) :-
+    SuffixTypeA(ui,"totalRunTime",rv).
+
+.decl InputSize(
+    unique_id:number,
+    tuple_count:number
+)
+
+InputSize(ui,tc) :-
+    SuffixTypeA(ui,"inputSize",tc).
+
+.decl OutputSize(
+    unique_id:number,
+    tuple_count:number
+)
+
+OutputSize(ui,tc) :-
+    SuffixTypeA(ui,"outputSize",tc).
+
+.decl StringBytesProduced(
+    unique_id:number,
+    stratum_index:symbol,
+    byte_count:number
+)
+
+StringBytesProduced(ui,si,bc) :-
+    SuffixTypeB(ui,"stringBytesProduced",si,bc).
+
+.decl RelationTuplesProduced(
+    unique_id:number,
+    stratum_index:symbol,
+    tuple_count:number
+)
+
+RelationTuplesProduced(ui,si,tc) :-
+    SuffixTypeB(ui,"relationTuplesProduced",si,tc).
+
+.decl TotalStringBytesProduced(
+    unique_id:number,
+    byte_count:number
+)
+
+TotalStringBytesProduced(ui,bc) :-
+    SuffixTypeA(ui,"totalStringBytesProduced",bc).
+
+.decl TotalRelationTuplesProduced(
+    unique_id:number,
+    tuple_count:number
+)
+
+TotalRelationTuplesProduced(ui,tc) :-
+    SuffixTypeA(ui,"totalRelationTuplesProduced",tc).
+
+.decl ValidUniqueId(
+    unique_id:number
+)
+
+.decl ThirdTable(
+    unique_id:number
+    data_type:symbol,
+    join_type:symbol,
+    kafka_mode:symbol,
+    dataset_name:symbol,
+    input_size:number,
+    output_size:number,
+    run_time:number,
+    tuple_count:number,
+    byte_count:number
+)
+
+.output ThirdTable
+
+// @TODO (lh): add filtering conditions here also
+// @TODO (lh): maybe should still add the last two columns, after getting this working
+ThirdTable(ui,dt,jt,km,dn,is,os,rt,tc,bc) :-
+    Prefix(ui,_,dt,_,jt,km,_,dn,_),
+    InputSize(ui,is),
+    OutputSize(ui,os),
+    RunTime(ui,rt),
+    TotalRelationTuplesProduced(tc),
+    TotalStringBytesProduced(bc).
+
