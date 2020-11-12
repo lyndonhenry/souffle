@@ -115,7 +115,7 @@ function _extend_docker_compose() {
   local THREADS="${8}"
   local STRATUM_NAME="${9}"
 cat >> "${FILE}" << EOF
-  souffle_${ID}_${STRATUM_NAME}:
+  souffle-${ID}-${STRATUM_NAME}:
     image: '${IMAGE_NAME}:latest'
     environment:
       ID: ${ID}
