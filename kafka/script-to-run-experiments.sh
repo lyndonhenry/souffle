@@ -6,6 +6,8 @@ set -ouex pipefail
 AWS_ACCESS_KEY_ID="$(cat "${HOME}/.aws/credentials" | grep "aws_access_key_id" | sed 's/^.*=\s*//')"
 AWS_SECRET_ACCESS_KEY="$(cat "${HOME}/.aws/credentials" | grep "aws_secret_access_key" | sed 's/^.*=\s*//')"
 
+TIMEOUTS_FILE="timeouts.txt"
+
 function _run_experiment() {
 
   local DOCKER_COMPOSE_FILE="${1}"
@@ -38,6 +40,7 @@ function _run_experiment() {
       if [ "${COUNT}" -ge "${MAX_COUNT}" ]
       then
         echo "ERROR: THE EXPERIMENT HAS REACHED THE TIMEOUT!"
+        echo "$NAME" >> $TIMEOUTS_FILE
         break
       fi
       COUNT=$((COUNT+1))
@@ -48,7 +51,7 @@ function _run_experiment() {
    sudo docker stop $(sudo docker ps -a -q) || :
    sudo docker rm $(sudo docker ps -a -q) || :
    sudo docker rmi $(sudo docker images -q -a) || :
-   sudo docker volume rm $(docker volume ls -qf dangling=true)
+   sudo docker volume rm $(docker volume ls -qf dangling=true) || :
    sudo docker system prune -a -f
 
     # sync the log file
@@ -58,7 +61,8 @@ function _run_experiment() {
     local LOG_FILE
     for LOG_FILE in ${LOG_FILES}
     do
-      aws s3api put-object-acl --bucket souffle-on-kafka --key ${LOG_FILE} --acl bucket-owner-full-control || :
+      # Run in background as it is quite slow 
+      aws s3api put-object-acl --bucket souffle-on-kafka --key ${LOG_FILE} --acl bucket-owner-full-control &
     done
   fi
 }
@@ -76,6 +80,8 @@ function _main() {
 
   # initialise the docker swarm, to use the stack deploy commands
   sudo docker swarm init || :
+
+  rm $TIMEOUTS_FILE
 
   # run the example experiments first, to ensure everything is working as exepected
   local DOCKER_COMPOSE_FILE
