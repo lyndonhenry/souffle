@@ -184,7 +184,7 @@ spec:
         env:
           - name: ALLOW_ANONYMOUS_LOGIN
             value: 'yes'
-          - name: ID: 
+          - name: ID 
             value: ${ID}
           - name: KAFKA_HOST
             value: ${KAFKA_HOST}
