@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: kafka-cluster
+  name: kafka
   labels:
     app: kafka
     tier: backend
@@ -15,7 +15,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: kafka-cluster
+  name: kafka
 spec:
   selector:
     matchLabels:
