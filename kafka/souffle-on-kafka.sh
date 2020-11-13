@@ -185,25 +185,25 @@ spec:
           - name: ALLOW_ANONYMOUS_LOGIN
             value: 'yes'
           - name: ID 
-            value: ${ID}
+            value: '${ID}'
           - name: KAFKA_HOST
-            value: ${KAFKA_HOST}
+            value: '${KAFKA_HOST}'
           - name: MODE
-            value: ${MODE}
+            value: '${MODE}'
           - name: S3_EXE 
-            value: ${S3_EXE}
+            value: '${S3_EXE}'
           - name: S3_INPUT 
-            value: ${S3_INPUT}
+            value: '${S3_INPUT}'
           - name: S3_OUTPUT 
-            value: ${S3_OUTPUT}
+            value: '${S3_OUTPUT}'
           - name: STRATUM_NAME   
-            value: ${STRATUM_NAME}
+            value: '${STRATUM_NAME}'
           - name: THREADS
-            value: ${THREADS}
+            value: '${THREADS}'
           - name: AWS_ACCESS_KEY_ID 
-            value: \${AWS_ACCESS_KEY_ID}
+            value: '\${AWS_ACCESS_KEY_ID}'
           - name: AWS_SECRET_ACCESS_KEY 
-            value: \${AWS_SECRET_ACCESS_KEY}
+            value: '\${AWS_SECRET_ACCESS_KEY}'
         resources:
           requests:
             cpu: '${THREADS}'
