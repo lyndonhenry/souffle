@@ -159,7 +159,7 @@ cat >> "${FILE}" << EOF
   spec:
     selector:
       app: souffle-${ID}-${STRATUM_NAME}
-  ---
+---
   apiVersion: apps/v1
   kind: Deployment
   metadata:
@@ -184,23 +184,23 @@ cat >> "${FILE}" << EOF
               value: 'yes'
             - name: ID: 
               value: ${ID}
-            - name: KAFKA_HOST: 
+            - name: KAFKA_HOST
               value: ${KAFKA_HOST}
-            - name: MODE: 
+            - name: MODE
               value: ${MODE}
-            - name: S3_EXE: 
+            - name: S3_EXE 
               value: ${S3_EXE}
-            - name: S3_INPUT: 
+            - name: S3_INPUT 
               value: ${S3_INPUT}
-            - name: S3_OUTPUT: 
+            - name: S3_OUTPUT 
               value: ${S3_OUTPUT}
-            - name: STRATUM_NAME:   
+            - name: STRATUM_NAME   
               value: ${STRATUM_NAME}
-            - name: THREADS: 
+            - name: THREADS
               value: ${THREADS}
-            - name: AWS_ACCESS_KEY_ID: 
+            - name: AWS_ACCESS_KEY_ID 
               value: \${AWS_ACCESS_KEY_ID}
-            - name: AWS_SECRET_ACCESS_KEY: 
+            - name: AWS_SECRET_ACCESS_KEY 
               value: \${AWS_SECRET_ACCESS_KEY}
           resources:
             requests:
