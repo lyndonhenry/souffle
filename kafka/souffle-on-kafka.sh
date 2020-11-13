@@ -149,64 +149,64 @@ function _extend_k8s() {
   local THREADS="${8}"
   local STRATUM_NAME="${9}"
 cat >> "${FILE}" << EOF
-  apiVersion: v1
-  kind: Service
-  metadata:
-    name: souffle-${ID}-${STRATUM_NAME}
-    labels:
-      app: souffle-${ID}-${STRATUM_NAME}
-      tier: backend
-  spec:
-    selector:
-      app: souffle-${ID}-${STRATUM_NAME}
+apiVersion: v1
+kind: Service
+metadata:
+  name: souffle-${ID}-${STRATUM_NAME}
+  labels:
+    app: souffle-${ID}-${STRATUM_NAME}
+    tier: backend
+spec:
+  selector:
+    app: souffle-${ID}-${STRATUM_NAME}
 ---
-  apiVersion: apps/v1
-  kind: Deployment
-  metadata:
-    name: souffle-${ID}-${STRATUM_NAME}
-  spec:
-    selector:
-      matchLabels:
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: souffle-${ID}-${STRATUM_NAME}
+spec:
+  selector:
+    matchLabels:
+      app: souffle-${ID}-${STRATUM_NAME}
+  replicas: 1
+  template:
+    metadata:
+      labels:
         app: souffle-${ID}-${STRATUM_NAME}
-    replicas: 1
-    template:
-      metadata:
-        labels:
-          app: souffle-${ID}-${STRATUM_NAME}
-      spec:
-        containers:
-        - name: souffle-${ID}-${STRATUM_NAME}
-          image: ${IMAGE_NAME}:latest
-          command: ['./kafka/docker.sh']
-          args: ['--run']
-          env:
-            - name: ALLOW_ANONYMOUS_LOGIN
-              value: 'yes'
-            - name: ID: 
-              value: ${ID}
-            - name: KAFKA_HOST
-              value: ${KAFKA_HOST}
-            - name: MODE
-              value: ${MODE}
-            - name: S3_EXE 
-              value: ${S3_EXE}
-            - name: S3_INPUT 
-              value: ${S3_INPUT}
-            - name: S3_OUTPUT 
-              value: ${S3_OUTPUT}
-            - name: STRATUM_NAME   
-              value: ${STRATUM_NAME}
-            - name: THREADS
-              value: ${THREADS}
-            - name: AWS_ACCESS_KEY_ID 
-              value: \${AWS_ACCESS_KEY_ID}
-            - name: AWS_SECRET_ACCESS_KEY 
-              value: \${AWS_SECRET_ACCESS_KEY}
-          resources:
-            requests:
-              cpu: '${THREADS}'
-            limits:
-              cpu: '${THREADS}'
+    spec:
+      containers:
+      - name: souffle-${ID}-${STRATUM_NAME}
+        image: ${IMAGE_NAME}:latest
+        command: ['./kafka/docker.sh']
+        args: ['--run']
+        env:
+          - name: ALLOW_ANONYMOUS_LOGIN
+            value: 'yes'
+          - name: ID: 
+            value: ${ID}
+          - name: KAFKA_HOST
+            value: ${KAFKA_HOST}
+          - name: MODE
+            value: ${MODE}
+          - name: S3_EXE 
+            value: ${S3_EXE}
+          - name: S3_INPUT 
+            value: ${S3_INPUT}
+          - name: S3_OUTPUT 
+            value: ${S3_OUTPUT}
+          - name: STRATUM_NAME   
+            value: ${STRATUM_NAME}
+          - name: THREADS
+            value: ${THREADS}
+          - name: AWS_ACCESS_KEY_ID 
+            value: \${AWS_ACCESS_KEY_ID}
+          - name: AWS_SECRET_ACCESS_KEY 
+            value: \${AWS_SECRET_ACCESS_KEY}
+        resources:
+          requests:
+            cpu: '${THREADS}'
+          limits:
+            cpu: '${THREADS}'
 ---
 EOF
 }
