@@ -148,18 +148,20 @@ function _extend_k8s() {
   local S3_OUTPUT="${7}"
   local THREADS="${8}"
   local STRATUM_NAME="${9}"
+
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: souffle-${ID}-${STRATUM_NAME}
+#   labels:
+#     app: souffle-${ID}-${STRATUM_NAME}
+#     tier: backend
+# spec:
+#   selector:
+#     app: souffle-${ID}-${STRATUM_NAME}
+# ---
+
 cat >> "${FILE}" << EOF
-apiVersion: v1
-kind: Service
-metadata:
-  name: souffle-${ID}-${STRATUM_NAME}
-  labels:
-    app: souffle-${ID}-${STRATUM_NAME}
-    tier: backend
-spec:
-  selector:
-    app: souffle-${ID}-${STRATUM_NAME}
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
