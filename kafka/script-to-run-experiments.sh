@@ -27,7 +27,7 @@ function _run_experiment() {
      sed "s/\${AWS_SECRET_ACCESS_KEY}/${AWS_SECRET_ACCESS_KEY_REGEX}/g" > ${SECRET_DOCKER_COMPOSE_FILE}
 
     # deploy the stack
-    sudo docker stack deploy -c ${SECRET_DOCKER_COMPOSE_FILE} ${STACK_NAME}
+    docker stack deploy -c ${SECRET_DOCKER_COMPOSE_FILE} ${STACK_NAME}
 
     # set a timeout of 1 hour via max count
     local COUNT=0
@@ -46,13 +46,13 @@ function _run_experiment() {
       COUNT=$((COUNT+1))
     done
     # kill the docker stack
-    sudo docker stack rm ${STACK_NAME}
+    docker stack rm ${STACK_NAME}
 
-   sudo docker stop $(sudo docker ps -a -q) || :
-   sudo docker rm $(sudo docker ps -a -q) || :
-   sudo docker rmi $(sudo docker images -q -a) || :
-   sudo docker volume rm $(docker volume ls -qf dangling=true) || :
-   sudo docker system prune -a -f
+    docker stop $(docker ps -a -q) || :
+    docker rm $(docker ps -a -q) || :
+    docker rmi $(docker images -q -a) || :
+    docker volume rm $(docker volume ls -qf dangling=true) || :
+    docker system prune -a -f
 
     # sync the log file
     aws s3 sync "s3://souffle-on-kafka/output/log" "${ROOT}/output/log" || :
@@ -76,10 +76,10 @@ function _main() {
   aws s3 sync "s3://souffle-on-kafka" "${ROOT}" || :
 
   # sync the contents of the s3 bucket locally
-  aws s3 sync "${ROOT}" "s3://souffle-on-kafka"
+  #aws s3 sync "${ROOT}" "s3://souffle-on-kafka"
 
   # initialise the docker swarm, to use the stack deploy commands
-  sudo docker swarm init || :
+  #docker swarm init || :
 
   rm $TIMEOUTS_FILE || :
 
@@ -107,7 +107,7 @@ function _main() {
   done
 
   # sync the s3 bucket
-  aws s3 sync "${ROOT}" "s3://souffle-on-kafka"
+  #aws s3 sync "${ROOT}" "s3://souffle-on-kafka"
 
 
 }

@@ -115,7 +115,7 @@ function _extend_docker_compose() {
   local THREADS="${8}"
   local STRATUM_NAME="${9}"
 cat >> "${FILE}" << EOF
-  souffle_${ID}_${STRATUM_NAME}:
+  souffle-${ID}-${STRATUM_NAME}:
     image: '${IMAGE_NAME}:latest'
     environment:
       ID: ${ID}
@@ -138,6 +138,81 @@ cat >> "${FILE}" << EOF
 EOF
 }
 
+function _extend_k8s() {
+  local ID="${1}"
+  local FILE="${2}"
+  local KAFKA_HOST="${3}"
+  local MODE="${4}"
+  local S3_EXE="${5}"
+  local S3_INPUT="${6}"
+  local S3_OUTPUT="${7}"
+  local THREADS="${8}"
+  local STRATUM_NAME="${9}"
+
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: souffle-${ID}-${STRATUM_NAME}
+#   labels:
+#     app: souffle-${ID}-${STRATUM_NAME}
+#     tier: backend
+# spec:
+#   selector:
+#     app: souffle-${ID}-${STRATUM_NAME}
+# ---
+
+cat >> "${FILE}" << EOF
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: souffle-${ID}-${STRATUM_NAME}
+spec:
+  selector:
+    matchLabels:
+      app: souffle-${ID}-${STRATUM_NAME}
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: souffle-${ID}-${STRATUM_NAME}
+    spec:
+      containers:
+      - name: souffle-${ID}-${STRATUM_NAME}
+        image: ${IMAGE_NAME}:latest
+        command: ['./kafka/docker.sh']
+        args: ['--run']
+        env:
+          - name: ALLOW_ANONYMOUS_LOGIN
+            value: 'yes'
+          - name: ID 
+            value: '${ID}'
+          - name: KAFKA_HOST
+            value: '${KAFKA_HOST}'
+          - name: MODE
+            value: '${MODE}'
+          - name: S3_EXE 
+            value: '${S3_EXE}'
+          - name: S3_INPUT 
+            value: '${S3_INPUT}'
+          - name: S3_OUTPUT 
+            value: '${S3_OUTPUT}'
+          - name: STRATUM_NAME   
+            value: '${STRATUM_NAME}'
+          - name: THREADS
+            value: '${THREADS}'
+          - name: AWS_ACCESS_KEY_ID 
+            value: '\${AWS_ACCESS_KEY_ID}'
+          - name: AWS_SECRET_ACCESS_KEY 
+            value: '\${AWS_SECRET_ACCESS_KEY}'
+        resources:
+          requests:
+            cpu: '${THREADS}'
+          limits:
+            cpu: '${THREADS}'
+---
+EOF
+}
+
 function _generate_with_no_kafka() {
   local ID="${1}"
   local FILE="${2}"
@@ -147,9 +222,12 @@ function _generate_with_no_kafka() {
   local S3_INPUT="${5}"
   local S3_OUTPUT="${6}"
   local THREADS="${7}"
+  local DESCRIPTOR_GENERATOR="${8}"
+  local TEMPLATE="${9}"
+
   mkdir -p "$(dirname "${FILE}")"
-  cat ./kafka/docker-compose.yml > "${FILE}"
-  _extend_docker_compose ${ID} ${FILE} ${KAFKA_HOST} ${MODE} ${S3_EXE} ${S3_INPUT} ${S3_OUTPUT} ${THREADS} "none"
+  cat ${TEMPLATE} > "${FILE}"
+  ${DESCRIPTOR_GENERATOR} ${ID} ${FILE} ${KAFKA_HOST} ${MODE} ${S3_EXE} ${S3_INPUT} ${S3_OUTPUT} ${THREADS} "none"
 }
 
 function _generate_with_one_kafka() {
@@ -161,9 +239,12 @@ function _generate_with_one_kafka() {
   local S3_INPUT="${5}"
   local S3_OUTPUT="${6}"
   local THREADS="${7}"
+  local DESCRIPTOR_GENERATOR="${8}"
+  local TEMPLATE="${9}"
+
   mkdir -p "$(dirname "${FILE}")"
-  cat ./kafka/docker-compose.yml > "${FILE}"
-  _extend_docker_compose ${ID} ${FILE} ${KAFKA_HOST} ${MODE} ${S3_EXE} ${S3_INPUT} ${S3_OUTPUT} ${THREADS} "none"
+  cat ${TEMPLATE} > "${FILE}"
+  ${DESCRIPTOR_GENERATOR} ${ID} ${FILE} ${KAFKA_HOST} ${MODE} ${S3_EXE} ${S3_INPUT} ${S3_OUTPUT} ${THREADS} "none"
 }
 
 function _generate_with_many_kafka() {
@@ -176,17 +257,19 @@ function _generate_with_many_kafka() {
   local S3_OUTPUT="${6}"
   local THREADS="${7}"
   local EXE="exe"
+  local DESCRIPTOR_GENERATOR="${8}"
+  local TEMPLATE="${9}"
   rm -f ${EXE}
   aws s3 cp ${S3_EXE} ${EXE}
   chmod +x ${EXE} || :
   mkdir -p "$(dirname "${FILE}")"
-  cat ./kafka/docker-compose.yml > "${FILE}"
+  cat $TEMPLATE > "${FILE}"
   local STRATUM_NAMES="$(./${EXE} -Xcustom.print-metadata=true)"
-  _extend_docker_compose ${ID} ${FILE} ${KAFKA_HOST} "${MODE}-as-broker" ${S3_EXE} ${S3_INPUT} ${S3_OUTPUT} ${THREADS} "none"
-  _for_each "_extend_docker_compose ${ID} ${FILE} ${KAFKA_HOST} "${MODE}-as-client" ${S3_EXE} ${S3_INPUT} ${S3_OUTPUT} ${THREADS} " ${STRATUM_NAMES}
+  ${DESCRIPTOR_GENERATOR} ${ID} ${FILE} ${KAFKA_HOST} "${MODE}-as-broker" ${S3_EXE} ${S3_INPUT} ${S3_OUTPUT} ${THREADS} "none"
+  _for_each "${DESCRIPTOR_GENERATOR} ${ID} ${FILE} ${KAFKA_HOST} "${MODE}-as-client" ${S3_EXE} ${S3_INPUT} ${S3_OUTPUT} ${THREADS} " ${STRATUM_NAMES}
 }
 
-function _generate_docker_compose() {
+function _generate_descriptor() {
   local ID="$(date +%s)"
   local FILE="${1}"
   local KAFKA_HOST="${2}"
@@ -195,6 +278,9 @@ function _generate_docker_compose() {
   local S3_INPUT="${5}"
   local S3_OUTPUT="${6}"
   local THREADS="${7}"
+  local DESCRIPTOR_GENERATOR="${8}"
+  local TEMPLATE="${9}"
+
   local CMD="_generate_with"
   case ${MODE} in
   "no-kafka")
@@ -210,7 +296,7 @@ function _generate_docker_compose() {
   _error
   ;;
 esac
-  ${CMD} ${ID} ${FILE} ${KAFKA_HOST} ${S3_EXE} ${S3_INPUT} ${S3_OUTPUT} ${THREADS}
+  ${CMD} ${ID} ${FILE} ${KAFKA_HOST} ${S3_EXE} ${S3_INPUT} ${S3_OUTPUT} ${THREADS} ${DESCRIPTOR_GENERATOR} ${TEMPLATE}
 }
 
 #
@@ -258,17 +344,25 @@ function _phase_three() {
   local THREADS="${4}"
   local SUBDIR="${5}"
   local LOCATION="docker-compose/${SUBDIR}/$(basename ${EXE})_${DATA}/docker-compose.yml"
+  local LOCATION_K8S="k8s/${SUBDIR}/$(basename ${EXE})_${DATA}/k8s-deployment.yml"
   local FILE="${ROOT}/${LOCATION}"
+  local FILE_K8S="${ROOT}/${LOCATION_K8S}"
   local KAFKA_HOST="kafka:29092"
   local S3_EXE="s3://souffle-on-kafka/exe/$(basename ${EXE})"
   local S3_INPUT="s3://souffle-on-kafka/input/${DATA}"
   local S3_OUTPUT="s3://souffle-on-kafka/output"
   if [ ! -e "${FILE}" ]
   then
-    _generate_docker_compose "${FILE}" "${KAFKA_HOST}" "${MODE}" "${S3_EXE}" "${S3_INPUT}" "${S3_OUTPUT}" "${THREADS}"
+    _generate_descriptor "${FILE}" "${KAFKA_HOST}" "${MODE}" "${S3_EXE}" "${S3_INPUT}" "${S3_OUTPUT}" "${THREADS}" "_extend_docker_compose" "./kafka/docker-compose.yml"
     aws s3 cp ${FILE} "s3://souffle-on-kafka/${LOCATION}"
   fi
   echo "s3://souffle-on-kafka/${LOCATION}"
+
+  if [ ! -e "${FILE_K8S}" ]
+  then
+    _generate_descriptor "${FILE_K8S}" "${KAFKA_HOST}" "${MODE}" "${S3_EXE}" "${S3_INPUT}" "${S3_OUTPUT}" "${THREADS}" "_extend_k8s" "./kafka/k8s-descriptor.yml"
+    aws s3 cp ${FILE_K8S} "s3://souffle-on-kafka/${LOCATION_K8S}"
+  fi
 }
 
 #
