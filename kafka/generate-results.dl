@@ -194,24 +194,42 @@ tuple_count:number
 RelationTermsProduced(ui,rn,tc) :-
 SuffixTypeB(ui,"relationTermsProduced",rn,tc).
 
+.decl OneKafka(unique_id:number)
+
+OneKafka(ui) :-
+    KafkaMode(ui, "one-kafka").
+
+.decl ManyKafka(unique_id:number)
+
+ManyKafka(ui) :-
+    KafkaMode(ui, "many-kafka").
+
+.decl SomeKafka(unique_id:number)
+
+SomeKafka(ui) :-
+    OneKafka(ui).
+
+SomeKafka(ui) :-
+    ManyKafka(ui).
+
 .decl TotalCommunicationTime(unique_id:number,communication_time:number)
 
 TotalCommunicationTime(ui,ct) :-
-KafkaMode(ui,"many-kafka"),
+ManyKafka(ui),
 ct = sum x : { CommunicationTime(ui,si,x), si != "none" }.
 
 TotalCommunicationTime(ui,0) :-
-!KafkaMode(ui,"many-kafka"),
+!ManyKafka(ui),
 KafkaMode(ui,_).
 
 .decl TotalRunTime(unique_id:number,run_time:number)
 
 TotalRunTime(ui,rt) :-
-KafkaMode(ui,"many-kafka"),
+ManyKafka(ui),
 rt = sum x : { RunTime(ui,si,x), si != "none" }.
 
 TotalRunTime(ui,0) :-
-!KafkaMode(ui,"many-kafka"),
+!ManyKafka(ui),
 KafkaMode(ui,_).
 
 .decl TotalComputationTime(unique_id:number,computation_time:number)
@@ -224,21 +242,21 @@ ct = rt - ct1.
 .decl TotalRelationTermsProduced(unique_id:number,tuple_count:number)
 
 TotalRelationTermsProduced(ui,tc) :-
-KafkaMode(ui,"many-kafka"),
+SomeKafka(ui),
 tc = sum x : { RelationTermsProduced(ui,_,x) }.
 
 TotalRelationTermsProduced(ui,0) :-
-!KafkaMode(ui,"many-kafka"),
+!SomeKafka(ui),
 KafkaMode(ui,_).
 
 .decl TotalStringBytesProduced(unique_id:number,string_bytes:number)
 
 TotalStringBytesProduced(ui,tc) :-
-KafkaMode(ui,"many-kafka"),
+SomeKafka(ui),
 tc = sum x : { StringBytesProduced(ui,_,x) }.
 
 TotalStringBytesProduced(ui,0) :-
-!KafkaMode(ui,"many-kafka"),
+!SomeKafka(ui),
 KafkaMode(ui,_).
 
 .decl Results1(
@@ -263,8 +281,8 @@ string_bytes:number
 .output Results1(delimiter=",",headers=true)
 
 Results1(ui,bp,dt,ss,jt,km,ea,dn,ts,is,os,rt,ct1,ct2,tc,sb) :-
-bp = "NR",
-substr(dn, 0, strlen("half-complete-graph-")) = "half-complete-graph-",
+//bp = "NR",
+//substr(dn, 0, strlen("half-complete-graph-")) = "half-complete-graph-",
 Prefix(ui,bp,dt,ss,jt,km,ea,dn,ts),
 InputSize(ui,is),
 OutputSize(ui,os),
@@ -286,7 +304,7 @@ ValidStratumIndexForMax(ui,si) :-
 .decl ValidRelationNameForMax(unique_id:number,relation_name:symbol)
 
 ValidRelationNameForMax(ui,rn) :-
-    KafkaMode(ui,"many-kafka"),
+    SomeKafka(ui),
     RelationTermsProduced(ui,rn,_),
     rn != "I",
     rn != "E".
@@ -346,8 +364,8 @@ max_computation_time_stratum_value:number
 .output Results2(delimiter=",",headers=true)
 
 Results2(ui,bp,dt,ss,jt,km,ea,dn,ts,is,os,mprck,mprcv,mrtsk,mrtsv,mcts1k,mcts1v,mcts2k,mcts2v) :-
-bp = "NR",
-substr(dn, 0, strlen("half-complete-graph-")) = "half-complete-graph-",
+//bp = "NR",
+//substr(dn, 0, strlen("half-complete-graph-")) = "half-complete-graph-",
 Prefix(ui,bp,dt,ss,jt,km,ea,dn,ts),
 InputSize(ui,is),
 OutputSize(ui,os),
@@ -356,4 +374,8 @@ MaxRunTimeStratum(ui,mrtsk,mrtsv),
 MaxCommunicationTimeStratum(ui,mcts1k,mcts1v),
 MaxComputationTimeStratum(ui,mcts2k,mcts2v).
 
-// @TODO: do ./kafka/script-to-generate-results.sh ~/Downloads/metrics_11-11-2020.csv ~/Downloads/
+// @TODO: do ./kafka/script-to-generate-results.sh ~/Downloads/metrics_13-11-2020.csv ~/Downloads/
+// @TODO: remove outputs below, for debugging, ALL in InputSize but not OutputSize, hence no output generated, retry
+.output InputSize
+.output OutputSize
+

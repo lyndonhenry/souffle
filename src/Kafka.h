@@ -738,6 +738,8 @@ public:
         }
     }
     void endProduction(const String& topicName) {
+        // @TODO (lh): put here as an insurance measure, due to error with Local: Queue full
+        detail::KafkaHelper::pollProducerUntilEmpty(producer_);
         delete producerTopics_[topicName];
         producerTopics_[topicName] = nullptr;
         log("endProduction," + topicName);
@@ -781,12 +783,12 @@ public:
         detail::KafkaHelper::consumeConsumer(consumer_, topic, payload, timeoutMs);
         log("endConsume," + topicName + "," + std::to_string(payload.size()) + "," + std::to_string(sizeof(T)));
     }
-    void pollProducer(const int timeoutMs = 100) {
+    void pollProducer(const int timeoutMs = 0) {
         log("beginPollProducer");
         detail::KafkaHelper::pollHandle(producer_, timeoutMs);
         log("endPollProducer");
     }
-    void pollConsumer(const int timeoutMs = 100) {
+    void pollConsumer(const int timeoutMs = 0) {
         log("beginPollConsumer");
         detail::KafkaHelper::pollHandle(consumer_, timeoutMs);
         log("endPollConsumer");
