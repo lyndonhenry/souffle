@@ -92,12 +92,20 @@ function _main() {
 
   read -p "Example experiments have run, press enter to run the real experiments..."
 
-  # run all experiments in the second round
+  echo
+  echo "RUNNING NEXT ROUND OF EXPERIMENTS (1/3)"
+  echo
+
+  # run all experiments in the third round
   local DOCKER_COMPOSE_FILE
   for DOCKER_COMPOSE_FILE in $(find "${ROOT}/docker-compose/third/no-cloud" -name "*.yml")
   do
     _run_experiment "${DOCKER_COMPOSE_FILE}"
   done
+
+  echo
+  echo "RUNNING NEXT ROUND OF EXPERIMENTS (2/3)"
+  echo
 
   # run all experiments in the second round
   local DOCKER_COMPOSE_FILE
@@ -105,6 +113,10 @@ function _main() {
   do
     _run_experiment "${DOCKER_COMPOSE_FILE}"
   done
+
+  echo
+  echo "RUNNING NEXT ROUND OF EXPERIMENTS (3/3)"
+  echo
 
   # run the non-cloud experiments in the first round
   local DOCKER_COMPOSE_FILE

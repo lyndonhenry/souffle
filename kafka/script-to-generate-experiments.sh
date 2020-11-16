@@ -312,7 +312,41 @@ function _generate_third_round_of_experiments() {
         done
       done
     done
-    ((COUNT++))
+  done
+
+  # Experiments with no kafka
+  for SPLIT in ${SPLITS}
+  do
+    local BENCHMARK
+    for BENCHMARK in ${BENCHMARKS}
+    do
+      local DATASET
+      for DATASET in ${DATASETS}
+      do
+        local TYPE
+        for TYPE in ${TYPES}
+        do
+          for JOIN in ${JOINS}
+          do
+            local THREAD
+            for THREAD in ${THREADS}
+            do
+              local SIZE=$((2 ** COUNT))
+              ./kafka/souffle-on-kafka.sh \
+              --benchmark "${BENCHMARK}" \
+              --type "${TYPE}" \
+              --split "${SPLIT}" \
+              --join "${JOIN}" \
+              --mode "no-kafka" \
+              --algorithm "GPCSNE" \
+              --data "${DATASET}-${SIZE}" \
+              --threads "${THREAD}" \
+              --subdir "${SUBDIR}"
+            done
+          done
+        done
+      done
+    done
   done
 
 }
