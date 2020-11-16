@@ -104,6 +104,7 @@ public:
                 const auto str_bytes = str.size() + sizeof(std::size_t);
                 if ((size_in_bytes + str_bytes) >= max_bytes) {
                     producePayload();
+                    pollProducerUntilEmpty();
                     size_in_bytes = 0;
                 }
                 strings_.push_back(str);
