@@ -259,6 +259,64 @@ function _generate_first_round_of_experiments() {
 
 }
 
+function _generate_third_round_of_experiments() {
+
+  # This experiment is to see if there is a sweet spot between number of splits and number of threads.
+  # We keep the size of the data constant and increase the number of threads and splits.
+
+  # 4 + (2 * SPLITS) = TOTAL STRATA
+  # TOTAL STRATA * THREADS = TOTAL THREADS
+  # 2t,8s = 20 * 2 = 40
+  # 4t,4s = 12 * 4 = 48
+  # 8t,2s = 8 * 8 = 64
+  DATASETS="half-complete-graph"
+  BENCHMARKS="NR"
+  TYPES="number symbol"
+  THREADS="2 4 8"
+  SPLITS="8 4 2"
+  JOINS="complete"
+  SUBDIR="third/no-cloud"
+
+  COUNT=11
+
+  # Experiments with kafka
+  for SPLIT in ${SPLITS}
+  do
+    local BENCHMARK
+    for BENCHMARK in ${BENCHMARKS}
+    do
+      local DATASET
+      for DATASET in ${DATASETS}
+      do
+        local TYPE
+        for TYPE in ${TYPES}
+        do
+          for JOIN in ${JOINS}
+          do
+            local THREAD
+            for THREAD in ${THREADS}
+            do
+              local SIZE=$((2 ** COUNT))
+              ./kafka/souffle-on-kafka.sh \
+              --benchmark "${BENCHMARK}" \
+              --type "${TYPE}" \
+              --split "${SPLIT}" \
+              --join "${JOIN}" \
+              --mode "many-kafka" \
+              --algorithm "GPCSNE" \
+              --data "${DATASET}-${SIZE}" \
+              --threads "${THREAD}" \
+              --subdir "${SUBDIR}"
+            done
+          done
+        done
+      done
+    done
+    ((COUNT++))
+  done
+
+}
+
 function _generate_second_round_of_experiments() {
   #
   # Generate the second round of experiments.
@@ -309,7 +367,7 @@ function _generate_second_round_of_experiments() {
 
   BENCHMARKS="ALL"
   TYPES="number symbol"
-  THREADS="32"
+  THREADS="16"
   SPLITS="0"
   JOINS="none"
 
@@ -404,6 +462,9 @@ function _main() {
 
   _generate_second_round_of_experiments
 
+  _generate_third_round_of_experiments
+
 }
 
 _main
+}

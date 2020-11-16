@@ -94,6 +94,13 @@ function _main() {
 
   # run all experiments in the second round
   local DOCKER_COMPOSE_FILE
+  for DOCKER_COMPOSE_FILE in $(find "${ROOT}/docker-compose/third/no-cloud" -name "*.yml")
+  do
+    _run_experiment "${DOCKER_COMPOSE_FILE}"
+  done
+
+  # run all experiments in the second round
+  local DOCKER_COMPOSE_FILE
   for DOCKER_COMPOSE_FILE in $(find "${ROOT}/docker-compose/second/no-cloud" -name "*.yml")
   do
     _run_experiment "${DOCKER_COMPOSE_FILE}"
