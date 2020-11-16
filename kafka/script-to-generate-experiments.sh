@@ -429,7 +429,7 @@ function _generate_second_round_of_experiments() {
               --type "${TYPE}" \
               --split "${SPLIT}" \
               --join "${JOIN}" \
-              --mode "one-kafka" \
+              --mode "many-kafka" \
               --algorithm "GPCSNE" \
               --data "${DATASET}" \
               --threads "${THREAD}" \
