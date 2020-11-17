@@ -348,6 +348,7 @@ function _phase_three() {
   local FILE="${ROOT}/${LOCATION}"
   local FILE_K8S="${ROOT}/${LOCATION_K8S}"
   local KAFKA_HOST="kafka:29092"
+  local KAFKA_HOST_K8S="kafka-cluster:29092"
   local S3_EXE="s3://souffle-on-kafka/exe/$(basename ${EXE})"
   local S3_INPUT="s3://souffle-on-kafka/input/${DATA}"
   local S3_OUTPUT="s3://souffle-on-kafka/output"
@@ -360,7 +361,7 @@ function _phase_three() {
 
   if [ ! -e "${FILE_K8S}" ]
   then
-    _generate_descriptor "${FILE_K8S}" "${KAFKA_HOST}" "${MODE}" "${S3_EXE}" "${S3_INPUT}" "${S3_OUTPUT}" "${THREADS}" "_extend_k8s" "./kafka/k8s-descriptor.yml"
+    _generate_descriptor "${FILE_K8S}" "${KAFKA_HOST_K8S}" "${MODE}" "${S3_EXE}" "${S3_INPUT}" "${S3_OUTPUT}" "${THREADS}" "_extend_k8s" "./kafka/k8s-descriptor.yml"
     aws s3 cp ${FILE_K8S} "s3://souffle-on-kafka/${LOCATION_K8S}"
   fi
 }
