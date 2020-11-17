@@ -7,8 +7,8 @@ metadata:
     tier: backend
 spec:
   ports:
-  - port: 9092
-    targetPort: 9092
+  - port: 29092
+    targetPort: 29092
   selector:
     app: kafka
 ---
@@ -30,7 +30,7 @@ spec:
       - name: kafka
         image: wurstmeister/kafka
         ports:
-        - containerPort: 9092
+        - containerPort: 29092
         env:
           - name: KAFKA_LISTENERS
             value: "LISTENER_INTER://:29092"
