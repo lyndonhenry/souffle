@@ -9,6 +9,9 @@ set -ouex pipefail
 
 KAFKA_LOG_TOPIC="souffle-log"
 VERBOSE="" # use VERBOSE="--verbose" for verbose mode
+KAFKA_PATH="/home/${USER}/.kafka"
+
+export PATH="${KAFKA_PATH}/bin:${PATH}"
 
 #
 # == Utilities ==
@@ -188,7 +191,6 @@ function _ensure_souffle_dependencies_are_installed() {
 # The installation location is ~/.kafka.
 #
 function _ensure_apache_kafka_is_installed() {
-  local KAFKA_PATH="/home/${USER}/.kafka"
   if [ ! -e "${KAFKA_PATH}" ]
   then
     sudo apt-get install -y curl
