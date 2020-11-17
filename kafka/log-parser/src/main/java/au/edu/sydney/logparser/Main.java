@@ -81,7 +81,7 @@ public class Main {
                         }
                         break;
                     case "uploadOutput" :
-                        if (parts.length == 5) {
+                        if (parts.length == 6) {
                             BigDecimal uploadCount = new BigDecimal(parts[4]);
                             addValue(metrics, "outputSize", emptyKey, uploadCount);
                         }

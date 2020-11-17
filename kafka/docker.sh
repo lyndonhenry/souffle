@@ -458,8 +458,12 @@ function _kafka_produce_log_message() {
   ;;
   "uploadOutput")
   # note: this always assumes './output/I.csv'
-  local LINE_COUNT="$(cat "./output/I.csv" || :)"
-  MESSAGE="uploadOutput,${LINE_COUNT}"
+  local FILE
+  for FILE in ./output/*.csv
+  do
+    local LINE_COUNT="$(cat ${FILE})"
+    MESSAGE="uploadOutput,${LINE_COUNT},$(basename ${FILE})"
+  done
   ;;
   "printMetadata")
   BEGIN_TIME=$(($(date +%s%N)/1000000))
