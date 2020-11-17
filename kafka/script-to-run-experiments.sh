@@ -96,9 +96,8 @@ function _main() {
   echo "RUNNING NEXT ROUND OF EXPERIMENTS (1/3)"
   echo
 
-  # run all experiments in the third round
   local DOCKER_COMPOSE_FILE
-  for DOCKER_COMPOSE_FILE in $(find "${ROOT}/docker-compose/third/no-cloud" -name "*.yml")
+  for DOCKER_COMPOSE_FILE in $(find "${ROOT}/docker-compose/first/no-cloud" -name "*.yml")
   do
     _run_experiment "${DOCKER_COMPOSE_FILE}"
   done
@@ -107,9 +106,8 @@ function _main() {
   echo "RUNNING NEXT ROUND OF EXPERIMENTS (2/3)"
   echo
 
-  # run all experiments in the second round
   local DOCKER_COMPOSE_FILE
-  for DOCKER_COMPOSE_FILE in $(find "${ROOT}/docker-compose/second/no-cloud" -name "*.yml")
+  for DOCKER_COMPOSE_FILE in $(find "${ROOT}/docker-compose/third/no-cloud" -name "*.yml")
   do
     _run_experiment "${DOCKER_COMPOSE_FILE}"
   done
@@ -118,9 +116,8 @@ function _main() {
   echo "RUNNING NEXT ROUND OF EXPERIMENTS (3/3)"
   echo
 
-  # run the non-cloud experiments in the first round
   local DOCKER_COMPOSE_FILE
-  for DOCKER_COMPOSE_FILE in $(find "${ROOT}/docker-compose/first/no-cloud" -name "*.yml")
+  for DOCKER_COMPOSE_FILE in $(find "${ROOT}/docker-compose/second/no-cloud" -name "*.yml")
   do
     _run_experiment "${DOCKER_COMPOSE_FILE}"
   done

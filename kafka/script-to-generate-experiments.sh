@@ -126,7 +126,7 @@ function _generate_first_round_of_experiments() {
 
   THREADS="1"
   SPLITS="1 2 4 8 16 32"
-  JOINS="complete left balanced"
+  JOINS="complete"
 
   COUNT=6
   SUBDIR="first/no-cloud"
