@@ -23,7 +23,7 @@ function _generate_example_benchmarks() {
     --join "complete" \
     --mode "no-kafka" \
     --algorithm "SNE" \
-    --data "example"
+    --data "example" \
     --threads "2" \
     --subdir "example"
 
