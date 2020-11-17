@@ -5,47 +5,38 @@ set -ouex pipefail
 
 function _generate_example_benchmarks() {
 
-  # Run without Kafka, using SNE, on NR, with numbers, 1 thread, no splits or joins.
+  ./kafka/souffle-on-kafka.sh \
+    --benchmark "ALL" \
+    --type "number" \
+    --split "1" \
+    --join "none" \
+    --mode "no-kafka" \
+    --algorithm "SNE" \
+    --data "example" \
+    --threads "1" \
+    --subdir "example"
+
+  ./kafka/souffle-on-kafka.sh \
+    --benchmark "NR" \
+    --type "symbol" \
+    --split "2" \
+    --join "complete" \
+    --mode "no-kafka" \
+    --algorithm "SNE" \
+    --data "example"
+    --threads "2" \
+    --subdir "example"
 
   ./kafka/souffle-on-kafka.sh \
     --benchmark "NR" \
     --type "number" \
-    --split "0" \
-    --join "none" \
-    --mode "no-kafka" \
-    --algorithm "SNE" \
-    --data "complete-graph-4" \
-    --threads "1" \
-    --subdir "example"
-
-  # Run with Kafka, in one Docker, using GPCSNE, on ALL, with symbols, 2 threads, no splits or joins.
-
-  ./kafka/souffle-on-kafka.sh \
-    --benchmark "ALL" \
-    --type "symbol" \
-    --split "0" \
-    --join "none" \
+    --split "2" \
+    --join "complete" \
     --mode "one-kafka" \
     --algorithm "GPCSNE" \
     --data "example" \
     --threads "2" \
     --subdir "example"
-
-
-  # Run with Kafka, in many Dockers, using GPCSNE, on ALL, with symbols, 2 threads, no splits no joins.
-
-  ./kafka/souffle-on-kafka.sh \
-    --benchmark "NR" \
-    --type "symbol" \
-    --split "0" \
-    --join "none" \
-    --mode "many-kafka" \
-    --algorithm "GPCSNE" \
-    --data "example" \
-    --threads "2" \
-    --subdir "example"
-
-  # Run with Kafka, in many Dockers, using GPCSNE, on NR, with symbols, 1 thread, 2 splits, and complete join.
 
   ./kafka/souffle-on-kafka.sh \
     --benchmark "NR" \
@@ -55,8 +46,9 @@ function _generate_example_benchmarks() {
     --mode "many-kafka" \
     --algorithm "GPCSNE" \
     --data "example" \
-    --threads "1" \
+    --threads "2" \
     --subdir "example"
+
 
 }
 
