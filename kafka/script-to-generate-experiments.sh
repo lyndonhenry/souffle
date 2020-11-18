@@ -330,7 +330,7 @@ function _generate_third_round_of_experiments() {
               --split "${SPLIT}" \
               --join "${JOIN}" \
               --mode "no-kafka" \
-              --algorithm "GPCSNE" \
+              --algorithm "SNE" \
               --data "${DATASET}-${SIZE}" \
               --threads "${THREAD}" \
               --subdir "${SUBDIR}"
