@@ -777,7 +777,7 @@ public:
     }
     template <typename T>
     void consume(const String& topicName, Vec<T>& payload, const int timeoutMs = -1) {
-        log("beginConsume, " + topicName);
+        log("beginConsume," + topicName);
         RdKafka::Topic* topic = consumerTopics_.at(topicName);
         assert(topic);
         detail::KafkaHelper::consumeConsumer(consumer_, topic, payload, timeoutMs);

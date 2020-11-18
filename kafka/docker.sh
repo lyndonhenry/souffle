@@ -117,7 +117,7 @@ function _kafka_consume_file() {
   local TOPIC="${2}"
   local FILE="${3}"
   # consume lines of file as many messages from topic
-  kafka-console-consumer.sh --topic "${TOPIC}" --from-beginning --bootstrap-server "${KAFKA_HOST}" --timeout-ms 10000 > "${FILE}"
+  kafka-console-consumer.sh --topic "${TOPIC}" --from-beginning --bootstrap-server "${KAFKA_HOST}" --timeout-ms 60000 >> "${FILE}" || :
 }
 
 #
