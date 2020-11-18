@@ -694,6 +694,9 @@ public:
                 createTopic(topicName);
             }
         }
+        if (!runSouffleProgram()) {
+            exit(0);
+        }
         topicConf_ = detail::KafkaHelper::createTopicConf();
         detail::KafkaHelper::setEventCb(globalConf_, &eventCb_);
         detail::KafkaHelper::setDeliveryReportCb(globalConf_, &deliveryReportCb_);
