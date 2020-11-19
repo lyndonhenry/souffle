@@ -31,7 +31,7 @@ function _run_experiment() {
 
     # set a timeout of 1 hour via max count
     local COUNT=0
-    local MAX_COUNT=$(((60 * 60) / 5))
+    local MAX_COUNT=$(((60 * 10) / 5))
     # repeatedly check for log to be generated, signalling program termination
     while [ ! "$(aws s3 ls "s3://souffle-on-kafka/output/log/${NAME}")" ]
     do
@@ -93,29 +93,41 @@ function _main() {
   read -p "Example experiments have run, press enter to run the real experiments..."
 
   echo
-  echo "RUNNING NEXT ROUND OF EXPERIMENTS (1/3)"
+  echo "RUNNING NEXT ROUND OF EXPERIMENTS (1/4)"
   echo
 
+  #local DOCKER_COMPOSE_FILE
+  #for DOCKER_COMPOSE_FILE in $(find "${ROOT}/docker-compose/first/no-cloud" -name "*.yml")
+  #do
+  #  _run_experiment "${DOCKER_COMPOSE_FILE}"
+  #done
+
+  echo
+  echo "RUNNING NEXT ROUND OF EXPERIMENTS (2/4)"
+  echo
+
+  # @TODO (lh): this runs the fourth
   local DOCKER_COMPOSE_FILE
-  for DOCKER_COMPOSE_FILE in $(find "${ROOT}/docker-compose/first/no-cloud" -name "*.yml")
+  for DOCKER_COMPOSE_FILE in $(find "${ROOT}/docker-compose/fourth/no-cloud" -name "*.yml")
   do
     _run_experiment "${DOCKER_COMPOSE_FILE}"
   done
 
   echo
-  echo "RUNNING NEXT ROUND OF EXPERIMENTS (2/3)"
+  echo "RUNNING NEXT ROUND OF EXPERIMENTS (3/4)"
   echo
 
-  local DOCKER_COMPOSE_FILE
-  for DOCKER_COMPOSE_FILE in $(find "${ROOT}/docker-compose/third/no-cloud" -name "*.yml")
-  do
-    _run_experiment "${DOCKER_COMPOSE_FILE}"
-  done
+  #local DOCKER_COMPOSE_FILE
+  #for DOCKER_COMPOSE_FILE in $(find "${ROOT}/docker-compose/third/no-cloud" -name "*.yml")
+  #do
+  #  _run_experiment "${DOCKER_COMPOSE_FILE}"
+  #done
 
   echo
-  echo "RUNNING NEXT ROUND OF EXPERIMENTS (3/3)"
+  echo "RUNNING NEXT ROUND OF EXPERIMENTS (4/4)"
   echo
 
+  # @TODO (lh): this runs the second
   local DOCKER_COMPOSE_FILE
   for DOCKER_COMPOSE_FILE in $(find "${ROOT}/docker-compose/second/no-cloud" -name "*.yml")
   do

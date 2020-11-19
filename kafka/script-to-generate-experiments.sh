@@ -365,31 +365,23 @@ function _generate_second_round_of_experiments() {
   local JOINS
   local SUBDIR
 
-  DATASETS+=" cit-HepPh "
-  DATASETS+=" cit-HepTh "
-  DATASETS+=" com-Amazon "
-  DATASETS+=" com-DBLP "
-  DATASETS+=" com-Youtube "
+  DATASETS+=" half-complete-graph-2048 "
   DATASETS+=" ego-Facebook "
-  DATASETS+=" ego-Twitter "
+  DATASETS+=" wiki-Vote "
+  DATASETS+=" cit-HepTh "
   DATASETS+=" email-Enron "
   DATASETS+=" email-EuAll "
+  DATASETS+=" cit-HepPh "
   DATASETS+=" loc-Brightkite "
-  DATASETS+=" loc-Gowalla "
-  DATASETS+=" roadNet-CA "
-  DATASETS+=" roadNet-PA "
-  DATASETS+=" roadNet-TX "
   DATASETS+=" soc-Epinions1 "
+  DATASETS+=" sx-mathoverflow "
   DATASETS+=" soc-Slashdot0811 "
   DATASETS+=" soc-Slashdot0902 "
-  DATASETS+=" sx-askubuntu "
-  DATASETS+=" sx-mathoverflow "
-  DATASETS+=" sx-superuser "
+  DATASETS+=" com-Amazon "
+  DATASETS+=" com-DBLP "
   DATASETS+=" web-NotreDame "
-  DATASETS+=" web-Stanford "
-  DATASETS+=" web-flickr "
-  DATASETS+=" wiki-Talk "
-  DATASETS+=" wiki-Vote "
+  DATASETS+=" ego-Twitter "
+  DATASETS+=" loc-Gowalla "
 
   BENCHMARKS="ALL"
   TYPES="number symbol"
@@ -398,6 +390,124 @@ function _generate_second_round_of_experiments() {
   JOINS="none"
 
   SUBDIR="second/no-cloud"
+
+  # Experiments without kafka
+  local BENCHMARK
+  for BENCHMARK in ${BENCHMARKS}
+  do
+    local DATASET
+    for DATASET in ${DATASETS}
+    do
+      local TYPE
+      for TYPE in ${TYPES}
+      do
+        for SPLIT in ${SPLITS}
+        do
+          for JOIN in ${JOINS}
+          do
+            local THREAD
+            for THREAD in ${THREADS}
+            do
+              ./kafka/souffle-on-kafka.sh \
+              --benchmark "${BENCHMARK}" \
+              --type "${TYPE}" \
+              --split "${SPLIT}" \
+              --join "${JOIN}" \
+              --mode "no-kafka" \
+              --algorithm "SNE" \
+              --data "${DATASET}" \
+              --threads "${THREAD}" \
+              --subdir "${SUBDIR}"
+            done
+          done
+        done
+      done
+    done
+  done
+
+  # Experiments with kafka
+  local BENCHMARK
+  for BENCHMARK in ${BENCHMARKS}
+  do
+    local DATASET
+    for DATASET in ${DATASETS}
+    do
+      local TYPE
+      for TYPE in ${TYPES}
+      do
+        for SPLIT in ${SPLITS}
+        do
+          for JOIN in ${JOINS}
+          do
+            local THREAD
+            for THREAD in ${THREADS}
+            do
+              ./kafka/souffle-on-kafka.sh \
+              --benchmark "${BENCHMARK}" \
+              --type "${TYPE}" \
+              --split "${SPLIT}" \
+              --join "${JOIN}" \
+              --mode "many-kafka" \
+              --algorithm "GPCSNE" \
+              --data "${DATASET}" \
+              --threads "${THREAD}" \
+              --subdir "${SUBDIR}"
+            done
+          done
+        done
+      done
+    done
+  done
+
+}
+
+function _generate_fourth_round_of_experiments() {
+  #
+  # Generate the fourth round of experiments.
+  #
+  # This tests Souffle with Kafka vs Souffle with no Kafka.
+  # Here, all Souffle strata are executed together in the same Docker.
+  # These experiments are not required to be run in the cloud.
+  # All datasets are used, for both number and symbol types.
+  # Only the ALL benchmark is used, containing all other benchmarks.
+  # Eight threads is used, with no splits or joins.
+  # The total number of docker-compose.yml files is
+  # (|DATASETS| * |TYPES|) * 2  = (23 * 2) * 2 = 92
+  #
+
+  local DATASETS
+  local BENCHMARKS
+  local TYPES
+  local THREADS
+  local SPLITS
+  local JOINS
+  local SUBDIR
+
+  DATASETS+=" half-complete-graph-2048 "
+  DATASETS+=" ego-Facebook "
+  DATASETS+=" wiki-Vote "
+  DATASETS+=" cit-HepTh "
+  DATASETS+=" email-Enron "
+  DATASETS+=" email-EuAll "
+  DATASETS+=" cit-HepPh "
+  DATASETS+=" loc-Brightkite "
+  DATASETS+=" soc-Epinions1 "
+  DATASETS+=" sx-mathoverflow "
+  DATASETS+=" soc-Slashdot0811 "
+  DATASETS+=" soc-Slashdot0902 "
+  DATASETS+=" com-Amazon "
+  DATASETS+=" com-DBLP "
+  DATASETS+=" web-NotreDame "
+  DATASETS+=" ego-Twitter "
+  DATASETS+=" loc-Gowalla "
+
+  BENCHMARKS="NR"
+  TYPES="number symbol"
+  THREADS="16"
+  SPLITS="2"
+  JOINS="complete"
+
+  SUBDIR="fourth/no-cloud"
 
   # Experiments without kafka
   local BENCHMARK
@@ -489,6 +599,8 @@ function _main() {
   _generate_second_round_of_experiments
 
   _generate_third_round_of_experiments
+
+  _generate_fourth_round_of_experiments
 
 }
 

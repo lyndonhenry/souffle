@@ -854,6 +854,17 @@ impl Helper {
       InfoFormat::Synthetic => Self::run_for_synthetic_dataset(info, &root_dir),
     }
   }
+    fn print_latex(infos: &Vec<InfoStruct>) -> () {
+      for info in infos.iter() {
+        println!(
+          "{} & {} & {} & {} \\",
+          info.name,
+          info.vertices,
+          info.edges,
+          info.directed
+        );
+      }
+    }
 }
 
 fn make_datasets() -> Result<()> {
@@ -924,6 +935,7 @@ fn make_datasets() -> Result<()> {
       )
   }
    */
+  Helper::print_latex(&datasets);
   for dataset in datasets.iter() {
     Helper::run(dataset)?;
   }
