@@ -35,7 +35,7 @@ function _generate_results() {
 }
 
 function _main() {
-  _generate_results "${1}" "${2}"
+  _generate_results metrics.csv .
 }
 
 _main "${@:-}"

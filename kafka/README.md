@@ -2,9 +2,105 @@
 
 Welcome to Souffle on Kafka.
 
+## Files of Interest
+
+This briefly explains the role of certain files in the system. 
+Please look at the scripts themselves to understand the details of the implementation.
+The main script that shows how to go from a Datalog program and some data for it is `./kafka/souffle-on-kafka.sh`.
+Many of these scripts will need to be modified, as they are hardcoded to a particular S3 bucket.
+
+### Scripts
+
+- `./kafka/rust`: Has rust code for generating datasets and benchmarks.
+- `./kafka/log-parser`: Has java code for analysing log files for results analysis.
+- `./kafka/Dockerfile`: Dockerfile for the Souffle on Kafka system.
+- `./kafka/docker.sh`: Script that runs is included in every Souffle on Kafka docker build. Used by `./kafka/Dockerfile`.
+- `./kafka/souffle-on-kafka.sh`: Main script used to generate a Souffle on Kafka deployment from a given config.
+- `./kafka/souffle-on-kafka-docker.sh`: Commands for building and running Souffle on Kafka in a Docker container.
+
+### C++ Code
+
+- `./src/Kafka.h`: Contains all Kafka-related code.
+- `./src/WriteStreamKafka.h`: Write stream for Kafka. Contains logic on message batching at 100KB message size, and polling.
+- `./src/ReadStreamKafka.h`: Read stream for Kafka.
+- `./src/AstTranslator.cpp`: Implements streaming seminaive, see RAM program generated using debug report.
+- `./src/AstSemanticChecker.cpp`: Disables streaming seminaive if aggregation is present.
+
+
+## Configuration
+
+A brief explanation is given of each of the configuration parameters that defines a Souffle on Kafka execution over a particular program and input.
+Experiments are obtained by use of different combinations of configuration parameters on different programs and datasets. 
+
+- *Engine*: The engine determines what happens to intermediate relations during program execution. Any relation is considered intermediate if it occurs in the body of a rule of a stratum other than its own.
+    - *Normal*: Intermediate relations are produced to and consumed from memory.
+    - *Kafka*: Intermediate relations are produced to and consumed from Kafka topics.
+- *Machines*: This states whether strata are executed on one machine/docker instance, or multiple machines/docker instances.
+    - *One*: The program is executed using one machine/docker instance.
+    - *Many*: The program is executed as many machines/docker instances. 
+- *Processes*:  This states whether strata may be executed as multiple concurrent processes, or the program exected as a single process.
+    - *One*: The program may be executed as a single process on one machine, evaluating strata in topological order of their SCC graph.
+    - *Many*: The program may be executed as multiple concurrent processes.
+- *Threads*: This states whether executions may use one or many threads. Use of multithreading is valid under all configurations.
+    - *One*: The execution may run with one thread.
+    - *Many*:  The execution may run with multiple threads.
+- *Algorithm*: This states the evaluation algorithm used for the program execution.
+    - *SNE*:   Standard seminaive evaluation.
+    - *GSNE*: Generalised SNE, where each non-negated EDB relation is evaluated in the manner of an IDB relation.
+    - *GPSNE*: GSNE, but with production of new IDB tuples to successor strata occurring at the end of each epoch.
+    - *GPCSNE*: GPSNE, but with consumption of new EDB tuples from predecessor strata occuring at the beginning of each epoch. Note that this and the SNE algorithm are the ones that are useful, the others are intermediate algorithms that may be used to measure particular overheads.
+
+We follow with a list of each of the options that must be passed at the command line in the call to Souffle to obtain the desired configuration.
+Each of these are appended to a regular invocation of Souffle to enable the desired behaviour (e.g. `./src/souffle -Ffacts -Dcsvs myprogram.dl`).
+Use of some options is dependent upon deployment scripts, but may require particular arguments to Souffle.
+These are passed to Souffle by the `./kafka/souffle-on-kafka.sh` script.
+
+- Engine
+    - Normal: enabled by default
+    - File: `-Xuse-engine-file`
+    - Kafka: `-Xuse-engine-kafka`
+- Machine
+    - One: (determined by deployment scripts)
+    - Many: (determined by deployment scripts, only allowed if `-Xuse-engine-kafka`)
+- Processes
+    - One: (determined by deployment scripts)
+    - Many: (determined by deployment scripts, only allowed if `-Xuse-engine-kafka`)
+- Threads
+    - One: `-j1`
+    - Many: `-j8` note that this will run with 8 threads.
+- Algorithm
+    - SNE: (by default)
+    - GSNE: `-Xuse-general`
+    - GPSNE: `-Xuse-general -Xuse-general-producers`
+    - GPCSNE: `-Xuse-general -Xuse-general-producers -Xuse-general-consumers`
+
+A list of examples follows. 
+Here we assume that the Souffle executable at `./src/souffle` is on your `$PATH`, that "facts" is a directory with `.facts` files, "csv" is an output directory, and "prog.dl" is a Datalog program.
+
+- Compiler mode, eight threads. 
+    - `souffle -Ffacts -Dcsv prog.dl -j8 -c`
+- General strategy, compiler mode, eight threads.
+    -  `souffle -Ffacts -Dcsv prog.dl -j8 -c -Xuse-general`
+- General producers strategy, compiler mode, eight threads.
+    - `souffle -Ffacts -Dcsv prog.dl -j8 -c -Xuse-general -Xuse-general-producers`
+- File engine, compiler mode, eight threads.
+    - `souffle -Ffacts -Dcsv prog.dl -j8 -c -Xuse-engine-file`
+- General strategy, file engine, compiler mode, eight threads.
+    - `souffle -Ffacts -Dcsv prog.dl -j8 -c -Xuse-engine-file -Xuse-general`
+- General producers strategy, file engine, compiler mode, eight threads.
+    - `souffle -Ffacts -Dcsv prog.dl -j8 -c -Xuse-engine-file -Xuse-general -Xuse-general-producers`
+- Kafka engine, compiler mode, eight threads.
+    - `souffle -Ffacts -Dcsv prog.dl -j8 -c -Xuse-engine-kafka`
+- General strategy, kafka engine, compiler mode, eight threads.
+    - `souffle -Ffacts -Dcsv prog.dl -j8 -c -Xuse-engine-kafka -Xuse-general`
+- General producers strategy, kafka engine, compiler mode, eight threads.
+    - `souffle -Ffacts -Dcsv prog.dl -j8 -c -Xuse-engine-kafka -Xuse-general -Xuse-general-producers`
+- General consumers strategy, kafka engine, compiler mode, eight threads.
+    - `souffle -Ffacts -Dcsv prog.dl -j8 -c -Xuse-engine-kafka -Xuse-general -Xuse-general-producers -Xuse-general-consumers`
+
 ## Experiments
 
-The experiments are managed by four bash scripts.
+The experiments are managed by bash scripts.
 
 The scripts do not depend on each other, and no other script depends on them -- they are merely helper scripts.
 
@@ -14,6 +110,8 @@ The scripts are:
 2. `script-to-generate-datasets.sh` 
 3. `script-to-generate-experiments.sh`
 4. `script-to-run-experiments.sh`
+5. `script-to-analyse-logs.sh`
+6. `script-to-generate-results.sh`
 
 Each script is to be run from the Souffle root directory, i.e. `./kafka/my-script.sh` and not `cd kafka && ./my-script.sh`.
 
@@ -28,6 +126,7 @@ The purpose of each script is as follows:
     
 - `script-to-generate-datasets.sh`
     - Downloads all datasets for the experiments, formats them, and places them in the S3 bucket.
+    - This uses the code in `./kafka/rust/souffle_on_kafka.sh`.
 
 - `script-to-generate-experiments.sh`
     - Generates all `docker-compose.yml` files for the experiments.
@@ -37,13 +136,21 @@ The purpose of each script is as follows:
     - The `example` docker compose files are used to test the system.
     - The `yes-cloud` docker compose files **are to be run in Azure**.
     - The `no-cloud` docker compose files **are to be run on plang8**.
-    - Note that the user will be prompted to continue generating the real experiments once the example experiments are generated.
-    - By terminating the script before the real experiments are generated, the system can be tested on the examples only.
+    - This uses the code in `./kafka/rust/souffle_on_kafka.sh`.
     
 - `script-to-run-experiments.sh`
     - Runs the experiments, using Docker compose commands.
     - A user's AWS credentials are written to a `.env` file; the script then changes to the directory of the `.env` file, so that calls to `docker-compose` use the contents of this file to populate the environment variables.
     - Each experiment generates a log file in `s3://souffle-on-kafka/output/log`; we check for the existence of this log file in the S3 bucket to signal an experiment's termination.
+    
+- `script-to-analyse-logs.sh`
+    - Produces a `metrics.csv` from the logs in `~/.souffle/output/log`.
+    - This uses the code in `./kafka/log-parser`.
+    - Note that the log files must be synced from the S3 bucket.
+    
+- `script-to-generate-results.sh`
+    - Produces results from the `metrics.csv` file generated by `script-to-analyse-results.sh`.
+    - This uses the `./kafka/generate-results.dl` Datalog program for analysis.
     
 
 ## Results
@@ -166,86 +273,6 @@ The following message bodies are mmitted by operations from within the execution
     - Emitted after polling of consumer to process inbound messages has begun.
 - `endPollConsumer`
     - Emitted after polling of consumer to process inbound messages has ended.
-
-## Design
-
-This section explains the paramterization of the experiments.
-
-The experiments are split into two rounds.
-
-Each round compares an execution of standard Souffle (with `no-kafka` and `SNE`) against an execution of Souffle on Kafka (with either `one-kafka` or `many-kafka` and `GPCSNE`).
-
-Each round is described below, by the value of each of the parameters that describe it.
-
-One experiment will be generated per combination of parameters and execution mode (i.e. standard Souffle or Souffle on Kafka).
-
-In the first round, with `no-kakfa` and `SNE` vs `many-kafka` and `GPCSNE`, we have the following.
-
-For all in this round:
-
-~~~
-  DATASETS="soc-LiveJournal1"
-  BENCHMARKS="NR"
-  TYPES="number symbol"
-~~~
-
-For `no-kakfa` and `SNE`:
-
-~~~
-  THREADS="1 2 4 8 16 32 64"
-  SPLITS="0"
-  JOINS="none"
-  SUBDIR="no-cloud"
-~~~
-
-For `many-kafka` and `GPCSNE`:
-
-~~~
-  THREADS="1"
-  SPLITS="0 2 4 8 16 32 64"
-  JOINS="complete left balanced"
-  SUBDIR="yes-cloud"
-~~~
-
-In the second round, `no-kafka` and `SNE` vs `one-kafka` and `GPCSNE`, we have the following.
-
-For all in this round:
-
-~~~
-  DATASETS+="cit-Patents"
-  DATASETS+="com-Orkut"
-  DATASETS+="com-Youtube"
-  DATASETS+="roadNet-CA"
-  DATASETS+="roadNet-PA"
-  DATASETS+="roadNet-TX"
-  DATASETS+="soc-LiveJournal1"
-  DATASETS+="soc-Epinions1"
-  DATASETS+="soc-Pokec"
-  DATASETS+="web-BerkStan"
-  DATASETS+="web-Google"
-  DATASETS+="web-NotreDame"
-  DATASETS+="web-Stanford"
-  DATASETS+="wiki-Talk"
-  DATASETS+="wiki-topcats"
-  DATASETS+="prog-jenkins"
-  DATASETS+="prog-jython"
-  DATASETS+="prog-openjdk8"
-
-  BENCHMARKS+="LR"
-  BENCHMARKS+="RR"
-  BENCHMARKS+="NR"
-  BENCHMARKS+="SG"
-  BENCHMARKS+="RSG"
-  BENCHMARKS+="TC"
-  BENCHMARKS+="SCC"
-  BENCHMARKS+="MN"
-
-  TYPES="number symbol"
-  THREADS="1"
-  SPLITS="0"
-  JOINS="none"
-  SUBDIR="no-cloud"
-~~~
 
 ## Metrics
 

@@ -292,6 +292,193 @@ TotalComputationTime(ui,ct2),
 TotalRelationTermsProduced(ui,tc),
 TotalStringBytesProduced(ui,sb).
 
+.comp ResultsFilter {
+
+.decl InputResults(
+unique_id:number,
+benchmark_program:symbol,
+data_type:symbol,
+split_size:number,
+join_type:symbol,
+kafka_mode:symbol,
+evaluation_algorithm:symbol,
+dataset_name:symbol,
+thread_size:number,
+input_size:number,
+output_size:number,
+run_time:number,
+communication_time:number,
+computation_time:number,
+tuple_count:number,
+string_bytes:number
+)
+
+.decl OutputResults(
+unique_id:number,
+benchmark_program:symbol,
+data_type:symbol,
+split_size:number,
+join_type:symbol,
+kafka_mode:symbol,
+evaluation_algorithm:symbol,
+dataset_name:symbol,
+thread_size:number,
+input_size:number,
+output_size:number,
+run_time:number,
+communication_time:number,
+computation_time:number,
+tuple_count:number,
+string_bytes:number
+)
+
+.decl Filter(
+benchmark_program:symbol,
+data_type:symbol,
+split_size:number,
+join_type:symbol,
+kafka_mode:symbol,
+evaluation_algorithm:symbol,
+dataset_name:symbol,
+thread_size:number
+)
+
+OutputResults(ui,bp,dt,ss,jt,km,ea,dn,ts,is,os,rt,ct1,ct2,tc,sb) :-
+  Filter(bp,dt,ss,jt,km,ea,dn,ts),
+  InputResults(ui,bp,dt,ss,jt,km,ea,dn,ts,is,os,rt,ct1,ct2,tc,sb).
+
+}
+
+.init results_3 = ResultsFilter
+
+results_3.InputResults(ui,bp,dt,ss,jt,km,ea,dn,ts,is,os,rt,ct1,ct2,tc,sb) :- 
+    Results1(ui,bp,dt,ss,jt,km,ea,dn,ts,is,os,rt,ct1,ct2,tc,sb).
+
+.output results_3.OutputResults(delimiter=",",headers=true)
+
+results_3.Filter("NR","number",0,"none","no-kafka","SNE","half-complete-graph-64",1).
+results_3.Filter("NR","number",0,"none","no-kafka","SNE","half-complete-graph-128",2).
+results_3.Filter("NR","number",0,"none","no-kafka","SNE","half-complete-graph-256",4).
+results_3.Filter("NR","number",0,"none","no-kafka","SNE","half-complete-graph-512",8).
+results_3.Filter("NR","number",0,"none","no-kafka","SNE","half-complete-graph-1024",16).
+results_3.Filter("NR","number",0,"none","no-kafka","SNE","half-complete-graph-2048",32).
+
+results_3.Filter("NR","number",1,"complete","one-kafka","GPCSNE","half-complete-graph-64",1).
+results_3.Filter("NR","number",2,"complete","one-kafka","GPCSNE","half-complete-graph-128",1).
+results_3.Filter("NR","number",4,"complete","one-kafka","GPCSNE","half-complete-graph-256",1).
+results_3.Filter("NR","number",8,"complete","one-kafka","GPCSNE","half-complete-graph-512",1).
+results_3.Filter("NR","number",16,"complete","one-kafka","GPCSNE","half-complete-graph-1024",1).
+results_3.Filter("NR","number",32,"complete","one-kafka","GPCSNE","half-complete-graph-2048",1).
+
+results_3.Filter("NR","number",1,"complete","many-kafka","GPCSNE","half-complete-graph-64",1).
+results_3.Filter("NR","number",2,"complete","many-kafka","GPCSNE","half-complete-graph-128",1).
+results_3.Filter("NR","number",4,"complete","many-kafka","GPCSNE","half-complete-graph-256",1).
+results_3.Filter("NR","number",8,"complete","many-kafka","GPCSNE","half-complete-graph-512",1).
+results_3.Filter("NR","number",16,"complete","many-kafka","GPCSNE","half-complete-graph-1024",1).
+results_3.Filter("NR","number",32,"complete","many-kafka","GPCSNE","half-complete-graph-2048",1).
+
+results_3.Filter("NR","symbol",0,"none","no-kafka","SNE","half-complete-graph-64",1).
+results_3.Filter("NR","symbol",0,"none","no-kafka","SNE","half-complete-graph-128",2).
+results_3.Filter("NR","symbol",0,"none","no-kafka","SNE","half-complete-graph-256",4).
+results_3.Filter("NR","symbol",0,"none","no-kafka","SNE","half-complete-graph-512",8).
+results_3.Filter("NR","symbol",0,"none","no-kafka","SNE","half-complete-graph-1024",16).
+results_3.Filter("NR","symbol",0,"none","no-kafka","SNE","half-complete-graph-2048",32).
+
+results_3.Filter("NR","symbol",1,"complete","one-kafka","GPCSNE","half-complete-graph-64",1).
+results_3.Filter("NR","symbol",2,"complete","one-kafka","GPCSNE","half-complete-graph-128",1).
+results_3.Filter("NR","symbol",4,"complete","one-kafka","GPCSNE","half-complete-graph-256",1).
+results_3.Filter("NR","symbol",8,"complete","one-kafka","GPCSNE","half-complete-graph-512",1).
+results_3.Filter("NR","symbol",16,"complete","one-kafka","GPCSNE","half-complete-graph-1024",1).
+results_3.Filter("NR","symbol",32,"complete","one-kafka","GPCSNE","half-complete-graph-2048",1).
+
+results_3.Filter("NR","symbol",1,"complete","many-kafka","GPCSNE","half-complete-graph-64",1).
+results_3.Filter("NR","symbol",2,"complete","many-kafka","GPCSNE","half-complete-graph-128",1).
+results_3.Filter("NR","symbol",4,"complete","many-kafka","GPCSNE","half-complete-graph-256",1).
+results_3.Filter("NR","symbol",8,"complete","many-kafka","GPCSNE","half-complete-graph-512",1).
+results_3.Filter("NR","symbol",16,"complete","many-kafka","GPCSNE","half-complete-graph-1024",1).
+results_3.Filter("NR","symbol",32,"complete","many-kafka","GPCSNE","half-complete-graph-2048",1).
+
+.init results_4 = ResultsFilter
+
+results_4.InputResults(ui,bp,dt,ss,jt,km,ea,dn,ts,is,os,rt,ct1,ct2,tc,sb) :- 
+    Results1(ui,bp,dt,ss,jt,km,ea,dn,ts,is,os,rt,ct1,ct2,tc,sb).
+
+.output results_4.OutputResults(delimiter=",",headers=true)
+
+results_4.Filter("NR","number",2,"complete","no-kafka","SNE","half-complete-graph-2048",2).
+results_4.Filter("NR","number",2,"complete","no-kafka","SNE","half-complete-graph-2048",4).
+results_4.Filter("NR","number",2,"complete","no-kafka","SNE","half-complete-graph-2048",8).
+
+results_4.Filter("NR","number",4,"complete","no-kafka","SNE","half-complete-graph-2048",2).
+results_4.Filter("NR","number",4,"complete","no-kafka","SNE","half-complete-graph-2048",4).
+results_4.Filter("NR","number",4,"complete","no-kafka","SNE","half-complete-graph-2048",8).
+
+results_4.Filter("NR","number",8,"complete","no-kafka","SNE","half-complete-graph-2048",2).
+results_4.Filter("NR","number",8,"complete","no-kafka","SNE","half-complete-graph-2048",4).
+results_4.Filter("NR","number",8,"complete","no-kafka","SNE","half-complete-graph-2048",8).
+
+results_4.Filter("NR","number",2,"complete","many-kafka","GPCSNE","half-complete-graph-2048",2).
+results_4.Filter("NR","number",2,"complete","many-kafka","GPCSNE","half-complete-graph-2048",4).
+results_4.Filter("NR","number",2,"complete","many-kafka","GPCSNE","half-complete-graph-2048",8).
+
+results_4.Filter("NR","number",4,"complete","many-kafka","GPCSNE","half-complete-graph-2048",2).
+results_4.Filter("NR","number",4,"complete","many-kafka","GPCSNE","half-complete-graph-2048",4).
+results_4.Filter("NR","number",4,"complete","many-kafka","GPCSNE","half-complete-graph-2048",8).
+
+results_4.Filter("NR","number",8,"complete","many-kafka","GPCSNE","half-complete-graph-2048",2).
+results_4.Filter("NR","number",8,"complete","many-kafka","GPCSNE","half-complete-graph-2048",4).
+results_4.Filter("NR","number",8,"complete","many-kafka","GPCSNE","half-complete-graph-2048",8).
+
+results_4.Filter("NR","symbol",2,"complete","no-kafka","SNE","half-complete-graph-2048",2).
+results_4.Filter("NR","symbol",2,"complete","no-kafka","SNE","half-complete-graph-2048",4).
+results_4.Filter("NR","symbol",2,"complete","no-kafka","SNE","half-complete-graph-2048",8).
+
+results_4.Filter("NR","symbol",4,"complete","no-kafka","SNE","half-complete-graph-2048",2).
+results_4.Filter("NR","symbol",4,"complete","no-kafka","SNE","half-complete-graph-2048",4).
+results_4.Filter("NR","symbol",4,"complete","no-kafka","SNE","half-complete-graph-2048",8).
+
+results_4.Filter("NR","symbol",8,"complete","no-kafka","SNE","half-complete-graph-2048",2).
+results_4.Filter("NR","symbol",8,"complete","no-kafka","SNE","half-complete-graph-2048",4).
+results_4.Filter("NR","symbol",8,"complete","no-kafka","SNE","half-complete-graph-2048",8).
+
+results_4.Filter("NR","symbol",2,"complete","many-kafka","GPCSNE","half-complete-graph-2048",2).
+results_4.Filter("NR","symbol",2,"complete","many-kafka","GPCSNE","half-complete-graph-2048",4).
+results_4.Filter("NR","symbol",2,"complete","many-kafka","GPCSNE","half-complete-graph-2048",8).
+
+results_4.Filter("NR","symbol",4,"complete","many-kafka","GPCSNE","half-complete-graph-2048",2).
+results_4.Filter("NR","symbol",4,"complete","many-kafka","GPCSNE","half-complete-graph-2048",4).
+results_4.Filter("NR","symbol",4,"complete","many-kafka","GPCSNE","half-complete-graph-2048",8).
+
+results_4.Filter("NR","symbol",8,"complete","many-kafka","GPCSNE","half-complete-graph-2048",2).
+results_4.Filter("NR","symbol",8,"complete","many-kafka","GPCSNE","half-complete-graph-2048",4).
+results_4.Filter("NR","symbol",8,"complete","many-kafka","GPCSNE","half-complete-graph-2048",8).
+
+.init results_5 = ResultsFilter
+
+results_5.InputResults(ui,bp,dt,ss,jt,km,ea,dn,ts,is,os,rt,ct1,ct2,tc,sb) :- 
+    Results1(ui,bp,dt,ss,jt,km,ea,dn,ts,is,os,rt,ct1,ct2,tc,sb).
+
+.output results_5.OutputResults(delimiter=",",headers=true)
+
+.decl Results5Dn(dataset_name:symbol)
+
+Results5Dn("cit-HepTh").
+Results5Dn("com-Amazon").
+Results5Dn("ego-Facebook").
+Results5Dn("email-Enron").
+Results5Dn("wiki-Vote").
+Results5Dn("half-complete-graph-2048").
+
+results_5.Filter("ALL","number",0,"none","many-kafka","GPCSNE",dn,16) :- Results5Dn(dn).
+results_5.Filter("NR","number",2,"complete","many-kafka","GPCSNE",dn,16) :- Results5Dn(dn).
+results_5.Filter("ALL","number",0,"none","no-kafka","SNE",dn,16) :- Results5Dn(dn).
+results_5.Filter("NR","number",2,"complete","no-kafka","SNE",dn,16) :- Results5Dn(dn).
+
+results_5.Filter("ALL","symbol",0,"none","many-kafka","GPCSNE",dn,16) :- Results5Dn(dn).
+results_5.Filter("NR","symbol",2,"complete","many-kafka","GPCSNE",dn,16) :- Results5Dn(dn).
+results_5.Filter("ALL","symbol",0,"none","no-kafka","SNE",dn,16) :- Results5Dn(dn).
+results_5.Filter("NR","symbol",2,"complete","no-kafka","SNE",dn,16) :- Results5Dn(dn).
+
 .decl ValidStratumIndexForMax(unique_id:number,stratum_index:symbol)
 
 ValidStratumIndexForMax(ui,si) :-
@@ -378,4 +565,68 @@ MaxComputationTimeStratum(ui,mcts2k,mcts2v).
 // @TODO: remove outputs below, for debugging, ALL in InputSize but not OutputSize, hence no output generated, retry
 .output InputSize
 .output OutputSize
+/*
+.decl BenchmarkProgram(benchmark_program:symbol)
 
+BenchmarkProgram("ALL").
+BenchmarkProgram("NR").
+
+.decl DataType(data_type:symbol)
+
+DataType("number").
+DataType("symbol").
+
+.decl DataType(data_type:symbol)
+
+DataType("number").
+DataType("symbol").
+
+.decl SplitSize(split_size:number)
+
+SplitSize(0).
+SplitSize(1).
+SplitSize(2).
+SplitSize(4).
+SplitSize(8).
+SplitSize(16).
+SplitSize(32).
+
+.decl JoinType(join_type:symbol)
+
+JoinType("none").
+JoinType("complete").
+
+.decl KafkaMode(kafka_mode:symbol)
+
+KafkaMode("no-kafka").
+KafkaMode("one-kafka").
+KafkaMode("many-kafka").
+
+.decl EvaluationAlgorithm(evaluation_algorithm:symbol)
+
+EvaluationAlgorithm("SNE").
+EvaluationAlgorithm("GPCSNE").
+
+.decl DatasetName(dataset_name:symbol)
+
+DatasetName("half-complete-graph-64").
+DatasetName("half-complete-graph-128").
+DatasetName("half-complete-graph-512").
+DatasetName("half-complete-graph-1024").
+DatasetName("half-complete-graph-2048").
+DatasetName("cit-HepTh").
+DatasetName("com-Amazon").
+DatasetName("ego-Facebook").
+DatasetName("email-Enron").
+DatasetName("wiki-Vote").
+
+.decl ThreadSize(thread_size:number)
+
+ThreadSize(1).
+ThreadSize(2).
+ThreadSize(4).
+ThreadSize(8).
+ThreadSize(16).
+ThreadSize(32).
+ThreadSize(64).
+*/
