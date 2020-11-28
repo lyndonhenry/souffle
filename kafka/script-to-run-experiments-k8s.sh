@@ -83,23 +83,26 @@ function _main() {
 
   read -p "Example experiments have run, press enter to run the real experiments..."
 
-  # run all experiments in the second round
   local DOCKER_COMPOSE_FILE
-  for DOCKER_COMPOSE_FILE in $(find "${ROOT}/k8s/third/yes-cloud" -name "*.yml")
+  for DOCKER_COMPOSE_FILE in $(find "${ROOT}/k8s/first/yes-cloud" -name "*.yml")
   do
     _run_experiment "${DOCKER_COMPOSE_FILE}"
   done
 
-  # run all experiments in the second round
   local DOCKER_COMPOSE_FILE
   for DOCKER_COMPOSE_FILE in $(find "${ROOT}/k8s/second/yes-cloud" -name "*.yml")
   do
     _run_experiment "${DOCKER_COMPOSE_FILE}"
   done
 
-  # run the non-cloud experiments in the first round
   local DOCKER_COMPOSE_FILE
-  for DOCKER_COMPOSE_FILE in $(find "${ROOT}/k8s/first/yes-cloud" -name "*.yml")
+  for DOCKER_COMPOSE_FILE in $(find "${ROOT}/k8s/third/yes-cloud" -name "*.yml")
+  do
+    _run_experiment "${DOCKER_COMPOSE_FILE}"
+  done
+
+  local DOCKER_COMPOSE_FILE
+  for DOCKER_COMPOSE_FILE in $(find "${ROOT}/k8s/fourth/yes-cloud" -name "*.yml")
   do
     _run_experiment "${DOCKER_COMPOSE_FILE}"
   done
