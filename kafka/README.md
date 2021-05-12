@@ -4,14 +4,15 @@ Welcome to Souffle on Kafka.
 
 ## Running an Example
 
-$ ./script-to-generate-datasets.sh
+$ ./kafka/souffle-on-kafka-docker.sh
+$ ./kafka/script-to-generate-datasets.sh
 > Generated example datasets, press enter to continue.
 > Ctrl-C
-$ ./script-to-generate-experiments.sh
+$ ./kafka/script-to-generate-experiments.sh
 > Generated first example experiment, press enter to continue.
 > Generated all example experiments, press enter to continue.
 > Ctrl-C
-$ ./script-to-run-experiments.sh
+$ ./kafka/script-to-run-experiments.sh
 > Ran example experiments, press enter to continue.
 > Ctrl-C
 
