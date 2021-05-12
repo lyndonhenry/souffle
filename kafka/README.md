@@ -22,9 +22,15 @@ $ ./kafka/script-to-run-experiments.sh
 
 Note that 
 ```
-./kafka/souffle-on-kafka-docker.sh --clean
+$ ./kafka/souffle-on-kafka-docker.sh --clean
 ```
 can be used to delete all Docker containers.
+
+Also 
+```
+./kafka/.env
+```
+must use the current branch and be up to date.
 
 - do notes on how to generate everything up to an example and cancel with read -p
 - then test on both log files and without them for one example

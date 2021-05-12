@@ -196,7 +196,7 @@ function _ensure_apache_kafka_is_installed() {
     local KAFKA_FILE="kafka_2.12-2.8.0"
     sudo apt-get install -y curl
     curl -O "https://mirrors.gigenet.com/apache/kafka/2.8.0/${KAFKA_FILE}.tgz"
-    tar -xzf "${KAFKA_FILE}"
+    tar -xzf "${KAFKA_FILE}.tgz"
     mv "${KAFKA_FILE}" "${KAFKA_PATH}"
   fi
 }
