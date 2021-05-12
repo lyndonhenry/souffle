@@ -8,13 +8,23 @@ $ ./kafka/souffle-on-kafka-docker.sh
 $ ./kafka/script-to-generate-datasets.sh
 > Generated example datasets, press enter to continue.
 > Ctrl-C
+```
 $ ./kafka/script-to-generate-experiments.sh
 > Generated first example experiment, press enter to continue.
 > Generated all example experiments, press enter to continue.
 > Ctrl-C
+```
+~~~
 $ ./kafka/script-to-run-experiments.sh
 > Ran example experiments, press enter to continue.
 > Ctrl-C
+~~~
+
+Note that 
+```
+./kafka/souffle-on-kafka-docker.sh --clean
+```
+can be used to delete all Docker containers.
 
 - do notes on how to generate everything up to an example and cancel with read -p
 - then test on both log files and without them for one example
