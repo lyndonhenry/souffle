@@ -5,6 +5,19 @@ set -ouex pipefail
 
 function _generate_example_benchmarks() {
 
+ ./kafka/souffle-on-kafka.sh \
+    --benchmark "NR" \
+    --type "number" \
+    --split "8" \
+    --join "complete" \
+    --mode "many-kafka" \
+    --algorithm "GPCSNE" \
+    --data "half-complete-graph-1024" \
+    --threads "1" \
+    --subdir "example"
+
+   read -p "Generated first example experiment, press enter to continue."
+
   ./kafka/souffle-on-kafka.sh \
     --benchmark "ALL" \
     --type "number" \
@@ -48,6 +61,8 @@ function _generate_example_benchmarks() {
     --data "example" \
     --threads "2" \
     --subdir "example"
+
+ 
 
 
 }
@@ -591,7 +606,7 @@ function _main() {
   _generate_example_benchmarks
 
   echo
-  read -p "Example experiments generated, press enter to generate the real experiments..."
+  read -p "Generated all example experiments, press enter to continue."
   echo
 
   _generate_first_round_of_experiments

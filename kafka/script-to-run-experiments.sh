@@ -90,7 +90,7 @@ function _main() {
     _run_experiment "${DOCKER_COMPOSE_FILE}"
   done
 
-  read -p "Example experiments have run, press enter to run the real experiments..."
+  read -p "Ran example experiments, press enter to continue."
 
   echo
   echo "RUNNING NEXT ROUND OF EXPERIMENTS (1/4)"

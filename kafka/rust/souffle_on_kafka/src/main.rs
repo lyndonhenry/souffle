@@ -867,6 +867,29 @@ impl Helper {
     }
 }
 
+fn make_example_datasets() -> Result<()> {
+  test().expect("ERROR!");
+  let mut datasets = vec![
+    InfoStruct { name: "example".to_string(), location: "archive/example/E.facts".to_string(), vertices: 8, edges: 8, directed: true, format: InfoFormat::XProg, },
+  ];
+  let i :u32 = 10;
+    datasets.push(
+      InfoStruct {
+        name: format!("half-complete-graph-{}", 2u64.pow(i)).to_string(),
+        location: "none".to_string(),
+        vertices: 2u64.pow(i) as usize,
+        edges: ((2u64.pow(i) * (2u64.pow(i) - 1)) / 2) as usize,
+        directed: true,
+        format: InfoFormat::Synthetic,
+      },
+    )
+  Helper::print_latex(&datasets);
+  for dataset in datasets.iter() {
+    Helper::run(dataset)?;
+  }
+  Ok(())
+}
+
 fn make_datasets() -> Result<()> {
   test().expect("ERROR!");
   let mut datasets = vec![
@@ -964,6 +987,9 @@ fn main() {
   match args[1].as_str() {
     "--datasets" => {
       make_datasets().expect("ERROR!");
+    }
+    "--example-datasets" => {
+      make_example_datasets().expect("ERROR!");
     }
     "--benchmark" => {
       make_benchmark(
