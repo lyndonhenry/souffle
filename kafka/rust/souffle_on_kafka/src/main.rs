@@ -882,7 +882,7 @@ fn make_example_datasets() -> Result<()> {
         directed: true,
         format: InfoFormat::Synthetic,
       },
-    )
+    );
   Helper::print_latex(&datasets);
   for dataset in datasets.iter() {
     Helper::run(dataset)?;
