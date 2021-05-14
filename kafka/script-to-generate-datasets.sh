@@ -13,6 +13,9 @@ function _main() {
   # Obtain and preprocess all datasest
   cargo build --manifest-path kafka/rust/souffle_on_kafka/Cargo.toml
   kafka/rust/souffle_on_kafka/target/debug/souffle_on_kafka --example-datasets
+
+  # Sync local to S3 bucket
+  aws s3 sync "${ROOT}" "s3://souffle-on-kafka"
   echo
   read -p "Generated example datasets, press enter to continue."
   echo

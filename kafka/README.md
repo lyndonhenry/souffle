@@ -26,7 +26,8 @@ $ ./kafka/souffle-on-kafka-docker.sh --clean
 ```
 can be used to delete all Docker containers.
 
-Also 
+Also the environment variables in 
+
 ```
 ./kafka/.env
 ```
@@ -34,6 +35,20 @@ must use the current branch and be up to date.
 
 - do notes on how to generate everything up to an example and cancel with read -p
 - then test on both log files and without them for one example
+
+If you can't run `docker` without sudo, do
+```
+$ sudo groupadd docker
+$ sudo usermod -aG docker $USER
+$ su -s $USER
+$ docker run hello-world
+```
+
+If you aren't running a `docker swarm` before the call to `script-to-run-experiments.sh`, do
+
+```
+docker swarm init
+```
 
 ## Files of Interest
 
