@@ -4,39 +4,63 @@ Welcome to Souffle on Kafka.
 
 ## Running an Example
 
-$ ./kafka/souffle-on-kafka-docker.sh
+Here is an example of basic usage.
+
+First, enter the Docker container for the system.
+
+```
+$ ./kafka/souffle-on-kafka-docker.sh --run /bin/bash
+```
+
+Next, use the script to generate the example datasets.
+
+```
 $ ./kafka/script-to-generate-datasets.sh
 > Generated example datasets, press enter to continue.
 > Ctrl-C
+```
+
+Use the script to generate the example experiments.
+
 ```
 $ ./kafka/script-to-generate-experiments.sh
 > Generated first example experiment, press enter to continue.
 > Generated all example experiments, press enter to continue.
 > Ctrl-C
 ```
-~~~
+
+Now, exit the Docker container for the system.
+
+```
+$ exit
+```
+
+And from outside the Docker container, run 
+
+```
+docker swarm init
+```
+
+Test the system on the example experiments.
+
+```
 $ ./kafka/script-to-run-experiments.sh
 > Ran example experiments, press enter to continue.
 > Ctrl-C
-~~~
-
-Note that 
 ```
-$ ./kafka/souffle-on-kafka-docker.sh --clean
-```
-can be used to delete all Docker containers.
 
-Also the environment variables in 
+## Troubleshooting
 
-```
-./kafka/.env
-```
-must use the current branch and be up to date.
+Make sure you have the `awscli` package installed with credentials in `~/.aws/credentials`.
 
-- do notes on how to generate everything up to an example and cancel with read -p
-- then test on both log files and without them for one example
+Also make sure you have access to the S3 Bucket at `s3://souffle-on-kafka` and the files in it.
+
+Note that `$ ./kafka/souffle-on-kafka-docker.sh --clean` can be used to delete all Docker containers on your system.
+
+Also the environment variables in `./kafka/.env` must use the current branch and be up to date.
 
 If you can't run `docker` without sudo, do
+
 ```
 $ sudo groupadd docker
 $ sudo usermod -aG docker $USER
@@ -44,11 +68,9 @@ $ su -s $USER
 $ docker run hello-world
 ```
 
-If you aren't running a `docker swarm` before the call to `script-to-run-experiments.sh`, do
+If you aren't running a `docker swarm` before the call to `script-to-run-experiments.sh`, do `docker swarm init`.
 
-```
-docker swarm init
-```
+If the Kafka C++ library is not available, update the version in ./kafka/docker.sh` in the function `_ensure_apache_kafka_is_installed()`.
 
 ## Files of Interest
 

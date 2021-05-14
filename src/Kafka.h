@@ -588,8 +588,9 @@ private:
             {"stratum-index", "none"},
             {"use-kafkacat", "false"}, {"print-metadata", "false"}
 #ifdef KAFKA_LOG
+            // @@@TODO
             // we can disable logging regardless of compilation options by overriding this option
-            , {"log", "true"}
+            , {"log", "false"}
             , {"log-topic", "souffle-log"}
 #endif
     };
