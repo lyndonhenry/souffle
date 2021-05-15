@@ -588,9 +588,7 @@ private:
             {"stratum-index", "none"},
             {"use-kafkacat", "false"}, {"print-metadata", "false"}
 #ifdef KAFKA_LOG
-            // @@@TODO
-            // we can disable logging regardless of compilation options by overriding this option
-            , {"log", "false"}
+            , {"log", "true"}
             , {"log-topic", "souffle-log"}
 #endif
     };
@@ -630,7 +628,7 @@ public:
     inline void log(const String& messagePart) const {
         (void) messagePart;
 #ifdef KAFKA_LOG
-        if (customConf_.at("log") != "true") {
+        if (customConf_.at("log") == "true") {
           static std::size_t count = 0;
           static const auto stratumIndex = customConf_.at("stratum-index");
           const auto end = std::chrono::steady_clock::now();

@@ -7,6 +7,7 @@ set -ouex pipefail
 # == Global Variables ==
 #
 
+ENABLE_LOG="true" # set to false to disable logging
 KAFKA_LOG_TOPIC="souffle-log"
 VERBOSE="" # use VERBOSE="--verbose" for verbose mode
 KAFKA_PATH="/home/${USER}/.kafka"
@@ -315,6 +316,7 @@ function _exe_delete_kafka_topics() {
   ARGS+=" -Xcustom.run-program=false "
   ARGS+=" -Xcustom.delete-topics=true "
   ARGS+=" -Xcustom.unique-id=${ID} "
+  ARGS+=" -Xcustom.log=${ENABLE_LOG} "
   ./${EXE} ${ARGS}
 }
 
@@ -337,6 +339,7 @@ function _exe_create_kafka_topics() {
   ARGS+=" -Xcustom.run-program=false "
   ARGS+=" -Xcustom.delete-topics=false "
   ARGS+=" -Xcustom.unique-id=${ID} "
+  ARGS+=" -Xcustom.log=${ENABLE_LOG} "
   ./${EXE} ${ARGS}
 }
 
@@ -362,6 +365,7 @@ function _exe_run_all_strata() {
   ARGS+=" -Xcustom.run-program=true "
   ARGS+=" -Xcustom.delete-topics=false "
   ARGS+=" -Xcustom.unique-id=${ID} "
+  ARGS+=" -Xcustom.log=${ENABLE_LOG} "
   _for_each_async "./${EXE} ${ARGS} -j${THREADS} -i" ${STRATUM_NAMES}
   wait
 }
@@ -388,6 +392,7 @@ function _exe_run_one_stratum() {
   ARGS+=" -Xcustom.run-program=true "
   ARGS+=" -Xcustom.delete-topics=false "
   ARGS+=" -Xcustom.unique-id=${ID} "
+  ARGS+=" -Xcustom.log=${ENABLE_LOG} "
   ./${EXE} ${ARGS} -j${THREADS} -i${STRATUM_NAME}
 }
 
