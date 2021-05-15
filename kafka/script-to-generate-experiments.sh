@@ -8,11 +8,11 @@ function _generate_example_benchmarks() {
  ./kafka/souffle-on-kafka.sh \
     --benchmark "NR" \
     --type "number" \
-    --split "4" \
+    --split "2" \
     --join "complete" \
     --mode "many-kafka" \
     --algorithm "GPCSNE" \
-    --data "half-complete-graph-64" \
+    --data "half-complete-graph-16" \
     --threads "1" \
     --subdir "example"
 

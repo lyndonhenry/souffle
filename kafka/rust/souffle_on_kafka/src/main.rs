@@ -872,7 +872,7 @@ fn make_example_datasets() -> Result<()> {
   let mut datasets = vec![
     InfoStruct { name: "example".to_string(), location: "archive/example/E.facts".to_string(), vertices: 8, edges: 8, directed: true, format: InfoFormat::XProg, },
   ];
-  let i :u32 = 6;
+  let i :u32 = 4;
     datasets.push(
       InfoStruct {
         name: format!("half-complete-graph-{}", 2u64.pow(i)).to_string(),

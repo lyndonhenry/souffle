@@ -29,9 +29,10 @@ function _run_experiment() {
     # deploy the stack
     docker stack deploy -c ${SECRET_DOCKER_COMPOSE_FILE} ${STACK_NAME}
 
-    # set a timeout of 1 hour via max count
+    # set a timeout in minutes
+    local TIMEOUT_IN_MINUTES=30
     local COUNT=0
-    local MAX_COUNT=$(((60 * 10) / 5))
+    local MAX_COUNT=$(((60 * ${TIMEOUT_IN_MINUTES}) / 5))
     # repeatedly check for log to be generated, signalling program termination
     while [ ! "$(aws s3 ls "s3://souffle-on-kafka/output/log/${NAME}")" ]
     do
