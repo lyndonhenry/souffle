@@ -629,32 +629,32 @@ public:
         (void) messagePart;
 #ifdef KAFKA_LOG
         if (customConf_.at("log") == "true") {
-          static std::size_t count = 0;
-          static const auto stratumIndex = customConf_.at("stratum-index");
-          const auto end = std::chrono::steady_clock::now();
-          const auto begin = logTimestamp_;
-          const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>((end - begin)).count();
-          std::stringstream ss;
-          ss << stratumIndex << "," << count << "," << diff << "," << messagePart;
-          const auto message = ss.str();
-          if (!logState_) {
-              logMessageQueue_.push_back(message);
-          } else {
-              auto produceLogMessage = [&](const String& msg) -> void {
-                  auto payload = Vec<char>(msg.begin(), msg.end());
-                  detail::KafkaHelper::produceProducer(producer_, logTopic_, payload);
-              };
-              if (!logMessageQueue_.empty()) {
-                  for (auto& msg : logMessageQueue_) {
-                      produceLogMessage(msg);
-                  }
-                  logMessageQueue_.clear();
-              }
-              assert(logMessageQueue_.empty());
-              produceLogMessage(message);
-          }
-          ++count;
-          logTimestamp_ = std::chrono::steady_clock::now();
+        static std::size_t count = 0;
+        static const auto stratumIndex = customConf_.at("stratum-index");
+        const auto end = std::chrono::steady_clock::now();
+        const auto begin = logTimestamp_;
+        const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>((end - begin)).count();
+        std::stringstream ss;
+        ss << stratumIndex << "," << count << "," << diff << "," << messagePart;
+        const auto message = ss.str();
+        if (!logState_) {
+            logMessageQueue_.push_back(message);
+        } else {
+            auto produceLogMessage = [&](const String& msg) -> void {
+                auto payload = Vec<char>(msg.begin(), msg.end());
+                detail::KafkaHelper::produceProducer(producer_, logTopic_, payload);
+            };
+            if (!logMessageQueue_.empty()) {
+                for (auto& msg : logMessageQueue_) {
+                    produceLogMessage(msg);
+                }
+                logMessageQueue_.clear();
+            }
+            assert(logMessageQueue_.empty());
+            produceLogMessage(message);
+        }
+        ++count;
+        logTimestamp_ = std::chrono::steady_clock::now();
         }
 #endif
     }

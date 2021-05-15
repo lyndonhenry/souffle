@@ -28,7 +28,7 @@ function _docker_clean() {
   sudo docker stop $(sudo docker ps -a -q) || :
   sudo docker rm $(sudo docker ps -a -q) || :
   sudo docker rmi $(sudo docker images -q -a) || :
-  sudo docker system prune -a
+  #sudo docker system prune -a
 }
 
 #
